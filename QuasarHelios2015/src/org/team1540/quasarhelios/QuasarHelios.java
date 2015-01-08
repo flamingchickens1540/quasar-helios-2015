@@ -9,6 +9,7 @@ import ccre.igneous.IgneousApplication;
 public class QuasarHelios implements IgneousApplication {
 
     public void setupRobot() {
-        // Robot setup code goes here.
+        PositionTracking.setup();
+        DriveCode.setup();
     }
 }
