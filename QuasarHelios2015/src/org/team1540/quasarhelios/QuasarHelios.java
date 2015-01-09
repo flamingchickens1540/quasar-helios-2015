@@ -11,5 +11,6 @@ public class QuasarHelios implements IgneousApplication {
     public void setupRobot() {
         PositionTracking.setup();
         DriveCode.setup();
+        ControlInterface.setup();
     }
 }
