@@ -16,9 +16,11 @@ public class ControlInterface {
 		DriveCode.leftJoystickChannel = Igneous.joystick1.getYAxisSource();
 		DriveCode.rightJoystickChannel = Igneous.joystick2.getYAxisSource();		
 	}
+	
 	public static void setupPhidget() {
 	
 	}
+	
 	public static void setupCluck() {
 		
 	}
