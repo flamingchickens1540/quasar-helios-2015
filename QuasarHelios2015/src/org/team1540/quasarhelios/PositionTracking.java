@@ -5,7 +5,7 @@ public class PositionTracking {
 	private static boolean running;
 	
 	public static void setup() {
-		DisplacementSensor.setup();
+		DisplacementSensor.setup(4000);
 		HeadingSensor.setup();
 		
 		position = new Vector2(0.0f, 0.0f);
