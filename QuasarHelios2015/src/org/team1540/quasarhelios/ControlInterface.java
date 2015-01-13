@@ -1,6 +1,7 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 
 public class ControlInterface {
@@ -15,7 +16,8 @@ public class ControlInterface {
 	
 	public static void setupJoysticks() {
 		DriveCode.leftJoystickChannel = Igneous.joystick1.getYAxisSource();
-		DriveCode.rightJoystickChannel = Igneous.joystick2.getYAxisSource();		
+		DriveCode.rightJoystickChannel = Igneous.joystick2.getYAxisSource();	
+		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 	}
 	
 	public static void setupPhidget() {
