@@ -1,6 +1,5 @@
 package org.team1540.quasarhelios;
 
-import ccre.igneous.Igneous;
 import ccre.igneous.IgneousApplication;
 
 /**
@@ -10,5 +9,6 @@ public class QuasarHelios implements IgneousApplication {
 	
     public void setupRobot() {
         DriveCode.setup();
+        ControlInterface.setup();
     }
 }
