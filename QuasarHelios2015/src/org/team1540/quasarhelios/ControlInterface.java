@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
-import ccre.phidget.PhidgetReader;
 import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 
