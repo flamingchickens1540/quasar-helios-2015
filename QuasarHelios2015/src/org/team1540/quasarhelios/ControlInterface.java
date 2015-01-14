@@ -20,11 +20,7 @@ public class ControlInterface {
 		DriveCode.rightJoystickChannel = Igneous.joystick1.getAxisSource(6);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 	}
-	
-	public static void setupPhidget() {
-		PhidgetReader.getDigitalInput(0).send(Elevator.elevatorControl);
-	}
-	
+		
 	public static void setupCluck() {
 		
 	}
