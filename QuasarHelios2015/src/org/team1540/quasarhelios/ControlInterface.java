@@ -1,6 +1,7 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.phidget.PhidgetReader;
 import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 
@@ -21,7 +22,7 @@ public class ControlInterface {
 	}
 	
 	public static void setupPhidget() {
-	
+		PhidgetReader.getDigitalInput(0).send(Elevator.elevatorControl);
 	}
 	
 	public static void setupCluck() {
