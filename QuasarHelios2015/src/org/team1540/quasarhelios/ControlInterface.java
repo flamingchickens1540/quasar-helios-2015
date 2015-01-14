@@ -11,7 +11,6 @@ public class ControlInterface {
 	
 	public static void setup() {
 		setupJoysticks();
-		setupPhidget();
 		setupCluck();
 	}
 	
