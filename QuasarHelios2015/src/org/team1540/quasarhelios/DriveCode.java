@@ -50,10 +50,17 @@ public class DriveCode {
 						Math.max(Math.abs(leftFront), Math.abs(rightFront)),
 						Math.max(Math.abs(leftBack), Math.abs(rightBack)));
 				if (normalize > 1) {
-					leftFront = leftFront / normalize;
-					rightFront = rightFront / normalize;
-					leftBack = leftBack / normalize;
-					rightBack = rightBack / normalize;
+					leftFront /= normalize;
+					rightFront /= normalize;
+					leftBack /= normalize;
+					rightBack /= normalize;
+				}
+				if (normalize < Math.abs(speed)){
+					float multiplier = Math.abs(speed)/normalize;
+					leftFront *= multiplier;
+					rightFront *= multiplier;
+					leftBack *= multiplier;
+					rightBack *= multiplier;
 				}
 				rightFrontMotor.set(rightFront);
 				leftFrontMotor.set(leftFront);
