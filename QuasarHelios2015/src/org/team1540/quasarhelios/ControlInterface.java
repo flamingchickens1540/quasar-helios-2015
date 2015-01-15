@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 
 public class ControlInterface {
@@ -15,10 +16,10 @@ public class ControlInterface {
 	}
 	
 	public static void setupJoysticks() {
-		DriveCode.leftJoystickChannelX = Igneous.joystick1.getXAxisSource();
-		DriveCode.leftJoystickChannelY = Igneous.joystick1.getYAxisSource();
-		DriveCode.rightJoystickChannelX = Igneous.joystick1.getAxisSource(5);
-		DriveCode.rightJoystickChannelY = Igneous.joystick1.getAxisSource(6);	
+		DriveCode.leftJoystickChannelX = FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(),.1f);
+		DriveCode.leftJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(),.1f);
+		DriveCode.rightJoystickChannelX = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5),.1f);
+		DriveCode.rightJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6),.1f);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 	}
 	
