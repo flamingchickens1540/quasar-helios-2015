@@ -16,44 +16,44 @@ public class DriveCode {
 	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
-	
+
 	private static double π = Math.PI;
-	
+
 	public static void setup() {
-		Igneous.duringTele.send(new EventOutput(){
+		Igneous.duringTele.send(new EventOutput() {
 			public void event() {
 				float distanceY = rightJoystickChannelY.get();
 				float distanceX = rightJoystickChannelX.get();
 				float speed = leftJoystickChannelY.get();
 				float rotationspeed = leftJoystickChannelX.get();
 				double angle;
-				if (distanceX==0){
-					if (distanceY>=0){
-						angle = π/2;
+				if (distanceX == 0) {
+					if (distanceY >= 0) {
+						angle = π / 2;
+					} else {
+						angle = 3 * π / 2;
 					}
-					else{
-						angle = 3*π/2;
+				} else {
+					angle = Math.atan(distanceY / distanceX);
+					if (distanceX < 0) {
+						angle += π;
 					}
-				}
-				else{
-					angle = Math.atan(distanceY/distanceX);
-					if (distanceX<0){
-						angle+=π;
-					}
-					if (angle<0){
-						angle+=2*π;
+					if (angle < 0) {
+						angle += 2 * π;
 					}
 				}
-				float leftFront = (float) (speed*Math.sin(angle+π/4)+rotationspeed);
-				float rightFront = (float) (speed*Math.cos(angle+π/4)-rotationspeed);
-				float leftBack = (float) (speed*Math.cos(angle+π/4)+rotationspeed);
-				float rightBack = (float) (speed*Math.sin(angle+π/4)-rotationspeed);
-				float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)), Math.max(Math.abs(leftBack), Math.abs(rightBack)));
-				if (normalize>1){
-					leftFront = leftFront/normalize;
-					rightFront = rightFront/normalize;
-					leftBack = leftBack/normalize;
-					rightBack = rightBack/normalize;
+				float leftFront = (float) (speed * Math.sin(angle + π / 4) + rotationspeed);
+				float rightFront = (float) (speed * Math.cos(angle + π / 4) - rotationspeed);
+				float leftBack = (float) (speed * Math.cos(angle + π / 4) + rotationspeed);
+				float rightBack = (float) (speed * Math.sin(angle + π / 4) - rotationspeed);
+				float normalize = Math.max(
+						Math.max(Math.abs(leftFront), Math.abs(rightFront)),
+						Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+				if (normalize > 1) {
+					leftFront = leftFront / normalize;
+					rightFront = rightFront / normalize;
+					leftBack = leftBack / normalize;
+					rightBack = rightBack / normalize;
 				}
 				rightFrontMotor.set(rightFront);
 				leftFrontMotor.set(leftFront);
@@ -62,5 +62,5 @@ public class DriveCode {
 			}
 		});
 	}
-	
+
 }
