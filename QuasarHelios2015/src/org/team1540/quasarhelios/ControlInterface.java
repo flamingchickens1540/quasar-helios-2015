@@ -15,8 +15,10 @@ public class ControlInterface {
 	}
 	
 	public static void setupJoysticks() {
-		DriveCode.leftJoystickChannel = Igneous.joystick1.getYAxisSource();
-		DriveCode.rightJoystickChannel = Igneous.joystick1.getAxisSource(6);	
+		DriveCode.leftJoystickChannelX = Igneous.joystick1.getXAxisSource();
+		DriveCode.leftJoystickChannelY = Igneous.joystick1.getYAxisSource();
+		DriveCode.rightJoystickChannelX = Igneous.joystick1.getAxisSource(5);
+		DriveCode.rightJoystickChannelY = Igneous.joystick1.getAxisSource(6);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 	}
 	
