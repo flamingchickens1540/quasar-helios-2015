@@ -72,18 +72,17 @@ public class DriveCode {
 
 	public static void setup() {
 		Igneous.duringTele.send(mecanum);
-		BooleanMixing.whenBooleanBecomes(octocanumShifting, true).send(new EventOutput(){
-			public void event(){
+		BooleanMixing.whenBooleanBecomes(octocanumShifting, true).send(new EventOutput() {
+			public void event() {
 				Igneous.duringTele.unsend(mecanum);
 				Igneous.duringTele.send(tankDrive);
 			}
 		});
-		BooleanMixing.whenBooleanBecomes(octocanumShifting, false).send(new EventOutput(){
-			public void event(){
+		BooleanMixing.whenBooleanBecomes(octocanumShifting, false).send(new EventOutput() {
+			public void event() {
 				Igneous.duringTele.unsend(tankDrive);
 				Igneous.duringTele.send(mecanum);
 			}
 		});
 	}
-
 }
