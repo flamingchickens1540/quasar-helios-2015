@@ -13,10 +13,8 @@ import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
 
 public class Clamp {
-	public BooleanOutput openControl;
-	public FloatOutput heightControl;
-	
-	//private Integrator heightInput;
+	public final BooleanOutput openControl;
+	public final FloatOutput heightControl;
 	
 	private FloatStatus min;
 	private FloatStatus max;
@@ -40,9 +38,6 @@ public class Clamp {
 		EventInput limitTop = EventMixing.filterEvent(inputLimitTop, true, Igneous.constantPeriodic);
 		EventInput limitBottom = EventMixing.filterEvent(inputLimitBottom, true, Igneous.constantPeriodic);
 		
-		//heightInput = new Integrator(Igneous.constantPeriodic, encoder);
-		
-		
 		FloatMixing.pumpWhen(limitTop, encoder, max);
 		FloatMixing.pumpWhen(limitBottom, encoder, min);
 		
@@ -51,37 +46,4 @@ public class Clamp {
 		
 		pid.send(speedControl);
 	}
-	/*
-	private class Integrator implements FloatInputPoll, FloatOutput {
-		private float currentValue;
-		private FloatInputPoll base;
-		private long lastUpdate;
-		
-		public Integrator(EventInput update, FloatInputPoll base) {
-			this.currentValue = 0.0f;
-			this.base = base;
-			this.lastUpdate = System.nanoTime();
-			
-			update.send(new EventOutput() {
-				@Override
-				public void event() {
-					long currentTime = System.nanoTime();
-					float dt = (currentTime - lastUpdate) / 1e9f;
-					lastUpdate = currentTime;
-					
-					currentValue += base.get() * dt;
-				}
-			});
-		}
-
-		@Override
-		public float get() {
-			return currentValue;
-		}
-		
-		@Override
-		public void set(float value) {
-			currentValue = value;
-		}
-	}*/
 }
