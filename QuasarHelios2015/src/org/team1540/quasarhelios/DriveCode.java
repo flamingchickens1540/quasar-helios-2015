@@ -62,9 +62,28 @@ public class DriveCode {
 			leftBackMotor.set(leftBack);
 		}
 	};
+	
+	private static EventOutput tankDrive = new EventOutput() {
+		public void event(){
+			leftMotors.set(leftJoystickChannelY.get());
+			rightMotors.set(rightJoystickChannelY.get());
+		}
+	};
 
 	public static void setup() {
 		Igneous.duringTele.send(mecanum);
+		BooleanMixing.whenBooleanBecomes(octocanumShifting, true).send(new EventOutput(){
+			public void event(){
+				Igneous.duringTele.unsend(mecanum);
+				Igneous.duringTele.send(tankDrive);
+			}
+		});
+		BooleanMixing.whenBooleanBecomes(octocanumShifting, false).send(new EventOutput(){
+			public void event(){
+				Igneous.duringTele.unsend(tankDrive);
+				Igneous.duringTele.send(mecanum);
+			}
+		});
 	}
 
 }
