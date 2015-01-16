@@ -8,8 +8,9 @@ import ccre.igneous.IgneousApplication;
 public class QuasarHelios implements IgneousApplication {
 
     public void setupRobot() {
+        ControlInterface.setup();
         PositionTracking.setup();
         DriveCode.setup();
-        ControlInterface.setup();
+        Rollers.setup();
     }
 }
