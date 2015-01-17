@@ -10,15 +10,15 @@ import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 
 public class Rollers {
-	public final static BooleanStatus direction = new BooleanStatus(true);
-	public final static FloatStatus speed = new FloatStatus(0.0f);
+	private final static BooleanStatus direction = new BooleanStatus(true);
+	private final static FloatStatus speed = new FloatStatus(0.0f);
 	
-	public static FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f)); 
-	public static FloatOutput frontRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_FORWARD, 0.1f);
-	public static FloatOutput internalRollers = FloatMixing.combine(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, 0.1f)); 
+	private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f)); 
+	private static final FloatOutput frontRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_FORWARD, 0.1f);
+	private static final FloatOutput internalRollers = FloatMixing.combine(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, 0.1f)); 
 	
-	public static FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
-	public static FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
+	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
+	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
 	
 	public static BooleanInput toggleRollersButton;
 	public static BooleanInput runRollersButton;
