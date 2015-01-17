@@ -1,11 +1,8 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.*;
-import ccre.cluck.Cluck;
 import ccre.ctrl.*;
-import ccre.holders.TuningContext;
 import ccre.igneous.*;
-import ccre.log.Logger;
 
 public class DriveCode {
 	public static FloatInput leftJoystickChannelX;
