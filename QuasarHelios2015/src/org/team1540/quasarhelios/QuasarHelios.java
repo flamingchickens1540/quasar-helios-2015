@@ -1,8 +1,5 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.EventOutput;
-import ccre.ctrl.BooleanMixing;
-import ccre.igneous.Igneous;
 import ccre.igneous.IgneousApplication;
 
 /**
@@ -12,10 +9,11 @@ public class QuasarHelios implements IgneousApplication {
 	private Clamp clamp;
 
 	public void setupRobot() {
-		PositionTracking.setup();
-		DriveCode.setup();
-		ControlInterface.setup();
-
+        ControlInterface.setup();
+        PositionTracking.setup();
+        DriveCode.setup();
+        Rollers.setup();
+        
 		clamp = new Clamp();
-	}
+    }
 }
