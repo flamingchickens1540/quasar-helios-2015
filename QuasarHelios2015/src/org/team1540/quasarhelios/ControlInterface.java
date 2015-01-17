@@ -10,7 +10,6 @@ public class ControlInterface {
 	
 	public static void setup() {
 		setupJoysticks();
-		setupPhidget();
 		setupCluck();
 	}
 	
@@ -19,14 +18,12 @@ public class ControlInterface {
 		DriveCode.rightJoystickChannel = Igneous.joystick1.getAxisSource(6);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 		
+		Elevator.raisingInput = Igneous.joystick1.getButtonSource(2);
+		Elevator.loweringInput = Igneous.joystick1.getButtonSource(3);
 		Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
 		Rollers.toggleRollersButton =Igneous.joystick2.getButtonSource(4);
 	}
-	
-	public static void setupPhidget() {
-	
-	}
-	
+		
 	public static void setupCluck() {
 		
 	}
