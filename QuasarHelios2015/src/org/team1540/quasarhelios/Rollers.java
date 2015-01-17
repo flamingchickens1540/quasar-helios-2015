@@ -11,7 +11,7 @@ import ccre.igneous.Igneous;
 
 public class Rollers {
 	private final static BooleanStatus direction = new BooleanStatus(true);
-	private final static FloatStatus speed = new FloatStatus(0.0f);
+	private final static BooleanStatus speed = new BooleanStatus(false);
 	
 	private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f)); 
 	private static final FloatOutput frontRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_FORWARD, 0.1f);
@@ -26,10 +26,10 @@ public class Rollers {
 	public static BooleanOutput runRollers = new BooleanOutput() {
 		public void set(boolean value) {
 			if (value) {
-				if (speed.get() == 0.0f) {
-					speed.set(1.0f);
+				if (!speed.get()) {
+					speed.set(true);
 				} else {
-					speed.set(0.0f);
+					speed.set(false);
 				}
 			}
 		}
@@ -48,7 +48,7 @@ public class Rollers {
 		
 		Igneous.globalPeriodic.send(new EventOutput() {
 			public void event() {
-				if (speed.get() != 0.0f) {
+				if (speed.get()) {
 					float newSpeed = direction.get() ? 1.0f : -1.0f;
 					allRollers.set(newSpeed);
 				} else {
