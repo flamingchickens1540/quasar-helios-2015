@@ -20,7 +20,6 @@ public class ControlInterface {
 		
 		Elevator.raisingInput = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(2), Igneous.globalPeriodic);
 		Elevator.loweringInput = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(3), Igneous.globalPeriodic);
-
 	}
 		
 	public static void setupCluck() {
