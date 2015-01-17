@@ -20,6 +20,8 @@ public class ControlInterface {
 		
 		Elevator.raisingInput = Igneous.joystick1.getButtonSource(2);
 		Elevator.loweringInput = Igneous.joystick1.getButtonSource(3);
+		Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
+		Rollers.toggleRollersButton =Igneous.joystick2.getButtonSource(4);
 	}
 		
 	public static void setupCluck() {
