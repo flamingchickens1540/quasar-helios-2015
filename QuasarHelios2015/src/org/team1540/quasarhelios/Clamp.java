@@ -12,14 +12,12 @@ import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.PIDControl;
+import ccre.holders.TuningContext;
 import ccre.igneous.Igneous;
 
 public class Clamp {
 	public final BooleanOutput openControl = BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1));
 	public final FloatOutput heightControl;
-	
-	private FloatStatus min = new FloatStatus(0.0f);
-	private FloatStatus max = new FloatStatus(1.0f);
 	
 	public Clamp() {
 		FloatStatus height = new FloatStatus();
@@ -31,15 +29,22 @@ public class Clamp {
 		EventInput limitTop = EventMixing.filterEvent(Igneous.makeDigitalInput(2), true, Igneous.constantPeriodic);
 		EventInput limitBottom = EventMixing.filterEvent(Igneous.makeDigitalInput(3), true, Igneous.constantPeriodic);
 		
+		TuningContext context = new TuningContext("Clamp").publishSavingEvent();
+		
+		FloatStatus min = context.getFloat("clamp-min", 0.0f);
+		FloatStatus max = context.getFloat("clamp-max", 1.0f);
+		
 		FloatMixing.pumpWhen(limitTop, encoder, max);
 		FloatMixing.pumpWhen(limitBottom, encoder, min);
 		
-		PIDControl pid = new PIDControl(FloatMixing.normalizeFloat(encoder, min, max), height, FloatMixing.always(1.0f), FloatMixing.always(0.0f), FloatMixing.always(0.0f));
+		FloatStatus p = context.getFloat("clamp-p", 1.0f);
+		FloatStatus i = context.getFloat("clamp-i", 0.0f);
+		FloatStatus d = context.getFloat("clamp-d", 0.0f);
+		
+		PIDControl pid = new PIDControl(FloatMixing.normalizeFloat(encoder, min, max), height, p, i, d);
 		
 		Igneous.constantPeriodic.send(pid);
 		
 		pid.send(speedControl);
-		
-		
 	}
 }
