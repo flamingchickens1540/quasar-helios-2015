@@ -19,8 +19,8 @@ public class ControlInterface {
 		DriveCode.rightJoystickChannel = Igneous.joystick1.getAxisSource(6);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 		
-		Rollers.runRollersButton = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(3), Igneous.globalPeriodic);
-		Rollers.toggleRollersButton = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(4), Igneous.globalPeriodic);
+		Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
+		Rollers.toggleRollersButton =Igneous.joystick2.getButtonSource(4);
 	}
 	
 	public static void setupPhidget() {
