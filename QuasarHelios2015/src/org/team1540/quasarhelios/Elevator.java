@@ -2,6 +2,8 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanOutput;
+import ccre.channel.BooleanStatus;
+import ccre.channel.EventInput;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.ctrl.BooleanMixing;
@@ -15,7 +17,7 @@ public class Elevator {
 	private static final BooleanInput topLimitSwitch = BooleanMixing.createDispatch(Igneous.makeDigitalInput(0), Igneous.globalPeriodic);
 	private static final BooleanInput bottomLimitSwitch = BooleanMixing.createDispatch(Igneous.makeDigitalInput(1), Igneous.globalPeriodic);
 	
-	public static final BooleanOutput elevatorControl = new BooleanOutput() {
+	public static final BooleanStatus elevatorControl = new BooleanStatus(new BooleanOutput() {
 		public void set(boolean value) {
 			if (value) {
 				elevatorSpeed.set(1.0f);
@@ -23,42 +25,18 @@ public class Elevator {
 				elevatorSpeed.set(-1.0f);
 			}
 		}
-	};
+	});
 	
-	public static BooleanInput raisingInput;
-	public static BooleanInput loweringInput;
+	public static EventInput raisingInput;
+	public static EventInput loweringInput;
 	
-	public static void setup() {
-		topLimitSwitch.send(new BooleanOutput() {
-			public void set(boolean value) {
-				if (value && elevatorSpeed.get() > 0) {
-					elevatorSpeed.set(0.0f);
-				}
-			}
-		});
+	public static void setup() {		
+		elevatorSpeed.setWhen(0.0f, BooleanMixing.onPress(topLimitSwitch));
+		elevatorSpeed.setWhen(0.0f, BooleanMixing.onPress(bottomLimitSwitch));
 		
-		bottomLimitSwitch.send(new BooleanOutput() {
-			public void set(boolean value) {
-				if (value && elevatorSpeed.get() < 0) {
-					elevatorSpeed.set(0.0f);
-				}
-			}
-		});
+		elevatorControl.setTrueWhen(raisingInput);
+		elevatorControl.setFalseWhen(loweringInput);
 		
-		raisingInput.send(new BooleanOutput() {
-			public void set(boolean value) {
-				if (value) {
-					elevatorControl.set(value);
-				}
-			}
-		});
-		
-		loweringInput.send(new BooleanOutput() {
-			public void set(boolean value) {
-				if (value) {
-					elevatorControl.set(!value);
-				}
-			}
-		});
+		elevatorSpeed.set(0.0f);
 	}
 }

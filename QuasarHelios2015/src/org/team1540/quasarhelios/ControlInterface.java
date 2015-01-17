@@ -18,8 +18,8 @@ public class ControlInterface {
 		DriveCode.rightJoystickChannel = Igneous.joystick1.getAxisSource(6);	
 		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
 		
-		Elevator.raisingInput = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(2), Igneous.globalPeriodic);
-		Elevator.loweringInput = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(3), Igneous.globalPeriodic);
+		Elevator.raisingInput = Igneous.joystick1.getButtonSource(2);
+		Elevator.loweringInput = Igneous.joystick1.getButtonSource(3);
 	}
 		
 	public static void setupCluck() {
