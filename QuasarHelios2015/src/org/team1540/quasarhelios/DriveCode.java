@@ -1,8 +1,11 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.*;
+import ccre.cluck.Cluck;
 import ccre.ctrl.*;
+import ccre.holders.TuningContext;
 import ccre.igneous.*;
+import ccre.log.Logger;
 
 public class DriveCode {
 	public static FloatInput leftJoystickChannelX;
@@ -10,10 +13,10 @@ public class DriveCode {
 	public static FloatInput rightJoystickChannelX;
 	public static FloatInput rightJoystickChannelY;
 	public static BooleanInput octocanumShifting;
-	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
+	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
+	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2, Igneous.MOTOR_FORWARD, .1f);
-	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_REVERSE, .1f);
-	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, .1f);
+	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
 	
@@ -27,14 +30,14 @@ public class DriveCode {
 			float rotationspeed = leftJoystickChannelX.get();
 			double angle;
 			if (distanceX == 0) {
-				if (distanceY >= 0) {
-					angle = π / 2;
-				} else {
+				if (distanceY > 0) {
 					angle = 3 * π / 2;
+				} else {
+					angle = π / 2;
 				}
 			} else {
 				angle = Math.atan(distanceY / distanceX);
-				if (distanceX < 0) {
+				if (distanceX >= 0) {
 					angle += π;
 				}
 			}
@@ -71,18 +74,7 @@ public class DriveCode {
 	};
 
 	public static void setup() {
-		Igneous.duringTele.send(mecanum);
-		BooleanMixing.whenBooleanBecomes(octocanumShifting, true).send(new EventOutput() {
-			public void event() {
-				Igneous.duringTele.unsend(mecanum);
-				Igneous.duringTele.send(tankDrive);
-			}
-		});
-		BooleanMixing.whenBooleanBecomes(octocanumShifting, false).send(new EventOutput() {
-			public void event() {
-				Igneous.duringTele.unsend(tankDrive);
-				Igneous.duringTele.send(mecanum);
-			}
-		});
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, tankDrive));
 	}
 }
