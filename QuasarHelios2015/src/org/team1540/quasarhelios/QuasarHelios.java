@@ -11,11 +11,11 @@ import ccre.igneous.IgneousApplication;
 public class QuasarHelios implements IgneousApplication {
 	private Clamp clamp;
 
-    public void setupRobot() {
-        PositionTracking.setup();
-        DriveCode.setup();
-        ControlInterface.setup();
-        
-        clamp = new Clamp();
-    }
+	public void setupRobot() {
+		PositionTracking.setup();
+		DriveCode.setup();
+		ControlInterface.setup();
+
+		clamp = new Clamp();
+	}
 }
