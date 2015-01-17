@@ -1,12 +1,12 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 
 public class Elevator {
@@ -17,15 +17,7 @@ public class Elevator {
 	private static final BooleanInput topLimitSwitch = BooleanMixing.createDispatch(Igneous.makeDigitalInput(0), Igneous.globalPeriodic);
 	private static final BooleanInput bottomLimitSwitch = BooleanMixing.createDispatch(Igneous.makeDigitalInput(1), Igneous.globalPeriodic);
 	
-	public static final BooleanStatus elevatorControl = new BooleanStatus(new BooleanOutput() {
-		public void set(boolean value) {
-			if (value) {
-				elevatorSpeed.set(1.0f);
-			} else {
-				elevatorSpeed.set(-1.0f);
-			}
-		}
-	});
+	public static final BooleanStatus elevatorControl = new BooleanStatus(Mixing.select(elevatorSpeed, -1.0f, 1.0f));
 	
 	public static EventInput raisingInput;
 	public static EventInput loweringInput;
@@ -37,6 +29,7 @@ public class Elevator {
 		elevatorControl.setTrueWhen(raisingInput);
 		elevatorControl.setFalseWhen(loweringInput);
 		
+		// Needed because elevatorControl initialization causes elevatorSpeed to be set to -1.0.
 		elevatorSpeed.set(0.0f);
 	}
 }
