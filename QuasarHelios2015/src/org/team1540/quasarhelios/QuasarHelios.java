@@ -14,7 +14,7 @@ public class QuasarHelios implements IgneousApplication {
         DriveCode.setup();
         Elevator.setup();
         Rollers.setup();
-        
+        Autonomous.setup();
 		clamp = new Clamp();
     }
 }
