@@ -21,10 +21,10 @@ public class DriveCode {
 	
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
-			float distanceY = rightJoystickChannelY.get();
-			float distanceX = rightJoystickChannelX.get();
-			float speed = leftJoystickChannelY.get();
-			float rotationspeed = leftJoystickChannelX.get();
+			float distanceY = leftJoystickChannelY.get();
+			float distanceX = leftJoystickChannelX.get();
+			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+			float rotationspeed = rightJoystickChannelY.get();
 			double angle;
 			if (distanceX == 0) {
 				if (distanceY > 0) {
@@ -65,6 +65,7 @@ public class DriveCode {
 
 	public static void setup() {
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
-		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
+				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
 	}
 }

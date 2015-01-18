@@ -25,7 +25,7 @@ public class Clamp {
 		heightControl = height;
 
 		FloatInputPoll encoder = Igneous.makeEncoder(0, 1, false);
-		FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
+		FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
 		EventInput limitTop = EventMixing.filterEvent(Igneous.makeDigitalInput(2), true, Igneous.constantPeriodic);
 		EventInput limitBottom = EventMixing.filterEvent(Igneous.makeDigitalInput(3), true, Igneous.constantPeriodic);
