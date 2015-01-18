@@ -62,16 +62,9 @@ public class DriveCode {
 			leftBackMotor.set(leftBack);
 		}
 	};
-	
-	private static EventOutput tankDrive = new EventOutput() {
-		public void event(){
-			leftMotors.set(leftJoystickChannelY.get());
-			rightMotors.set(rightJoystickChannelY.get());
-		}
-	};
 
 	public static void setup() {
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
-		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, tankDrive));
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
 	}
 }
