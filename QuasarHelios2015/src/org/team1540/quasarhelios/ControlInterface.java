@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
-import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 
