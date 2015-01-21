@@ -18,12 +18,7 @@ public class AutoLoader extends InstinctModule {
 		a.setShouldBeRunning(b);
 		a.updateWhen(Igneous.globalPeriodic);
 		
-		BooleanMixing.whenBooleanBecomes(b, false).send(new EventOutput() {
-			@Override
-			public void event() {
-				Elevator.elevatorControl.set(false);
-			}
-		});
+		Elevator.elevatorControl.setFalseWhen(BooleanMixing.whenBooleanBecomes(b, false));
 		
 		return b;
 	}
