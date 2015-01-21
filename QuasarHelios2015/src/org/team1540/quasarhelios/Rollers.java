@@ -9,15 +9,15 @@ import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 
 public class Rollers {
-	private static final BooleanStatus direction = new BooleanStatus(true);
-	private static final BooleanStatus running = new BooleanStatus(false);
+	public static final BooleanStatus direction = new BooleanStatus(true);
+	public static final BooleanStatus running = new BooleanStatus(false);
 	
 	private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f)); 
 	private static final FloatOutput frontRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_FORWARD, 0.1f);
 	private static final FloatOutput internalRollers = FloatMixing.combine(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, 0.1f)); 
 	
 	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
-	public static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
+	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
 	
 	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.quadSelect(running, direction, 0.0f, 0.0f, -1.0f, 1.0f), Igneous.globalPeriodic);
 
