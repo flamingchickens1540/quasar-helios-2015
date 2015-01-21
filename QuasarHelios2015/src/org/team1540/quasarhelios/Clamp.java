@@ -1,13 +1,10 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanOutput;
 import ccre.channel.EventInput;
-import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
-import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
@@ -24,7 +21,7 @@ public class Clamp {
 		FloatStatus height = new FloatStatus();
 		heightControl = height;
 
-		FloatInputPoll encoder = Igneous.makeEncoder(0, 1, false);
+		FloatInputPoll encoder = Igneous.makeEncoder(4, 5, false);
 		FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
 		EventInput limitTop = EventMixing.filterEvent(Igneous.makeDigitalInput(2), true, Igneous.constantPeriodic);

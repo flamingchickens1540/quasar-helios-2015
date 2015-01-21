@@ -19,7 +19,7 @@ public class ControlInterface {
 		DriveCode.leftJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f);
 		DriveCode.rightJoystickChannelX = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .2f);
 		DriveCode.rightJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f);	
-		DriveCode.octocanumShifting = BooleanMixing.createDispatch(Igneous.joystick1.getButtonChannel(1), Igneous.globalPeriodic);
+		DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
 		
 		Elevator.raisingInput = Igneous.joystick1.getButtonSource(2);
 		Elevator.loweringInput = Igneous.joystick1.getButtonSource(3);

@@ -9,13 +9,14 @@ public class DriveCode {
 	public static FloatInput leftJoystickChannelY;
 	public static FloatInput rightJoystickChannelX;
 	public static FloatInput rightJoystickChannelY;
-	public static BooleanInput octocanumShifting;
+	public static EventInput octocanumShiftingButton;
 	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
+	public static BooleanStatus octocanumShifting = new BooleanStatus();
 	
 	private static double π = Math.PI;
 	
@@ -24,24 +25,24 @@ public class DriveCode {
 			float distanceY = leftJoystickChannelY.get();
 			float distanceX = leftJoystickChannelX.get();
 			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
-			float rotationspeed = rightJoystickChannelY.get();
+			float rotationspeed = rightJoystickChannelX.get();
 			double angle;
 			if (distanceX == 0) {
 				if (distanceY > 0) {
-					angle = 3 * π / 2;
-				} else {
 					angle = π / 2;
+				} else {
+					angle = 3 * π / 2;
 				}
 			} else {
 				angle = Math.atan(distanceY / distanceX);
-				if (distanceX >= 0) {
+				if (distanceX < 0) {
 					angle += π;
 				}
 			}
-			float leftFront = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-			float rightFront = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
-			float leftBack = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
-			float rightBack = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
+			float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
+			float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
+			float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
+			float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
 			float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)), Math.max(Math.abs(leftBack), Math.abs(rightBack)));
 			if (normalize > 1) {
 				leftFront /= normalize;
@@ -64,6 +65,7 @@ public class DriveCode {
 	};
 
 	public static void setup() {
+		octocanumShifting.toggleWhen(octocanumShiftingButton);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
 				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
