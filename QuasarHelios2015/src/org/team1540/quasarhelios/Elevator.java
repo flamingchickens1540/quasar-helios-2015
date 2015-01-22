@@ -14,8 +14,8 @@ public class Elevator {
 	
 	private static final FloatStatus elevatorSpeed = new FloatStatus(winch);
 	
-	private static final BooleanInputPoll topLimitSwitch = Igneous.makeDigitalInput(0);
-	private static final BooleanInputPoll bottomLimitSwitch = Igneous.makeDigitalInput(1);
+	public static final BooleanInputPoll topLimitSwitch = Igneous.makeDigitalInput(0);
+	public static final BooleanInputPoll bottomLimitSwitch = Igneous.makeDigitalInput(1);
 	
 	public static final BooleanStatus elevatorControl = new BooleanStatus(Mixing.select(elevatorSpeed, -1.0f, 1.0f));
 	
