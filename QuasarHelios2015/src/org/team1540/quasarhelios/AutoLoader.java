@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventOutput;
 import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
