@@ -50,11 +50,7 @@ public class Suspension {
 		}
 		
 		for (int i = 0; i < valves.length; i++) {
-			if (i == level) {
-				valves[i].set(true);
-			} else {
-				valves[i].set(false);
-			}
+			valves[i].set(i == level);
 		}
 		
 		currentLevel = level;
