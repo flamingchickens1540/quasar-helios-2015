@@ -20,10 +20,11 @@ public class ControlInterface {
 		DriveCode.rightJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f);	
 		DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
 		
-		Elevator.raisingInput = Igneous.joystick1.getButtonSource(2);
-		Elevator.loweringInput = Igneous.joystick1.getButtonSource(3);
+		Elevator.raisingInput = Igneous.joystick2.getButtonSource(1);
+		Elevator.loweringInput = Igneous.joystick2.getButtonSource(2);
 		Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
-		Rollers.toggleRollersButton =Igneous.joystick2.getButtonSource(4);
+		Rollers.toggleRollersButton = Igneous.joystick2.getButtonSource(4);
+		Rollers.toggleOpenButton = Igneous.joystick2.getButtonSource(5);
 	}
 		
 	public static void setupCluck() {
