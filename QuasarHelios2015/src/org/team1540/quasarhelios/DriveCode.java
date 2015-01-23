@@ -1,8 +1,11 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.*;
+import ccre.cluck.Cluck;
 import ccre.ctrl.*;
+import ccre.holders.TuningContext;
 import ccre.igneous.*;
+import ccre.log.Logger;
 
 public class DriveCode {
 	public static FloatInput leftJoystickChannelX;
@@ -16,17 +19,23 @@ public class DriveCode {
 	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
-	public static BooleanStatus octocanumShifting = new BooleanStatus();
+	private static BooleanStatus octocanumShifting = new BooleanStatus();
+
+	private static FloatStatus centricAngleOffset;
+	private static FloatStatus calibratedAngle = new FloatStatus(0);
 	
 	private static double π = Math.PI;
 	
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
+			float speed;
+			float rotationspeed;
+			double angle;
+			
 			float distanceY = leftJoystickChannelY.get();
 			float distanceX = leftJoystickChannelX.get();
-			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
-			float rotationspeed = rightJoystickChannelX.get();
-			double angle;
+			speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+			rotationspeed = rightJoystickChannelX.get();
 			if (distanceX == 0) {
 				if (distanceY > 0) {
 					angle = π / 2;
@@ -39,11 +48,19 @@ public class DriveCode {
 					angle += π;
 				}
 			}
+			
+			double centric = calibratedAngle.get() - centricAngleOffset.get();
+			double currentAngle = HeadingSensor.yaw.get();
+			currentAngle = currentAngle / 180 * π;
+			currentAngle -= centric;
+			angle -= currentAngle;
+			
 			float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
 			float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
 			float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
 			float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-			float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)), Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+			float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)),
+					Math.max(Math.abs(leftBack), Math.abs(rightBack)));
 			if (normalize > 1) {
 				leftFront /= normalize;
 				rightFront /= normalize;
@@ -63,8 +80,30 @@ public class DriveCode {
 			leftBackMotor.set(leftBack);
 		}
 	};
+	
+	private static EventOutput calibrate = new EventOutput() {
+		public void event() {
+			calibratedAngle.set((float) (HeadingSensor.yaw.get() / 180 * π));
+			Logger.info("Calibrated Angle: " + HeadingSensor.yaw.get());
+		}
+	};
 
 	public static void setup() {
+		TuningContext context = new TuningContext("DriveTuning").publishSavingEvent();
+		centricAngleOffset = context.getFloat("centric_angle", 0);
+		Cluck.publish("Centric Angle Offset",centricAngleOffset);
+		Cluck.publish("Calibrate Field Centric Angle", calibrate);
+		Cluck.publish("Get Current Angle", new EventOutput() {
+			public void event() {
+				double angle = calibratedAngle.get() / π * 180 - HeadingSensor.yaw.get();
+				Logger.info("Current Angle: " + angle);
+			}
+		});
+		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
+		
+		ExpirationTimer timer = new ExpirationTimer();
+		timer.schedule(100, calibrate);
+		timer.start();
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
