@@ -22,6 +22,6 @@ public class Pressure {
 		
 		Cluck.publish("Pressure Switch", pressureSwitch);
 		Cluck.publish("Pressure Gauge", pressureGauge);
-		Cluck.publish("Compressor Enabled", compressor);
+		Cluck.publish("Compressor Enable", compressor);
 	}
 }
