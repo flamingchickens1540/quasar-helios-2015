@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventOutput;
 import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
@@ -18,14 +17,14 @@ public class AutoLoader extends InstinctModule {
 		a.setShouldBeRunning(b);
 		a.updateWhen(Igneous.globalPeriodic);
 		
-		Elevator.elevatorControl.setFalseWhen(BooleanMixing.onRelease(b));
+		Elevator.raising.setFalseWhen(BooleanMixing.onRelease(b));
 		
 		return b;
 	}
 	
 	@Override
 	public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-		Elevator.elevatorControl.set(true);
+		Elevator.raising.set(true);
 		
 		waitUntil(Elevator.topLimitSwitch);
 		
@@ -43,7 +42,7 @@ public class AutoLoader extends InstinctModule {
 		Rollers.direction.set(d);
 		Rollers.open.set(o);
 		
-		Elevator.elevatorControl.set(false);
+		Elevator.raising.set(false);
 	}
 }
 
