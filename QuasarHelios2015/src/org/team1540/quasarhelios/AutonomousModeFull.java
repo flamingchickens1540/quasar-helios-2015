@@ -17,25 +17,29 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	@Override
 	protected void runAutonomous() throws InterruptedException,
 			AutonomousModeOverException {
+		// Collect first tote + container
 		setClampHeight(1.0f);
 		collectTote();
 		setClampHeight(0.0f);
-		QuasarHelios.clamp.openControl.set(true);
+		setClamp(true);
 		drive(nudge.get());
-		QuasarHelios.clamp.openControl.set(false);
+		setClamp(false);
 		setClampHeight(1.0f);
 		// TODO: Hold container with top claw
 		drive(toteDistance.get());
+		// Collect next tote + container
 		collectTote();
 		setClampHeight(0.0f);
-		QuasarHelios.clamp.openControl.set(true);
+		setClamp(true);
 		drive(nudge.get());
-		QuasarHelios.clamp.openControl.set(false);
+		setClamp(false);
 		setClampHeight(1.0f);
 		drive(toteDistance.get());
+		// Collect last tote and drive to auto zone
 		collectTote();
 		turn(90);
 		drive(autoZoneDistance.get());
+		// Drop everything off
 		// TODO: Put down container
 		DriveCode.octocanumShifting.set(true);
 		// TODO: Strafe right
