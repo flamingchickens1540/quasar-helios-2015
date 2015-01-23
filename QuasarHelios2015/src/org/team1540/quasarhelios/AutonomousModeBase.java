@@ -16,11 +16,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	
 	protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
 		float currentEncoder = DriveCode.leftEncoder.get() * encoderScaling.get();
-		if (distance > 0) {
-			DriveCode.allMotors.set(1.0f);
-		} else {
-			DriveCode.allMotors.set(-1.0f);
-		}
+		DriveCode.allMotors.set(distance > 0 ? 1.0f : -1.0f);
 
 		waitUntilAtLeast(FloatMixing.multiplication.of(DriveCode.leftEncoder, encoderScaling), currentEncoder * encoderScaling.get() + distance);
 		DriveCode.allMotors.set(0.0f);
