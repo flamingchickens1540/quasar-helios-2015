@@ -18,6 +18,7 @@ public class AutoLoader extends InstinctModule {
 		a.updateWhen(Igneous.globalPeriodic);
 		
 		Elevator.raising.setFalseWhen(BooleanMixing.onRelease(b));
+		Elevator.lowering.setTrueWhen(BooleanMixing.onRelease(b));
 		
 		return b;
 	}
@@ -43,6 +44,7 @@ public class AutoLoader extends InstinctModule {
 		Rollers.open.set(o);
 		
 		Elevator.raising.set(false);
+		Elevator.lowering.set(true);
 	}
 }
 
