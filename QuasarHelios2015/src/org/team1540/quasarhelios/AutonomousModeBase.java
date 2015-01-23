@@ -80,7 +80,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	public void loadSettings(TuningContext context) {
 		this.driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
 		this.rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-		this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.1f);
+		this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
 	}
 
 }
