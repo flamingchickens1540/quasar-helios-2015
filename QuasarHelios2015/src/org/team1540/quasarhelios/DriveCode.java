@@ -17,12 +17,7 @@ public class DriveCode {
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
 	public static FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
-	public static FloatOutput rotate = new FloatOutput() {
-		public void set(float value) {
-			leftMotors.set(value);
-			rightMotors.set(-value);
-		}
-	};
+	public static FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
 	public static BooleanStatus octocanumShifting = new BooleanStatus();
 	public static FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6,7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
 	public static FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8,9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
@@ -80,7 +75,7 @@ public class DriveCode {
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
-		DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
+				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
 
 	}
 }
