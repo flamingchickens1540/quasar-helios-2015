@@ -5,6 +5,7 @@ import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 
 public class ControlInterface {
+	public static TuningContext mainTuning = new TuningContext("Main").publishSavingEvent();
 	public static TuningContext autoTuning = new TuningContext("Autonomous").publishSavingEvent();
 	public static TuningContext teleTuning = new TuningContext("Teleoperated").publishSavingEvent();
 	
