@@ -102,6 +102,7 @@ public class DriveCode {
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
 		
 		ExpirationTimer timer = new ExpirationTimer();
+		timer.schedule(10,HeadingSensor.zeroGyro);
 		timer.schedule(100, calibrate);
 		timer.start();
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
