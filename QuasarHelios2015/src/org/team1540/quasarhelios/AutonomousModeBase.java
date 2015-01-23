@@ -11,7 +11,8 @@ import ccre.instinct.InstinctModeModule;
 public abstract class AutonomousModeBase extends InstinctModeModule {
 	public FloatInputPoll driveSpeed;
 	public FloatInputPoll rotateSpeed;
-
+	public FloatInputPoll clampHeightPadding;
+	
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
 	}
@@ -55,7 +56,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	
 	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - 0.1f, value + 0.1f));
+		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - this.clampHeightPadding.get(), value + this.clampHeightPadding.get()));
 	}
 
 	@Override
@@ -74,6 +75,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	public void loadSettings(TuningContext context) {
 		this.driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
 		this.rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
+		this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.1f);
 	}
 
 }
