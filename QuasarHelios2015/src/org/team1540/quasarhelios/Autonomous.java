@@ -7,5 +7,6 @@ public class Autonomous {
 	
 	public static void setup() {
 		Igneous.registerAutonomous(mainModule);
+		mainModule.publishDefaultControls(true, true);
 	}
 }
