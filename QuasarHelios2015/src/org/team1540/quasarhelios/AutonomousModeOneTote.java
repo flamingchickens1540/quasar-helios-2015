@@ -17,7 +17,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 	protected void runAutonomous() throws InterruptedException,
 			AutonomousModeOverException {
 		drive(toteDistance.get());
-		AutoLoader.create().set(true);
+		QuasarHelios.autoLoader.set(true);
 		drive(autoZoneDistance.get());
 		// TODO: dump out tote
 		drive(-returnDistance.get());

@@ -1,5 +1,7 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInputPoll;
+import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
@@ -20,6 +22,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 		DriveCode.rotate.set(degree/degree);
 		waitUntilAtLeast(HeadingSensor.yaw, degree);
 		DriveCode.rotate.set(0.0f);
+	}
+	
+	protected void collectTote() throws AutonomousModeOverException, InterruptedException {
+		QuasarHelios.autoLoader.set(true);
+		waitUntil(BooleanMixing.invert((BooleanInputPoll) QuasarHelios.autoLoader));
 	}
 	
     @Override
