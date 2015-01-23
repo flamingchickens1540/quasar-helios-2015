@@ -51,6 +51,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 		waitUntil(BooleanMixing
 				.invert((BooleanInputPoll) QuasarHelios.autoLoader));
 	}
+	
+	protected void setForklift(float value) throws AutonomousModeOverException, InterruptedException {
+		QuasarHelios.clamp.heightControl.set(value);
+		waitUntilAtLeast(QuasarHelios.clamp.heightReadout, value);
+	}
 
 	@Override
 	protected void autonomousMain() throws AutonomousModeOverException,
