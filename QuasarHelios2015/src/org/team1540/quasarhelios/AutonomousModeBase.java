@@ -10,8 +10,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	}
 	
 	protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
+		float currentEncoder = DriveCode.leftEncoder.get();
 		DriveCode.allMotors.set(1.0f);
-		waitUntilAtLeast(DriveCode.leftEncoder, distance);
+		waitUntilAtLeast(DriveCode.leftEncoder, currentEncoder + distance);
 		DriveCode.allMotors.set(0.0f);
 	}
 	
