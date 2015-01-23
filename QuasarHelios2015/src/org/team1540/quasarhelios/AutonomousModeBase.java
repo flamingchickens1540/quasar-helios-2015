@@ -54,9 +54,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 				.invert((BooleanInputPoll) QuasarHelios.autoLoader));
 	}
 	
-	protected void setClamp(boolean value) throws InterruptedException, AutonomousModeOverException {
+	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
 		QuasarHelios.clamp.openControl.set(value);
-		waitForTime(30l);
+		waitForTime(30);
 	}
 	
 	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {

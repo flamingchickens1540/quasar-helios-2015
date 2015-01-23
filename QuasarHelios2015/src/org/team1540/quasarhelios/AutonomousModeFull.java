@@ -21,18 +21,18 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		setClampHeight(1.0f);
 		collectTote();
 		setClampHeight(0.0f);
-		setClamp(true);
+		setClampOpen(true);
 		drive(nudge.get());
-		setClamp(false);
+		setClampOpen(false);
 		setClampHeight(1.0f);
 		// TODO: Hold container with top claw
 		drive(toteDistance.get());
 		// Collect next tote + container
 		collectTote();
 		setClampHeight(0.0f);
-		setClamp(true);
+		setClampOpen(true);
 		drive(nudge.get());
-		setClamp(false);
+		setClampOpen(false);
 		setClampHeight(1.0f);
 		drive(toteDistance.get());
 		// Collect last tote and drive to auto zone
