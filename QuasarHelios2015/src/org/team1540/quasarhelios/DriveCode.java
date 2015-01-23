@@ -16,6 +16,13 @@ public class DriveCode {
 	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
+	public static FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
+	public static FloatOutput rotate = new FloatOutput() {
+		public void set(float value) {
+			leftMotors.set(value);
+			rightMotors.set(-value);
+		}
+	};
 	public static BooleanStatus octocanumShifting = new BooleanStatus();
 	
 	private static double π = Math.PI;

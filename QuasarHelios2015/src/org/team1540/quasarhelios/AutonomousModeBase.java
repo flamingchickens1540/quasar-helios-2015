@@ -1,12 +1,9 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.FloatOutput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
-public abstract class AutonomousModeBase extends InstinctModeModule {
-	public static FloatOutput allDriveMotors;
-	
+public abstract class AutonomousModeBase extends InstinctModeModule {	
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
 	}
@@ -16,7 +13,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         try {
             runAutonomous();
         } finally {
-            allDriveMotors.set(0);
+            DriveCode.allMotors.set(0);
         }
     }
     
