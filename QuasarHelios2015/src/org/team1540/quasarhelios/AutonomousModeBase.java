@@ -23,7 +23,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 			DriveCode.allMotors.set(driveSpeed.get());
 			waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
 		} else {
-			DriveCode.allMotors.set(-1.0f * driveSpeed.get());
+			DriveCode.allMotors.set(-driveSpeed.get());
 			waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
 		}
 
@@ -38,7 +38,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 			DriveCode.rotate.set(rotateSpeed.get());
 			waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
 		} else {
-			DriveCode.rotate.set(-1.0f * rotateSpeed.get());
+			DriveCode.rotate.set(-rotateSpeed.get());
 			waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
 		}
 
