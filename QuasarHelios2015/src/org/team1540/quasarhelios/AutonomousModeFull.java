@@ -8,7 +8,7 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	public FloatInputPoll nudge;
 	public FloatInputPoll toteDistance;
 	public FloatInputPoll autoZoneDistance;
-	public FloatInputPoll strafeDistance;
+	public FloatInputPoll strafeTime;
 	
 	public AutonomousModeFull() {
 		super("Full Auto");
@@ -42,9 +42,9 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		// Drop everything off
 		// TODO: Put down container
 		DriveCode.octocanumShifting.set(true);
-		// TODO: Strafe right
+		strafe(1.0f, strafeTime.get());
 		// TODO: Put down container
-		// TODO: Strafe right
+		strafe(1.0f, strafeTime.get());
 		// TODO: Spit out totes
 		DriveCode.octocanumShifting.set(false);
 	}
@@ -53,7 +53,7 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		this.nudge = context.getFloat("auto-full-nudge", 1.0f);
 		this.toteDistance = context.getFloat("auto-full-toteDistance", 7.0f);
 		this.autoZoneDistance = context.getFloat("auto-full-autoZoneDistance", 5.0f);
-		this.strafeDistance = context.getFloat("auto-full-strafeDistance", 2.0f);
+		this.strafeTime = context.getFloat("auto-full-strafeTime", 1.0f);
 	}
 
 }

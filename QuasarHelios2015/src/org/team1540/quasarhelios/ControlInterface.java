@@ -15,10 +15,10 @@ public class ControlInterface {
 	}
 	
 	public static void setupJoysticks() {
-		DriveCode.leftJoystickChannelX = FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f);
-		DriveCode.leftJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f);
-		DriveCode.rightJoystickChannelX = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .2f);
-		DriveCode.rightJoystickChannelY = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f);	
+		FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickX);
+		FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickY);
+		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .2f).send(DriveCode.rightJoystickX);
+		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f).send(DriveCode.rightJoystickY);	
 		DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
 		
 		Elevator.raisingInput = Igneous.joystick2.getButtonSource(1);

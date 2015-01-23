@@ -5,10 +5,16 @@ import ccre.ctrl.*;
 import ccre.igneous.*;
 
 public class DriveCode {
-	public static FloatInput leftJoystickChannelX;
-	public static FloatInput leftJoystickChannelY;
-	public static FloatInput rightJoystickChannelX;
-	public static FloatInput rightJoystickChannelY;
+	private static FloatStatus leftJoystickChannelX = new FloatStatus();
+	private static FloatStatus leftJoystickChannelY = new FloatStatus();
+	private static FloatStatus rightJoystickChannelX = new FloatStatus();
+	private static FloatStatus rightJoystickChannelY = new FloatStatus();
+
+	public static FloatOutput leftJoystickX = leftJoystickChannelX;
+	public static FloatOutput leftJoystickY = leftJoystickChannelY;
+	public static FloatOutput rightJoystickX = rightJoystickChannelX;
+	public static FloatOutput rightJoystickY = rightJoystickChannelY;
+	
 	public static EventInput octocanumShiftingButton;
 	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
