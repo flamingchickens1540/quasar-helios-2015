@@ -52,9 +52,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 				.invert((BooleanInputPoll) QuasarHelios.autoLoader));
 	}
 	
-	protected void setForklift(float value) throws AutonomousModeOverException, InterruptedException {
+	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.clamp.heightControl.set(value);
-		waitUntilAtLeast(QuasarHelios.clamp.heightReadout, value);
+		if (value >= QuasarHelios.clamp.heightReadout.get()) {
+			waitUntilAtLeast(QuasarHelios.clamp.heightReadout, value);
+		} else {
+			waitUntilAtMost(QuasarHelios.clamp.heightReadout, value);
+		}
 	}
 
 	@Override

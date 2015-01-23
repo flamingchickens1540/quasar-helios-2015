@@ -17,21 +17,21 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	@Override
 	protected void runAutonomous() throws InterruptedException,
 			AutonomousModeOverException {
-		setForklift(1.0f);
+		setClampHeight(1.0f);
 		collectTote();
-		setForklift(0.0f);
+		setClampHeight(0.0f);
 		QuasarHelios.clamp.openControl.set(true);
 		drive(nudge.get());
 		QuasarHelios.clamp.openControl.set(false);
-		setForklift(1.0f);
+		setClampHeight(1.0f);
 		// TODO: Hold container with top claw
 		drive(toteDistance.get());
 		collectTote();
-		setForklift(0.0f);
+		setClampHeight(0.0f);
 		QuasarHelios.clamp.openControl.set(true);
 		drive(nudge.get());
 		QuasarHelios.clamp.openControl.set(false);
-		setForklift(1.0f);
+		setClampHeight(1.0f);
 		drive(toteDistance.get());
 		collectTote();
 		turn(90);
