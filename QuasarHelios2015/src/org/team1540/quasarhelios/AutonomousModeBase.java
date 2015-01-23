@@ -1,24 +1,20 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInputPoll;
-import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
-import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
-	private FloatInputPoll encoderScaling;
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
 	}
 	
 	protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
-		float currentEncoder = DriveCode.leftEncoder.get() * encoderScaling.get();
+		float currentEncoder = DriveCode.leftEncoder.get();
 		DriveCode.allMotors.set(distance > 0 ? 1.0f : -1.0f);
 
-		waitUntilAtLeast(FloatMixing.multiplication.of(DriveCode.leftEncoder, encoderScaling), currentEncoder * encoderScaling.get() + distance);
+		waitUntilAtLeast(DriveCode.leftEncoder, currentEncoder + distance);
 		DriveCode.allMotors.set(0.0f);
 	}
 	
@@ -50,9 +46,4 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     
     protected abstract void runAutonomous() throws InterruptedException, AutonomousModeOverException;
     
-    public void loadSettings(TuningContext context) {
-    	// This is in ????
-    	this.encoderScaling = context.getFloat("autonomous-encoder", 0.1f);
-    }
-
 }
