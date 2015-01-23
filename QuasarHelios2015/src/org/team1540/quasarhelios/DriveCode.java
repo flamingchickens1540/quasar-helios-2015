@@ -28,7 +28,7 @@ public class DriveCode {
 	public static FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
 	public static FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
 	public static FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
-	
+
 	private static double π = Math.PI;
 	
 	private static FloatStatus centricAngleOffset;
@@ -99,20 +99,15 @@ public class DriveCode {
 	public static void setup() {
 		TuningContext context = new TuningContext("DriveTuning").publishSavingEvent();
 		centricAngleOffset = context.getFloat("centric_angle", 0);
-		Cluck.publish("Centric Angle Offset",centricAngleOffset);
+		Cluck.publish("Centric Angle Offset", centricAngleOffset);
 		Cluck.publish("Calibrate Field Centric Angle", calibrate);
-		Cluck.publish("Get Current Angle", new EventOutput() {
-			public void event() {
-				double angle = calibratedAngle.get() / π * 180 - HeadingSensor.yaw.get();
-				Logger.info("Current Angle: " + angle);
-			}
-		});
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
 		
 		ExpirationTimer timer = new ExpirationTimer();
 		timer.schedule(10,HeadingSensor.zeroGyro);
 		timer.schedule(100, calibrate);
 		timer.start();
+		
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
