@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
@@ -54,11 +55,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	
 	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.clamp.heightControl.set(value);
-		if (value >= QuasarHelios.clamp.heightReadout.get()) {
-			waitUntilAtLeast(QuasarHelios.clamp.heightReadout, value);
-		} else {
-			waitUntilAtMost(QuasarHelios.clamp.heightReadout, value);
-		}
+		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - 0.1f, value + 0.1f));
 	}
 
 	@Override
