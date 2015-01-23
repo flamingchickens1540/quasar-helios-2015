@@ -45,7 +45,7 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		strafe(1.0f, strafeTime.get());
 		// TODO: Put down container
 		strafe(1.0f, strafeTime.get());
-		// TODO: Spit out totes
+		ejectTotes();
 		DriveCode.octocanumShifting.set(false);
 	}
 	

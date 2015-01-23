@@ -7,7 +7,7 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
-	public BooleanStatus create() {
+	public static BooleanStatus create() {
 		BooleanStatus b = new BooleanStatus(false);
 		AutoEjector a = new AutoEjector();
 		
