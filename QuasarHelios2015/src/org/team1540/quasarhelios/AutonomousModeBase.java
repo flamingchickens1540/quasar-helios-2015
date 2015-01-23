@@ -5,21 +5,20 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
+	public AutonomousModeBase(String modeName) {
+		super(modeName);
+	}
 	
-	public void drive(float distance) throws AutonomousModeOverException, InterruptedException {
+	protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
 		DriveCode.allMotors.set(1.0f);
 		waitUntilAtLeast(DriveCode.leftEncoder, distance);
 		DriveCode.allMotors.set(0.0f);
 	}
 	
-	public void turn(float degree) throws AutonomousModeOverException, InterruptedException {
+	protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
 		DriveCode.rotate.set(degree/degree);
 		waitUntilAtLeast(HeadingSensor.yaw, degree);
 		DriveCode.rotate.set(0.0f);
-	}
-	
-	public AutonomousModeBase(String modeName) {
-		super(modeName);
 	}
 	
     @Override
