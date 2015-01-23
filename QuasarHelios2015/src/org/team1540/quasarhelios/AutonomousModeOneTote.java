@@ -9,7 +9,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 	protected FloatInputPoll autoZoneDistance;
 	protected FloatInputPoll returnDistance;
 	
-	public AutonomousModeOneTote(String modeName) {
+	public AutonomousModeOneTote() {
 		super("One Tote");
 	}
 

@@ -10,7 +10,7 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	public FloatInputPoll autoZoneDistance;
 	public FloatInputPoll strafeDistance;
 	
-	public AutonomousModeFull(String modeName) {
+	public AutonomousModeFull() {
 		super("Full Auto");
 	}
 

@@ -6,8 +6,11 @@ public class Autonomous {
 	public static InstinctMultiModule mainModule = new InstinctMultiModule(ControlInterface.autoTuning);
 	
 	public static void setup() {
-		Igneous.registerAutonomous(mainModule);
 		mainModule.publishDefaultControls(true, true);
-		mainModule.addNullMode("none", "I'm a sitting chicken!");
+		mainModule.addMode(new AutonomousModeDrive());
+		mainModule.addMode(new AutonomousModeOneTote());
+		mainModule.addMode(new AutonomousModeFull());
+		mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));
+		Igneous.registerAutonomous(mainModule);
 	}
 }

@@ -7,7 +7,7 @@ import ccre.instinct.AutonomousModeOverException;
 public class AutonomousModeDrive extends AutonomousModeBase {
 	protected FloatInputPoll driveDistance;
 	
-	public AutonomousModeDrive(String modeName) {
+	public AutonomousModeDrive() {
 		super("Drive");
 	}
 
