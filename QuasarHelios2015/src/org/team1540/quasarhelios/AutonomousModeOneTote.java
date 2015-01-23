@@ -16,8 +16,8 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 	@Override
 	protected void runAutonomous() throws InterruptedException,
 			AutonomousModeOverException {
-		drive(toteDistance.get());
 		collectTote();
+		turn(90);
 		drive(autoZoneDistance.get());
 		// TODO: dump out tote
 		drive(-returnDistance.get());
