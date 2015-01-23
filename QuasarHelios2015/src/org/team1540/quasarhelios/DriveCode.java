@@ -19,12 +19,20 @@ public class DriveCode {
 	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
 	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
 	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
-	private static BooleanStatus octocanumShifting = new BooleanStatus();
-
-	private static FloatStatus centricAngleOffset;
-	private static FloatStatus calibratedAngle = new FloatStatus(0);
+	public static FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
+	public static FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
+	public static BooleanStatus octocanumShifting = new BooleanStatus();
+	public static FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6,7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
+	public static FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8,9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
+	// This is in ??? units.
+	public static FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
+	public static FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
+	public static FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
 	
 	private static double π = Math.PI;
+	
+	private static FloatStatus centricAngleOffset;
+	private static FloatStatus calibratedAngle = new FloatStatus(0);
 	
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
@@ -109,5 +117,6 @@ public class DriveCode {
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
 				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
+
 	}
 }

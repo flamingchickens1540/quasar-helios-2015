@@ -9,7 +9,7 @@ import ccre.igneous.IgneousApplication;
  */
 public class QuasarHelios implements IgneousApplication {
 	private Clamp clamp;
-	private BooleanStatus autoLoader;
+	public static BooleanStatus autoLoader;
 
     public void setupRobot() {
         ControlInterface.setup();
@@ -18,10 +18,11 @@ public class QuasarHelios implements IgneousApplication {
         DriveCode.setup();
         Elevator.setup();
         Rollers.setup();
+        Autonomous.setup();
         Suspension.setup();
+        Pressure.setup();
         
-		clamp = new Clamp();
-		
+        clamp = new Clamp();
 		autoLoader = AutoLoader.create();
     }
 }
