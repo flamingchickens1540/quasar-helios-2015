@@ -21,6 +21,7 @@ public class DriveCode {
 	public static BooleanStatus octocanumShifting = new BooleanStatus();
 	public static FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6,7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
 	public static FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8,9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
+	// This is in ??? units.
 	public static FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
 	public static FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
 	public static FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);

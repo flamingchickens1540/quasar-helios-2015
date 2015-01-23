@@ -13,8 +13,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
 		float currentEncoder = DriveCode.leftEncoder.get();
 		DriveCode.allMotors.set(distance > 0 ? 1.0f : -1.0f);
+		
+		if (distance > 0) {
+			waitUntilAtLeast(DriveCode.leftEncoder, currentEncoder + distance);
+		} else {
+			waitUntilAtMost(DriveCode.leftEncoder, currentEncoder + distance);
+		}
 
-		waitUntilAtLeast(DriveCode.leftEncoder, currentEncoder + distance);
 		DriveCode.allMotors.set(0.0f);
 	}
 	
@@ -22,7 +27,12 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 		float currentYaw = HeadingSensor.yaw.get();
 		DriveCode.rotate.set(degree > 0 ? 1.0f : -1.0f);
 
-		waitUntilAtLeast(HeadingSensor.yaw, currentYaw + degree);
+		if (degree > 0) {
+			waitUntilAtLeast(HeadingSensor.yaw, currentYaw + degree);
+		} else {
+			waitUntilAtMost(HeadingSensor.yaw, currentYaw + degree);
+		}
+		
 		DriveCode.rotate.set(0.0f);
 	}
 	
