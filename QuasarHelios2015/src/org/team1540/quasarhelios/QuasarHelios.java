@@ -10,20 +10,20 @@ public class QuasarHelios implements IgneousApplication {
 	public static Clamp clamp;
 	public static BooleanStatus autoLoader;
 	public static BooleanStatus autoEjector;
-	
-    public void setupRobot() {
-        ControlInterface.setup();
-        HeadingSensor.setup();
-        PositionTracking.setup();
-        DriveCode.setup();
-        Elevator.setup();
-        Rollers.setup();
-        Autonomous.setup();
-        Suspension.setup();
-        Pressure.setup();
-        
-        clamp = new Clamp();
+
+	public void setupRobot() {
+		ControlInterface.setup();
+		HeadingSensor.setup();
+		PositionTracking.setup();
+		DriveCode.setup();
+		Elevator.setup();
+		Rollers.setup();
+		Autonomous.setup();
+		Suspension.setup();
+		Pressure.setup();
+
+		clamp = new Clamp();
 		autoLoader = AutoLoader.create();
 		autoEjector = AutoEjector.create();
-    }
+	}
 }

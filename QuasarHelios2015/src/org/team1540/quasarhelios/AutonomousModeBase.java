@@ -8,9 +8,12 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
 	private static final TuningContext context = ControlInterface.autoTuning;
-	private static final FloatInputPoll driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
-	private static final FloatInputPoll rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-	private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
+	private static final FloatInputPoll driveSpeed = context.getFloat(
+			"auto-main-driveSpeed", 1.0f);
+	private static final FloatInputPoll rotateSpeed = context.getFloat(
+			"auto-main-rotateSpeed", 1.0f);
+	private static final FloatInputPoll clampHeightPadding = context.getFloat(
+			"auto-main-clampHeightPadding", 0.01f);
 
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
@@ -30,8 +33,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
 		DriveCode.allMotors.set(0.0f);
 	}
-	
-	protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
+
+	protected void strafe(float direction, float time)
+			throws InterruptedException, AutonomousModeOverException {
 		DriveCode.leftJoystickX.set(direction);
 		DriveCode.rightJoystickX.set(direction);
 		waitForTime((long) time);
@@ -59,18 +63,23 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 		QuasarHelios.autoLoader.set(true);
 		waitUntil(AutoLoader.done);
 	}
-	
-	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
+
+	protected void setClampOpen(boolean value) throws InterruptedException,
+			AutonomousModeOverException {
 		QuasarHelios.clamp.openControl.set(value);
 		waitForTime(30);
 	}
-	
-	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+
+	protected void setClampHeight(float value)
+			throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout,
+				value - clampHeightPadding.get(),
+				value + clampHeightPadding.get()));
 	}
-	
-	protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
+
+	protected void ejectTotes() throws AutonomousModeOverException,
+			InterruptedException {
 		QuasarHelios.autoEjector.set(true);
 		waitUntil(AutoEjector.done);
 	}
