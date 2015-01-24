@@ -19,7 +19,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 		collectTote();
 		turn(90);
 		drive(autoZoneDistance.get());
-		// TODO: dump out tote
+		ejectTotes();
 		drive(-returnDistance.get());
 	}
 	
