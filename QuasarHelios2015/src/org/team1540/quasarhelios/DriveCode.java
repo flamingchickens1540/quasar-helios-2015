@@ -93,8 +93,9 @@ public class DriveCode {
 	
 	private static EventOutput calibrate = new EventOutput() {
 		public void event() {
-			calibratedAngle.set((float) (HeadingSensor.yaw.get() / 180 * π));
-			Logger.info("Calibrated Angle: " + HeadingSensor.yaw.get());
+			float yaw = HeadingSensor.yaw.get();
+			calibratedAngle.set((float) (yaw / 180 * π));
+			Logger.info("Calibrated Angle: " + yaw);
 		}
 	};
 
