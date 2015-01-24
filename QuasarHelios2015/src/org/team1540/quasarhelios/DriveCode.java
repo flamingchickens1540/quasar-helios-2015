@@ -20,6 +20,7 @@ public class DriveCode {
 	
 	public static EventInput octocanumShiftingButton;
 	public static EventInput recalibrateButton;
+
 	private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
 	private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
 	private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2, Igneous.MOTOR_FORWARD, .1f);
@@ -42,6 +43,10 @@ public class DriveCode {
 	private static final FloatStatus calibratedAngle = new FloatStatus(0);
 	private static final BooleanStatus fieldCentric = new BooleanStatus();
 	
+	private static final FloatStatus currentAngle = new FloatStatus();
+	private static final FloatStatus desiredAngle = new FloatStatus();
+	private static PIDControl pid;
+	
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
 			float distanceY = leftJoystickChannelY.get();
@@ -62,12 +67,46 @@ public class DriveCode {
 				}
 			}
 			
+			float currentAngle = HeadingSensor.yaw.get();
+			
 			if (fieldCentric.get()) {
 				double centric = calibratedAngle.get() - centricAngleOffset.get();
-				double currentAngle = HeadingSensor.yaw.get();
-				currentAngle = currentAngle / 180 * π;
-				currentAngle -= centric;
-				angle -= currentAngle;
+				double angleOffset = currentAngle / 180 * π;
+				angleOffset -= centric;
+				angle -= angleOffset;
+			}
+			
+			int flipped = 0;
+			if (rotationspeed == 0&&false) {
+				float wantedAngle = desiredAngle.get();
+				if (wantedAngle > 180) {
+					wantedAngle -= 360;
+					flipped++;
+				} else if (wantedAngle < -180) {
+					wantedAngle += 360;
+					flipped++;
+				}
+				if (currentAngle > 180) {
+					currentAngle -= 360;
+					flipped++;
+				} else if (currentAngle < -180) {
+					currentAngle += 360;
+					flipped++;
+				}
+				if (Math.abs(currentAngle - wantedAngle) > 10){
+					if (currentAngle > wantedAngle) {
+						rotationspeed = -.1f * (float) Math.pow(-1, flipped);
+					} else {
+						rotationspeed = .1f * (float) Math.pow(-1, flipped);
+					}
+				}
+			} else {
+				//desiredAngle.set(currentAngle);
+			}
+			if (rotationspeed == 0) {
+				rotationspeed = pid.get();
+			} else {
+				desiredAngle.set(currentAngle);
 			}
 			
 			float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
@@ -101,6 +140,7 @@ public class DriveCode {
 		public void event() {
 			float yaw = HeadingSensor.yaw.get();
 			calibratedAngle.set((float) (yaw / 180 * π));
+			desiredAngle.set(yaw);
 			Logger.info("Calibrated Angle: " + yaw);
 		}
 	};
@@ -113,6 +153,19 @@ public class DriveCode {
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
 		recalibrateButton.send(calibrate);
 		
+		FloatStatus p = context.getFloat("drive-p", 0.01f);
+		FloatStatus i = context.getFloat("drive-i", 0f);
+		FloatStatus d = context.getFloat("drive-d", 0f);
+
+		pid = new PIDControl(HeadingSensor.yaw, desiredAngle, p, i, d);
+		pid.setOutputBounds(-1f, 1f);
+		
+		Cluck.publish("Yaw", HeadingSensor.yaw);
+		Cluck.publish("Desired Angle", desiredAngle);
+		Cluck.publish("PID", (FloatInput) pid);
+
+		Igneous.constantPeriodic.send(pid);
+		
 		ExpirationTimer timer = new ExpirationTimer();
 		timer.schedule(10, HeadingSensor.zeroGyro);
 		timer.schedule(1000, calibrate);
@@ -121,6 +174,7 @@ public class DriveCode {
 		fieldCentric.setFalseWhen(Igneous.startAuto);
 		fieldCentric.setTrueWhen(Igneous.startTele);
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
+		FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.yaw, desiredAngle);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
 				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
