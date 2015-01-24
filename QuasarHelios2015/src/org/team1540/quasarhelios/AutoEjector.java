@@ -28,20 +28,23 @@ public class AutoEjector extends InstinctModule {
 
 	@Override
 	protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-		done.set(false);
-		Elevator.lowering.set(true);
-		Elevator.raising.set(false);
-		
-		waitUntil(Elevator.bottomLimitSwitch);
-		
-		Rollers.open.set(true);
-		Rollers.direction.set(false);
-		Rollers.running.set(true);
-		
-		waitUntil(BooleanMixing.invert(crateInPosition));
-		waitForTime(timeout);
-		
-		Rollers.running.set(false);
-		done.set(true);
+		try {
+			done.set(false);
+			Elevator.lowering.set(true);
+			Elevator.raising.set(false);
+			
+			waitUntil(Elevator.bottomLimitSwitch);
+			
+			Rollers.open.set(true);
+			Rollers.direction.set(false);
+			Rollers.running.set(true);
+			
+			waitUntil(BooleanMixing.invert(crateInPosition));
+			waitForTime(timeout);
+			
+			Rollers.running.set(false);
+		} finally {
+			done.set(true);
+		}
 	}
 }
