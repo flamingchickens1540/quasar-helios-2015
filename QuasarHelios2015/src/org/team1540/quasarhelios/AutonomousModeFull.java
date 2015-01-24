@@ -40,12 +40,14 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		turn(90);
 		drive(autoZoneDistance.get());
 		// Drop everything off
-		// TODO: Put down container
+		setClampHeight(0.0f);
+		setClampOpen(true);
+		setClampHeight(1.0f);
 		DriveCode.octocanumShifting.set(true);
 		strafe(1.0f, strafeTime.get());
-		// TODO: Put down container
-		strafe(1.0f, strafeTime.get());
 		ejectTotes();
+	        strafe(1.0f, strafeTime.get());
+	        // TODO: Put down top container
 		DriveCode.octocanumShifting.set(false);
 	}
 	
