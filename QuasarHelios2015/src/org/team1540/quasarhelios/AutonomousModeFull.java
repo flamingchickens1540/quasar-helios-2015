@@ -9,7 +9,7 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	public FloatInputPoll toteDistance;
 	public FloatInputPoll autoZoneDistance;
 	public FloatInputPoll strafeTime;
-	
+
 	public AutonomousModeFull() {
 		super("Full Auto");
 	}
@@ -48,11 +48,12 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		ejectTotes();
 		DriveCode.octocanumShifting.set(false);
 	}
-	
+
 	public void loadSettings(TuningContext context) {
 		this.nudge = context.getFloat("auto-full-nudge", 1.0f);
 		this.toteDistance = context.getFloat("auto-full-toteDistance", 7.0f);
-		this.autoZoneDistance = context.getFloat("auto-full-autoZoneDistance", 5.0f);
+		this.autoZoneDistance = context.getFloat("auto-full-autoZoneDistance",
+				5.0f);
 		this.strafeTime = context.getFloat("auto-full-strafeTime", 1.0f);
 	}
 

@@ -8,7 +8,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 	protected FloatInputPoll toteDistance;
 	protected FloatInputPoll autoZoneDistance;
 	protected FloatInputPoll returnDistance;
-	
+
 	public AutonomousModeOneTote() {
 		super("One Tote");
 	}
@@ -22,11 +22,13 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 		ejectTotes();
 		drive(-returnDistance.get());
 	}
-	
+
 	public void loadSettings(TuningContext context) {
 		this.toteDistance = context.getFloat("auto-onetote-toteDistance", 2.0f);
-		this.autoZoneDistance = context.getFloat("auto-onetote-autoZoneDistance", 2.0f);
-		this.returnDistance = context.getFloat("auto-onetote-returnDistance", 2.0f);
+		this.autoZoneDistance = context.getFloat(
+				"auto-onetote-autoZoneDistance", 2.0f);
+		this.returnDistance = context.getFloat("auto-onetote-returnDistance",
+				2.0f);
 	}
 
 }

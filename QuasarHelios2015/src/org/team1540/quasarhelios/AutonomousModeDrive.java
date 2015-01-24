@@ -6,7 +6,7 @@ import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeDrive extends AutonomousModeBase {
 	protected FloatInputPoll driveDistance;
-	
+
 	public AutonomousModeDrive() {
 		super("Drive");
 	}
@@ -16,7 +16,7 @@ public class AutonomousModeDrive extends AutonomousModeBase {
 			AutonomousModeOverException {
 		drive(driveDistance.get());
 	}
-	
+
 	public void loadSettings(TuningContext context) {
 		this.driveDistance = context.getFloat("auto-drive-distance", 2.0f);
 	}

@@ -14,31 +14,47 @@ public class DriveCode {
 	public static FloatOutput leftJoystickY = leftJoystickChannelY;
 	public static FloatOutput rightJoystickX = rightJoystickChannelX;
 	public static FloatOutput rightJoystickY = rightJoystickChannelY;
-	
+
 	public static EventInput octocanumShiftingButton;
-	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
-	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
-	private static FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2, Igneous.MOTOR_FORWARD, .1f);
-	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3, Igneous.MOTOR_FORWARD, .1f);
-	private static FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
-	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
-	public static FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
-	public static FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
+	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0,
+			Igneous.MOTOR_REVERSE, .1f);
+	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1,
+			Igneous.MOTOR_REVERSE, .1f);
+	private static FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2,
+			Igneous.MOTOR_FORWARD, .1f);
+	private static FloatOutput rightBackMotor = Igneous.makeTalonMotor(3,
+			Igneous.MOTOR_FORWARD, .1f);
+	private static FloatOutput rightMotors = FloatMixing.combine(
+			rightFrontMotor, rightBackMotor);
+	private static FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor,
+			leftBackMotor);
+	public static FloatOutput allMotors = FloatMixing.combine(leftMotors,
+			rightMotors);
+	public static FloatOutput rotate = FloatMixing.combine(leftMotors,
+			FloatMixing.negate(rightMotors));
 	public static BooleanStatus octocanumShifting = new BooleanStatus();
-	public static FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6,7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
-	public static FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8,9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
+	public static FloatInput leftEncoderRaw = FloatMixing.createDispatch(
+			Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE),
+			Igneous.globalPeriodic);
+	public static FloatInput rightEncoderRaw = FloatMixing.createDispatch(
+			Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD),
+			Igneous.globalPeriodic);
 	// This is in ??? units.
-	public static FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
-	public static FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
-	public static FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
+	public static FloatInput encoderScaling = ControlInterface.mainTuning
+			.getFloat("main-encoder-scaling", 0.1f);
+	public static FloatInput leftEncoder = FloatMixing.multiplication.of(
+			leftEncoderRaw, encoderScaling);
+	public static FloatInput rightEncoder = FloatMixing.multiplication.of(
+			rightEncoderRaw, encoderScaling);
 
 	private static double π = Math.PI;
-	
+
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
 			float distanceY = leftJoystickChannelY.get();
 			float distanceX = leftJoystickChannelX.get();
-			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+			float speed = (float) Math.sqrt(distanceX * distanceX + distanceY
+					* distanceY);
 			float rotationspeed = rightJoystickChannelX.get();
 			double angle;
 			if (distanceX == 0) {
@@ -57,7 +73,9 @@ public class DriveCode {
 			float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
 			float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
 			float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-			float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)), Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+			float normalize = Math.max(
+					Math.max(Math.abs(leftFront), Math.abs(rightFront)),
+					Math.max(Math.abs(leftBack), Math.abs(rightBack)));
 			if (normalize > 1) {
 				leftFront /= normalize;
 				rightFront /= normalize;
@@ -80,9 +98,11 @@ public class DriveCode {
 
 	public static void setup() {
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
-		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
-		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
-				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting,
+				false, mecanum));
+		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting,
+				true, DriverImpls.createTankDriverEvent(leftJoystickChannelY,
+						rightJoystickChannelY, leftMotors, rightMotors)));
 
 	}
 }
