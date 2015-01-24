@@ -1,6 +1,7 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 
@@ -22,11 +23,11 @@ public class ControlInterface {
 		DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
 		DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 		
-		Elevator.raisingInput = Igneous.joystick2.getButtonSource(1);
-		Elevator.loweringInput = Igneous.joystick2.getButtonSource(2);
-		Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
-		Rollers.toggleRollersButton = Igneous.joystick2.getButtonSource(4);
-		Rollers.toggleOpenButton = Igneous.joystick2.getButtonSource(5);
+		Elevator.raisingInput = EventMixing.never;//Igneous.joystick2.getButtonSource(1);
+		Elevator.loweringInput = EventMixing.never;//Igneous.joystick2.getButtonSource(2);
+		Rollers.runRollersButton = EventMixing.never;//Igneous.joystick2.getButtonSource(3);
+		Rollers.toggleRollersButton = EventMixing.never;//Igneous.joystick2.getButtonSource(4);
+		Rollers.toggleOpenButton = EventMixing.never;//Igneous.joystick2.getButtonSource(5);
 	}
 		
 	public static void setupCluck() {
