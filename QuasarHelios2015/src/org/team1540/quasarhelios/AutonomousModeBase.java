@@ -71,6 +71,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 		QuasarHelios.clamp.heightControl.set(value);
 		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - this.clampHeightPadding.get(), value + this.clampHeightPadding.get()));
 	}
+	
+	protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
+		QuasarHelios.autoEjector.set(true);
+		waitUntil(BooleanMixing.invert((BooleanInputPoll) QuasarHelios.autoEjector));
+	}
 
 	@Override
 	protected void autonomousMain() throws AutonomousModeOverException,
