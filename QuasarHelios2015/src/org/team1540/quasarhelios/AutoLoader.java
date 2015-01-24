@@ -8,7 +8,8 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
-    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
+	public static BooleanStatus done = new BooleanStatus(false);
+    public static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
@@ -25,6 +26,7 @@ public class AutoLoader extends InstinctModule {
 
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+    	done.set(false);
         Elevator.lowering.set(false);
         Elevator.raising.set(true);
 
@@ -46,5 +48,6 @@ public class AutoLoader extends InstinctModule {
 
         Elevator.raising.set(false);
         Elevator.lowering.set(true);
+        done.set(true);
     }
 }

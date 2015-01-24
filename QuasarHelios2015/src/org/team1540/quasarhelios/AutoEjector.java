@@ -9,6 +9,7 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
+	public static final BooleanStatus done = new BooleanStatus(false);
     private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-ejectorTimeout", 2.0f);
 
@@ -27,6 +28,7 @@ public class AutoEjector extends InstinctModule {
 
 	@Override
 	protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+		done.set(false);
 		Elevator.lowering.set(true);
 		Elevator.raising.set(false);
 		
@@ -40,5 +42,6 @@ public class AutoEjector extends InstinctModule {
 		waitForTime(timeout);
 		
 		Rollers.running.set(false);
+		done.set(true);
 	}
 }

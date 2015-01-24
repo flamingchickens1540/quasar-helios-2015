@@ -19,12 +19,11 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 		collectTote();
 		turn(90);
 		drive(autoZoneDistance.get());
-		// TODO: dump out tote
+		ejectTotes();
 		drive(-returnDistance.get());
 	}
 	
 	public void loadSettings(TuningContext context) {
-		super.loadSettings(context);
 		this.toteDistance = context.getFloat("auto-onetote-toteDistance", 2.0f);
 		this.autoZoneDistance = context.getFloat("auto-onetote-autoZoneDistance", 2.0f);
 		this.returnDistance = context.getFloat("auto-onetote-returnDistance", 2.0f);

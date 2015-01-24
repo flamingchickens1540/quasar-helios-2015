@@ -1,17 +1,17 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInputPoll;
-import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
-	public FloatInputPoll driveSpeed;
-	public FloatInputPoll rotateSpeed;
-	public FloatInputPoll clampHeightPadding;
+	public static TuningContext context = ControlInterface.autoTuning;
+	public static FloatInputPoll driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
+	public static FloatInputPoll rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
+	public static FloatInputPoll clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
+
 	
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
@@ -58,8 +58,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	protected void collectTote() throws AutonomousModeOverException,
 			InterruptedException {
 		QuasarHelios.autoLoader.set(true);
-		waitUntil(BooleanMixing
-				.invert((BooleanInputPoll) QuasarHelios.autoLoader));
+		waitUntil(AutoLoader.done);
 	}
 	
 	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
@@ -69,12 +68,12 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	
 	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - this.clampHeightPadding.get(), value + this.clampHeightPadding.get()));
+		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
 	}
 	
 	protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
 		QuasarHelios.autoEjector.set(true);
-		waitUntil(BooleanMixing.invert((BooleanInputPoll) QuasarHelios.autoEjector));
+		waitUntil(AutoEjector.done);
 	}
 
 	@Override
@@ -89,11 +88,4 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
 	protected abstract void runAutonomous() throws InterruptedException,
 			AutonomousModeOverException;
-
-	public void loadSettings(TuningContext context) {
-		this.driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
-		this.rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-		this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
-	}
-
 }

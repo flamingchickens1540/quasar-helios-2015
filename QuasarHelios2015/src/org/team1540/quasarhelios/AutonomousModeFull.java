@@ -50,7 +50,6 @@ public class AutonomousModeFull extends AutonomousModeBase {
 	}
 	
 	public void loadSettings(TuningContext context) {
-		super.loadSettings(context);
 		this.nudge = context.getFloat("auto-full-nudge", 1.0f);
 		this.toteDistance = context.getFloat("auto-full-toteDistance", 7.0f);
 		this.autoZoneDistance = context.getFloat("auto-full-autoZoneDistance", 5.0f);

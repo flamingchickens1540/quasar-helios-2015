@@ -18,7 +18,6 @@ public class AutonomousModeDrive extends AutonomousModeBase {
 	}
 	
 	public void loadSettings(TuningContext context) {
-		super.loadSettings(context);
 		this.driveDistance = context.getFloat("auto-drive-distance", 2.0f);
 	}
 }
