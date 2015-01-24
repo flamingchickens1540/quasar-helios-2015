@@ -7,12 +7,11 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
-	public static TuningContext context = ControlInterface.autoTuning;
-	public static FloatInputPoll driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
-	public static FloatInputPoll rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-	public static FloatInputPoll clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
+	private static final TuningContext context = ControlInterface.autoTuning;
+	private static final FloatInputPoll driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
+	private static final FloatInputPoll rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
+	private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
 
-	
 	public AutonomousModeBase(String modeName) {
 		super(modeName);
 	}
