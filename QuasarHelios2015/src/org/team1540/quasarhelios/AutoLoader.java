@@ -9,7 +9,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
 	public static BooleanStatus done = new BooleanStatus(false);
-    public static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
+    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(10);
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
