@@ -45,9 +45,9 @@ public class AutonomousModeFull extends AutonomousModeBase {
 		setClampHeight(1.0f);
 		DriveCode.octocanumShifting.set(true);
 		strafe(1.0f, strafeTime.get());
-		// TODO: Put down top container
-		strafe(1.0f, strafeTime.get());
 		ejectTotes();
+	        strafe(1.0f, strafeTime.get());
+	        // TODO: Put down top container
 		DriveCode.octocanumShifting.set(false);
 	}
 	
