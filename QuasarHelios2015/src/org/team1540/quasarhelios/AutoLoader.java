@@ -8,6 +8,7 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
+	public static BooleanStatus done = new BooleanStatus(false);
     private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(10);
 
     public static BooleanStatus create() {
@@ -25,26 +26,31 @@ public class AutoLoader extends InstinctModule {
 
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-        Elevator.lowering.set(false);
-        Elevator.raising.set(true);
-
-        waitUntil(Elevator.topLimitSwitch);
-
-        boolean r = Rollers.running.get();
-        boolean d = Rollers.direction.get();
-        boolean o = Rollers.open.get();
-
-        Rollers.direction.set(true);
-        Rollers.running.set(true);
-        Rollers.open.set(false);
-
-        waitUntil(crateInPosition);
-
-        Rollers.running.set(r);
-        Rollers.direction.set(d);
-        Rollers.open.set(o);
-
-        Elevator.raising.set(false);
-        Elevator.lowering.set(true);
+    	try {
+	    	done.set(false);
+	        Elevator.lowering.set(false);
+	        Elevator.raising.set(true);
+	
+	        waitUntil(Elevator.topLimitSwitch);
+	
+	        boolean r = Rollers.running.get();
+	        boolean d = Rollers.direction.get();
+	        boolean o = Rollers.open.get();
+	
+	        Rollers.direction.set(true);
+	        Rollers.running.set(true);
+	        Rollers.open.set(false);
+	
+	        waitUntil(crateInPosition);
+	
+	        Rollers.running.set(r);
+	        Rollers.direction.set(d);
+	        Rollers.open.set(o);
+	
+	        Elevator.raising.set(false);
+	        Elevator.lowering.set(true);
+    	} finally {
+    		done.set(true);
+    	}
     }
 }
