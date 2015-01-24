@@ -76,38 +76,11 @@ public class DriveCode {
 				angle -= angleOffset;
 			}
 			
-			int flipped = 0;
-			if (rotationspeed == 0&&false) {
-				float wantedAngle = desiredAngle.get();
-				if (wantedAngle > 180) {
-					wantedAngle -= 360;
-					flipped++;
-				} else if (wantedAngle < -180) {
-					wantedAngle += 360;
-					flipped++;
-				}
-				if (currentAngle > 180) {
-					currentAngle -= 360;
-					flipped++;
-				} else if (currentAngle < -180) {
-					currentAngle += 360;
-					flipped++;
-				}
-				if (Math.abs(currentAngle - wantedAngle) > 10){
-					if (currentAngle > wantedAngle) {
-						rotationspeed = -.1f * (float) Math.pow(-1, flipped);
-					} else {
-						rotationspeed = .1f * (float) Math.pow(-1, flipped);
-					}
-				}
-			} else {
+			//if (rotationspeed == 0 && speed > 0) {
+				//rotationspeed = -pid.get();
+			//} else {
 				//desiredAngle.set(currentAngle);
-			}
-			if (rotationspeed == 0) {
-				rotationspeed = pid.get();
-			} else {
-				desiredAngle.set(currentAngle);
-			}
+			//}
 			
 			float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
 			float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
