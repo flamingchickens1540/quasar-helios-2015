@@ -9,78 +9,78 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
-	public FloatInputPoll driveSpeed;
-	public FloatInputPoll rotateSpeed;
-	public FloatInputPoll clampHeightPadding;
-	
-	public AutonomousModeBase(String modeName) {
-		super(modeName);
-	}
+    public FloatInputPoll driveSpeed;
+    public FloatInputPoll rotateSpeed;
+    public FloatInputPoll clampHeightPadding;
 
-	protected void drive(float distance) throws AutonomousModeOverException,
-			InterruptedException {
-		float startingEncoder = DriveCode.leftEncoder.get();
+    public AutonomousModeBase(String modeName) {
+        super(modeName);
+    }
 
-		if (distance > 0) {
-			DriveCode.allMotors.set(driveSpeed.get());
-			waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
-		} else {
-			DriveCode.allMotors.set(-driveSpeed.get());
-			waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
-		}
+    protected void drive(float distance) throws AutonomousModeOverException,
+            InterruptedException {
+        float startingEncoder = DriveCode.leftEncoder.get();
 
-		DriveCode.allMotors.set(0.0f);
-	}
+        if (distance > 0) {
+            DriveCode.allMotors.set(driveSpeed.get());
+            waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
+        } else {
+            DriveCode.allMotors.set(-driveSpeed.get());
+            waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
+        }
 
-	protected void turn(float degree) throws AutonomousModeOverException,
-			InterruptedException {
-		float startingYaw = HeadingSensor.yaw.get();
+        DriveCode.allMotors.set(0.0f);
+    }
 
-		if (degree > 0) {
-			DriveCode.rotate.set(rotateSpeed.get());
-			waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
-		} else {
-			DriveCode.rotate.set(-rotateSpeed.get());
-			waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
-		}
+    protected void turn(float degree) throws AutonomousModeOverException,
+            InterruptedException {
+        float startingYaw = HeadingSensor.yaw.get();
 
-		DriveCode.rotate.set(0.0f);
-	}
+        if (degree > 0) {
+            DriveCode.rotate.set(rotateSpeed.get());
+            waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
+        } else {
+            DriveCode.rotate.set(-rotateSpeed.get());
+            waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
+        }
 
-	protected void collectTote() throws AutonomousModeOverException,
-			InterruptedException {
-		QuasarHelios.autoLoader.set(true);
-		waitUntil(BooleanMixing
-				.invert((BooleanInputPoll) QuasarHelios.autoLoader));
-	}
-	
-	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-		QuasarHelios.clamp.openControl.set(value);
-		waitForTime(30);
-	}
-	
-	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-		QuasarHelios.clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - this.clampHeightPadding.get(), value + this.clampHeightPadding.get()));
-	}
+        DriveCode.rotate.set(0.0f);
+    }
 
-	@Override
-	protected void autonomousMain() throws AutonomousModeOverException,
-			InterruptedException {
-		try {
-			runAutonomous();
-		} finally {
-			DriveCode.allMotors.set(0);
-		}
-	}
+    protected void collectTote() throws AutonomousModeOverException,
+            InterruptedException {
+        QuasarHelios.autoLoader.set(true);
+        waitUntil(BooleanMixing
+                .invert((BooleanInputPoll) QuasarHelios.autoLoader));
+    }
 
-	protected abstract void runAutonomous() throws InterruptedException,
-			AutonomousModeOverException;
+    protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
+        QuasarHelios.clamp.openControl.set(value);
+        waitForTime(30);
+    }
 
-	public void loadSettings(TuningContext context) {
-		this.driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
-		this.rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-		this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
-	}
+    protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+        QuasarHelios.clamp.heightControl.set(value);
+        waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - this.clampHeightPadding.get(), value + this.clampHeightPadding.get()));
+    }
+
+    @Override
+    protected void autonomousMain() throws AutonomousModeOverException,
+            InterruptedException {
+        try {
+            runAutonomous();
+        } finally {
+            DriveCode.allMotors.set(0);
+        }
+    }
+
+    protected abstract void runAutonomous() throws InterruptedException,
+            AutonomousModeOverException;
+
+    public void loadSettings(TuningContext context) {
+        this.driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
+        this.rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
+        this.clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
+    }
 
 }
