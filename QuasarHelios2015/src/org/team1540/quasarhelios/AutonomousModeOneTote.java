@@ -24,6 +24,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
 	}
 	
 	public void loadSettings(TuningContext context) {
+		super.loadSettings(context);
 		this.toteDistance = context.getFloat("auto-onetote-toteDistance", 2.0f);
 		this.autoZoneDistance = context.getFloat("auto-onetote-autoZoneDistance", 2.0f);
 		this.returnDistance = context.getFloat("auto-onetote-returnDistance", 2.0f);
