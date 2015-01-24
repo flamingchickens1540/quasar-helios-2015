@@ -13,6 +13,7 @@ public class DriveCode {
 	public static FloatInput rightJoystickChannelX;
 	public static FloatInput rightJoystickChannelY;
 	public static EventInput octocanumShiftingButton;
+	public static EventInput recalibrateButton;
 	private static FloatOutput leftFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput leftBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
 	private static FloatOutput rightFrontMotor = Igneous.makeTalonMotor(2, Igneous.MOTOR_FORWARD, .1f);
@@ -33,6 +34,7 @@ public class DriveCode {
 	
 	private static FloatStatus centricAngleOffset;
 	private static FloatStatus calibratedAngle = new FloatStatus(0);
+	private static BooleanStatus fieldCentric = new BooleanStatus();
 	
 	private static EventOutput mecanum = new EventOutput() {
 		public void event() {
@@ -57,11 +59,13 @@ public class DriveCode {
 				}
 			}
 			
-			double centric = calibratedAngle.get() - centricAngleOffset.get();
-			double currentAngle = HeadingSensor.yaw.get();
-			currentAngle = currentAngle / 180 * π;
-			currentAngle -= centric;
-			angle -= currentAngle;
+			if (fieldCentric.get()) {
+				double centric = calibratedAngle.get() - centricAngleOffset.get();
+				double currentAngle = HeadingSensor.yaw.get();
+				currentAngle = currentAngle / 180 * π;
+				currentAngle -= centric;
+				angle -= currentAngle;
+			}
 			
 			float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
 			float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
@@ -102,12 +106,15 @@ public class DriveCode {
 		Cluck.publish("Centric Angle Offset", centricAngleOffset);
 		Cluck.publish("Calibrate Field Centric Angle", calibrate);
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
+		recalibrateButton.send(calibrate);
 		
 		ExpirationTimer timer = new ExpirationTimer();
-		timer.schedule(10,HeadingSensor.zeroGyro);
-		timer.schedule(100, calibrate);
+		timer.schedule(10, HeadingSensor.zeroGyro);
+		timer.schedule(1000, calibrate);
 		timer.start();
 		
+		fieldCentric.setFalseWhen(Igneous.startAuto);
+		fieldCentric.setTrueWhen(Igneous.startTele);
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,

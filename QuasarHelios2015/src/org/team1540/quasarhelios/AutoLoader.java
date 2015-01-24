@@ -8,7 +8,7 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
-    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
+    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(10);
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
