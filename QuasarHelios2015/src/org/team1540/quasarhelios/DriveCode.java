@@ -76,7 +76,7 @@ public class DriveCode {
 				angle -= angleOffset;
 			}
 			
-			if (rotationspeed == 0) {
+			if (rotationspeed == 0 && speed > 0) {
 				rotationspeed = -pid.get();
 			} else {
 				desiredAngle.set(currentAngle);
