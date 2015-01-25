@@ -152,7 +152,7 @@ public class DriveCode {
 		Cluck.publish("Desired Angle", desiredAngle);
 		Cluck.publish("PID", (FloatInput) pid);
 
-		Igneous.constantPeriodic.send(pid);
+		Igneous.globalPeriodic.send(pid);
 		
 		ExpirationTimer timer = new ExpirationTimer();
 		timer.schedule(10, HeadingSensor.zeroGyro);
@@ -162,7 +162,7 @@ public class DriveCode {
 		fieldCentric.setFalseWhen(Igneous.startAuto);
 		fieldCentric.setTrueWhen(Igneous.startTele);
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
-		Igneous.constantPeriodic.send(updateYaw);
+		Igneous.globalPeriodic.send(updateYaw);
 		FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.yaw, desiredAngle);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,

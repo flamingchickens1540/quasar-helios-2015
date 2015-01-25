@@ -10,7 +10,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
 	public static final BooleanStatus done = new BooleanStatus(false);
-    private static final BooleanInputPoll crateInPosition = BooleanMixing.alwaysFalse;//Igneous.makeDigitalInput(2);
+    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-ejectorTimeout", 2.0f);
 
 	public static BooleanStatus create() {
