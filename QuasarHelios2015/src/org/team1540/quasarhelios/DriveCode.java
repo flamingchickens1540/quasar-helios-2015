@@ -43,7 +43,7 @@ public class DriveCode {
 	private static final FloatStatus calibratedAngle = new FloatStatus(0);
 	private static final BooleanStatus fieldCentric = new BooleanStatus();
 	
-	private static final FloatStatus currentAngle = new FloatStatus();
+	private static final FloatStatus adjustedYaw = new FloatStatus();
 	private static final FloatStatus desiredAngle = new FloatStatus();
 	private static PIDControl pid;
 	
@@ -76,7 +76,7 @@ public class DriveCode {
 				angle -= angleOffset;
 			}
 			
-			if (rotationspeed == 0 && speed > 0) {
+			if (rotationspeed == 0) {
 				rotationspeed = -pid.get();
 			} else {
 				desiredAngle.set(currentAngle);
@@ -117,6 +117,21 @@ public class DriveCode {
 			Logger.info("Calibrated Angle: " + yaw);
 		}
 	};
+	
+	private static EventOutput updateYaw = new EventOutput() {
+		public void event() {
+			float yaw = HeadingSensor.yaw.get();
+			float desired = desiredAngle.get();
+			if (Math.abs(yaw - desired) > 270) {
+				if (desired > 270){
+					yaw += 360;
+				} else if (desired < -270) {
+					yaw -= 360;
+				}
+			}
+			adjustedYaw.set(yaw);
+		}
+	};
 
 	public static void setup() {
 		TuningContext context = new TuningContext("DriveTuning").publishSavingEvent();
@@ -130,7 +145,7 @@ public class DriveCode {
 		FloatStatus i = context.getFloat("drive-i", 0f);
 		FloatStatus d = context.getFloat("drive-d", 0f);
 
-		pid = new PIDControl(HeadingSensor.yaw, desiredAngle, p, i, d);
+		pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
 		pid.setOutputBounds(-1f, 1f);
 		
 		Cluck.publish("Yaw", HeadingSensor.yaw);
@@ -147,6 +162,7 @@ public class DriveCode {
 		fieldCentric.setFalseWhen(Igneous.startAuto);
 		fieldCentric.setTrueWhen(Igneous.startTele);
 		octocanumShifting.toggleWhen(octocanumShiftingButton);
+		Igneous.constantPeriodic.send(updateYaw);
 		FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.yaw, desiredAngle);
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
