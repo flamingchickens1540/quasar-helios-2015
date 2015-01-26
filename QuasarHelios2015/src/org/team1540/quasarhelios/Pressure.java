@@ -6,7 +6,6 @@ import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
-import ccre.holders.TuningContext;
 import ccre.igneous.Igneous;
 
 public class Pressure {
