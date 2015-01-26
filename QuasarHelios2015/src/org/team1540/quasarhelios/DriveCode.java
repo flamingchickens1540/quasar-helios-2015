@@ -145,9 +145,9 @@ public class DriveCode {
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
 		recalibrateButton.send(calibrate);
 		
-		FloatStatus p = context.getFloat("drive-p", 0.01f);
-		FloatStatus i = context.getFloat("drive-i", 0f);
-		FloatStatus d = context.getFloat("drive-d", 0f);
+		FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", 0.01f);
+		FloatStatus i = ControlInterface.mainTuning.getFloat("main-drive-i", 0f);
+		FloatStatus d = ControlInterface.mainTuning.getFloat("main-drive-d", 0f);
 
 		pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
 		pid.setOutputBounds(-1f, 1f);
