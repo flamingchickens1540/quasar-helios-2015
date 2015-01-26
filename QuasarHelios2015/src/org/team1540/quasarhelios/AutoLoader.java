@@ -1,7 +1,9 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
+import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
@@ -9,7 +11,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
 	public static BooleanStatus done = new BooleanStatus(false);
-    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(10);
+    public static final BooleanInput crateInPosition = BooleanMixing.alwaysFalse;//BooleanMixing.createDispatch(Igneous.makeDigitalInput(10), Igneous.globalPeriodic);
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
@@ -20,6 +22,8 @@ public class AutoLoader extends InstinctModule {
 
         Elevator.raising.setFalseWhen(BooleanMixing.onRelease(b));
         Elevator.lowering.setTrueWhen(BooleanMixing.onRelease(b));
+        
+    	Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
 
         return b;
     }

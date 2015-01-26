@@ -10,7 +10,6 @@ import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
 	public static final BooleanStatus done = new BooleanStatus(false);
-    private static final BooleanInputPoll crateInPosition = Igneous.makeDigitalInput(2);
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-ejectorTimeout", 2.0f);
 
 	public static BooleanStatus create() {
@@ -39,7 +38,7 @@ public class AutoEjector extends InstinctModule {
 			Rollers.direction.set(false);
 			Rollers.running.set(true);
 			
-			waitUntil(BooleanMixing.invert(crateInPosition));
+			waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
 			waitForTime(timeout);
 			
 			Rollers.running.set(false);

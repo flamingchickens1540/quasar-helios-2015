@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
+import ccre.cluck.Cluck;
 import ccre.drivers.chrobotics.UM7LT;
 import ccre.igneous.Igneous;
 
@@ -30,5 +31,15 @@ public class HeadingSensor {
 		rollRate = sensor.rollRate;
 		
 		zeroGyro = sensor.zeroGyro;
+		
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Zero", zeroGyro);
+		
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch", pitch);
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw", yaw);
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Roll", roll);
+		
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch Rate", pitchRate);
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw Rate", yawRate);
+		Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Roll Rate", rollRate);
 	}
 }

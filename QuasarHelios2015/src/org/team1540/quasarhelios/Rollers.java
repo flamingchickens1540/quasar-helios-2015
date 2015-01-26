@@ -5,6 +5,7 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatOutput;
+import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
@@ -15,9 +16,9 @@ public class Rollers {
 	public static final BooleanStatus running = new BooleanStatus(false);
 	public static final BooleanStatus open = new BooleanStatus(BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1)));
 	
-	private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f)); 
-	private static final FloatOutput frontRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_FORWARD, 0.1f);
-	private static final FloatOutput internalRollers = FloatMixing.combine(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, 0.1f)); 
+	private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f)); 
+	private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
+	private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f); 
 	
 	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
 	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
@@ -33,5 +34,10 @@ public class Rollers {
 		direction.toggleWhen(toggleRollersButton);
 		open.toggleWhen(toggleOpenButton);
 		motorSpeed.send(allRollers);
+		
+		Cluck.publish(QuasarHelios.testPrefix + "Arm Rollers Speed", armRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Front Rollers Speed", frontRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Internal Rollers Speed", internalRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Rollers Open", open);
 	}
 }

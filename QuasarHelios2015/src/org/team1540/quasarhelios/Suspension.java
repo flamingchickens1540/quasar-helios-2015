@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanOutput;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
+import ccre.cluck.Cluck;
 import ccre.ctrl.Ticker;
 import ccre.holders.TuningContext;
 import ccre.igneous.Igneous;
@@ -13,7 +14,7 @@ public class Suspension {
 	
 	private static int currentLevel;
 	
-	public static void setup() {
+	public static void setup() {/*
 		TuningContext context = new TuningContext("suspension").publishSavingEvent();
 		FloatInput cutoffForward = context.getFloat("max-tilt-forward", 5.0f);
 		FloatInput cutoffBackward = context.getFloat("max-tilt-backward", 5.0f);
@@ -25,7 +26,7 @@ public class Suspension {
 		
 		setSuspensionLevel(1);
 		
-		new Ticker(100).send(new EventOutput() {
+		QuasarHelios.globalControl.send(new EventOutput() {
 			@Override
 			public void event() {
 				float pitch = HeadingSensor.pitch.get();
@@ -42,6 +43,10 @@ public class Suspension {
 				}
 			}
 		});
+		
+		for (int i = 0; i < valves.length; i++) {
+			Cluck.publish(QuasarHelios.testPrefix + "Suspension Level " + (i + 1), valves[i]);
+		}*/
 	}
 	
 	private static void setSuspensionLevel(int level) {
