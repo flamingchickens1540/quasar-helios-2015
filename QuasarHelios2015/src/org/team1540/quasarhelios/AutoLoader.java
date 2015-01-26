@@ -11,7 +11,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
 	public static BooleanStatus done = new BooleanStatus(false);
-    private static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(10), Igneous.globalPeriodic);
+    public static final BooleanInput crateInPosition = BooleanMixing.alwaysFalse;//BooleanMixing.createDispatch(Igneous.makeDigitalInput(10), Igneous.globalPeriodic);
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
