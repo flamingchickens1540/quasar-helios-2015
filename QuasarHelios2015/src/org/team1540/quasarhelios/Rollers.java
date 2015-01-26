@@ -5,6 +5,7 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatOutput;
+import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
@@ -33,5 +34,10 @@ public class Rollers {
 		direction.toggleWhen(toggleRollersButton);
 		open.toggleWhen(toggleOpenButton);
 		motorSpeed.send(allRollers);
+		
+		Cluck.publish(QuasarHelios.testPrefix + "Arm Rollers Speed", armRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Front Rollers Speed", frontRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Internal Rollers Speed", internalRollers);
+		Cluck.publish(QuasarHelios.testPrefix + "Rollers Open", open);
 	}
 }

@@ -125,5 +125,12 @@ public class DriveCode {
 		Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
 				DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
 
+		Cluck.publish(QuasarHelios.testPrefix + "Left Rear Motor", leftBackMotor);
+		Cluck.publish(QuasarHelios.testPrefix + "Left Forward Motor", leftFrontMotor);
+		Cluck.publish(QuasarHelios.testPrefix + "Right Rear Motor", rightBackMotor);
+		Cluck.publish(QuasarHelios.testPrefix + "Right Forward Motor", rightFrontMotor);
+		Cluck.publish(QuasarHelios.testPrefix + "Octocanum Mode", octocanumShifting);
+		Cluck.publish(QuasarHelios.testPrefix + "Left Drive Encoder", leftEncoderRaw);
+		Cluck.publish(QuasarHelios.testPrefix + "Right Drive Encoder", rightEncoderRaw);
 	}
 }
