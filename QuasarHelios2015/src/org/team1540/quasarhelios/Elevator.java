@@ -25,8 +25,8 @@ public class Elevator {
     public static EventInput loweringInput;
 
     public static void setup() {
-        raising.setFalseWhen(BooleanMixing.onPress(topLimitSwitch));
-        lowering.setFalseWhen(BooleanMixing.onPress(bottomLimitSwitch));
+    	raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
+    	lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
 
         raising.toggleWhen(raisingInput);
         raising.setFalseWhen(loweringInput);

@@ -22,10 +22,12 @@ public class Clamp {
 	public final FloatInputPoll heightReadout;
 
 	public Clamp() {
-		heightControl = new FloatStatus();
+		FloatStatus fs = new FloatStatus();
+		heightControl = fs;
+		FloatInput heightInput = fs;
 
 		FloatFilter limit = FloatMixing.limit(0.0f, 1.0f);
-		FloatInput desiredHeight = limit.wrap((FloatInput) heightControl);
+		FloatInput desiredHeight = limit.wrap(heightInput);
 
 		FloatInputPoll encoder = Igneous.makeEncoder(4, 5, false);
 		FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
