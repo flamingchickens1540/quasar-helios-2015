@@ -45,6 +45,7 @@ public class DriveCode {
 	
 	private static final FloatStatus adjustedYaw = new FloatStatus();
 	private static final FloatStatus desiredAngle = new FloatStatus();
+	private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
 	private static PIDControl pid;
 	
 	private static EventOutput mecanum = new EventOutput() {
@@ -116,7 +117,7 @@ public class DriveCode {
 		public void event() {
 			float yaw = HeadingSensor.yaw.get();
 			desiredAngle.set(yaw);
-			if (Igneous.getIsDisabled().get()){
+			if (isDisabled.get()){
 				yaw -= centricAngleOffset.get();
 			}
 			calibratedAngle.set((float) (yaw / 180 * π));
@@ -153,6 +154,7 @@ public class DriveCode {
 
 		pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
 		pid.setOutputBounds(-1f, 1f);
+		pid.setIntegralBounds(-.5f, .5f);
 		
 		Cluck.publish("Yaw", HeadingSensor.yaw);
 		Cluck.publish("Desired Angle", desiredAngle);
