@@ -12,7 +12,6 @@ import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.PIDControl;
-import ccre.holders.TuningContext;
 import ccre.igneous.Igneous;
 
 public class Clamp {

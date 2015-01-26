@@ -1,6 +1,5 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
