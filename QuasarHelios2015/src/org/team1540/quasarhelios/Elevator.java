@@ -34,7 +34,7 @@ public class Elevator {
         lowering.toggleWhen(loweringInput);
         lowering.setFalseWhen(raisingInput);
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(raising, Mixing.select(lowering, 0.0f, winchSpeed.get()), Mixing.select(lowering, 0.0f, -winchSpeed.get())), winch);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(raising, Mixing.select(lowering, FloatMixing.always(0.0f), FloatMixing.createDispatch(winchSpeed, Igneous.globalPeriodic)), Mixing.select(lowering, FloatMixing.always(0.0f), FloatMixing.negate(FloatMixing.createDispatch(winchSpeed, Igneous.globalPeriodic)))), winch);
         
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", topLimitSwitch);
