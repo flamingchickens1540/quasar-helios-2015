@@ -4,6 +4,7 @@ import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
+import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
@@ -22,8 +23,8 @@ public class Rollers {
 	
 	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
 	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
-	
-	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.quadSelect(running, direction, 0.0f, 0.0f, -1.0f, 1.0f), Igneous.globalPeriodic);
+	private static final FloatInputPoll actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
+	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.quadSelect(running, direction, 0.0f, 0.0f, -actualSpeed.get(), actualSpeed.get()), Igneous.globalPeriodic);
 
 	public static EventInput toggleRollersButton;
 	public static EventInput runRollersButton;
