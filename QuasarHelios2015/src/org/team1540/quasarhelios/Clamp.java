@@ -35,17 +35,15 @@ public class Clamp {
 		EventInput limitTop = EventMixing.filterEvent(Igneous.makeDigitalInput(2), true, Igneous.globalPeriodic);
 		EventInput limitBottom = EventMixing.filterEvent(Igneous.makeDigitalInput(3), true, Igneous.globalPeriodic);
 
-		TuningContext context = new TuningContext("Clamp").publishSavingEvent();
-
-		FloatStatus min = context.getFloat("clamp-min", 0.0f);
-		FloatStatus max = context.getFloat("clamp-max", 1.0f);
+		FloatStatus min = ControlInterface.mainTuning.getFloat("main-clamp-min", 0.0f);
+		FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
 
 		FloatMixing.pumpWhen(limitTop, encoder, max);
 		FloatMixing.pumpWhen(limitBottom, encoder, min);
 
-		FloatStatus p = context.getFloat("clamp-p", 1.0f);
-		FloatStatus i = context.getFloat("clamp-i", 0.0f);
-		FloatStatus d = context.getFloat("clamp-d", 0.0f);
+		FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
+		FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
+		FloatStatus d = ControlInterface.mainTuning.getFloat("clamp-d", 0.0f);
 
 		heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
