@@ -14,7 +14,7 @@ public class Suspension {
 	
 	private static int currentLevel;
 	
-	public static void setup() {
+	public static void setup() {/*
 		TuningContext context = new TuningContext("suspension").publishSavingEvent();
 		FloatInput cutoffForward = context.getFloat("max-tilt-forward", 5.0f);
 		FloatInput cutoffBackward = context.getFloat("max-tilt-backward", 5.0f);
@@ -46,7 +46,7 @@ public class Suspension {
 		
 		for (int i = 0; i < valves.length; i++) {
 			Cluck.publish(QuasarHelios.testPrefix + "Suspension Level " + (i + 1), valves[i]);
-		}
+		}*/
 	}
 	
 	private static void setSuspensionLevel(int level) {
