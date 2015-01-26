@@ -36,7 +36,7 @@ public class Clamp {
 		EventInput limitBottom = EventMixing.filterEvent(Igneous.makeDigitalInput(3), true, Igneous.globalPeriodic);
 
 		FloatStatus min = ControlInterface.mainTuning.getFloat("main-clamp-min", 0.0f);
-		FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
+		FloatStatus max = ControlInterface.mainTuning.getFloat("main-clamp-max", 1.0f);
 
 		FloatMixing.pumpWhen(limitTop, encoder, max);
 		FloatMixing.pumpWhen(limitBottom, encoder, min);
