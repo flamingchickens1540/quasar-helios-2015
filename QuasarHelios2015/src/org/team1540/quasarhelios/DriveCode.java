@@ -52,6 +52,9 @@ public class DriveCode {
 			float distanceY = leftJoystickChannelY.get();
 			float distanceX = leftJoystickChannelX.get();
 			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+			if (speed > 1) {
+				speed = 1;
+			}
 			float rotationspeed = rightJoystickChannelX.get();
 			double angle;
 			if (distanceX == 0) {
