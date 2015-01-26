@@ -23,7 +23,7 @@ public class Rollers {
 	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
 	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
 	private static final FloatInputPoll actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
-	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.quadSelect(running, direction, 0.0f, 0.0f, -actualSpeed.get(), actualSpeed.get()), Igneous.globalPeriodic);
+	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.select(running, Mixing.select(direction, actualSpeed.get(), -actualSpeed.get()), Mixing.select(direction, 0.0f, 0.0f)), Igneous.globalPeriodic);
 
 	public static EventInput toggleRollersButton;
 	public static EventInput runRollersButton;
