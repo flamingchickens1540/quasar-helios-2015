@@ -51,7 +51,7 @@ public class DriveCode {
 		public void event() {
 			float distanceY = leftJoystickChannelY.get();
 			float distanceX = leftJoystickChannelX.get();
-			float speed = (float) Math.sqrt(distanceX*distanceX+distanceY*distanceY);
+			float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
 			if (speed > 1) {
 				speed = 1;
 			}
@@ -73,7 +73,7 @@ public class DriveCode {
 			float currentAngle = HeadingSensor.yaw.get();
 			
 			if (fieldCentric.get()) {
-				double centric = calibratedAngle.get() - centricAngleOffset.get();
+				double centric = calibratedAngle.get();
 				double angleOffset = currentAngle / 180 * π;
 				angleOffset -= centric;
 				angle -= angleOffset;
@@ -115,8 +115,11 @@ public class DriveCode {
 	private static EventOutput calibrate = new EventOutput() {
 		public void event() {
 			float yaw = HeadingSensor.yaw.get();
-			calibratedAngle.set((float) (yaw / 180 * π));
 			desiredAngle.set(yaw);
+			if (Igneous.getIsDisabled().get()){
+				yaw -= centricAngleOffset.get();
+			}
+			calibratedAngle.set((float) (yaw / 180 * π));
 			Logger.info("Calibrated Angle: " + yaw);
 		}
 	};
