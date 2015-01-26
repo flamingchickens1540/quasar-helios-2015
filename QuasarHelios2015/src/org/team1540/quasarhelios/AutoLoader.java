@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;

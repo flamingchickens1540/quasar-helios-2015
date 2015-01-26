@@ -1,6 +1,5 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
@@ -22,8 +21,8 @@ public class Rollers {
 	
 	private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
 	private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
-	
-	private static final FloatInput motorSpeed = FloatMixing.createDispatch(Mixing.quadSelect(running, direction, 0.0f, 0.0f, -1.0f, 1.0f), Igneous.globalPeriodic);
+	private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
+	private static final FloatInput motorSpeed = Mixing.select(running, Mixing.select(direction, actualSpeed, FloatMixing.negate(actualSpeed)), FloatMixing.always(0.0f));
 
 	public static EventInput toggleRollersButton;
 	public static EventInput runRollersButton;

@@ -3,7 +3,6 @@ package org.team1540.quasarhelios;
 import ccre.channel.*;
 import ccre.cluck.Cluck;
 import ccre.ctrl.*;
-import ccre.holders.TuningContext;
 import ccre.igneous.*;
 import ccre.log.Logger;
 
@@ -140,8 +139,7 @@ public class DriveCode {
 	};
 
 	public static void setup() {
-		TuningContext context = new TuningContext("DriveTuning").publishSavingEvent();
-		centricAngleOffset = context.getFloat("centric_angle", 0);
+		centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
 		Cluck.publish("Centric Angle Offset", centricAngleOffset);
 		Cluck.publish("Calibrate Field Centric Angle", calibrate);
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);

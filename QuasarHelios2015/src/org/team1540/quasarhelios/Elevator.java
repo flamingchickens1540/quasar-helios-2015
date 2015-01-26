@@ -1,9 +1,9 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
+import ccre.channel.FloatInput;
 import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
@@ -23,7 +23,9 @@ public class Elevator {
 
     public static EventInput raisingInput;
     public static EventInput loweringInput;
-
+    
+    private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
+    
     public static void setup() {
     	raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
     	lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
@@ -33,7 +35,7 @@ public class Elevator {
         lowering.toggleWhen(loweringInput);
         lowering.setFalseWhen(raisingInput);
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.quadSelect(raising, lowering, 0.0f, -1.0f, 1.0f, 0.0f), winch);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(raising, Mixing.select(lowering, FloatMixing.always(0.0f), winchSpeed), Mixing.select(lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed))), winch);
         
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", topLimitSwitch);
