@@ -1,6 +1,8 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInput;
 import ccre.channel.BooleanOutput;
+import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatFilter;
 import ccre.channel.FloatInput;
@@ -15,30 +17,26 @@ import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
 
 public class Clamp {
-	public final BooleanOutput openControl = BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1));
-	public final FloatOutput heightControl;
+	public static FloatInput heightInput;
+	public static EventInput openInput;
+	public static final BooleanStatus openControl = new BooleanStatus(BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1)));
+	public static final FloatStatus heightControl = new FloatStatus();
 
-	public final FloatInputPoll heightReadout;
+	public static FloatInputPoll heightReadout;
 
-	public Clamp() {
-		FloatStatus fs = new FloatStatus();
-		heightControl = fs;
-		FloatInput heightInput = fs;
-
-		FloatFilter limit = FloatMixing.limit(0.0f, 1.0f);
-		FloatInput desiredHeight = limit.wrap(heightInput);
+	public static void setup() {
 
 		FloatInputPoll encoder = Igneous.makeEncoder(4, 5, false);
 		FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
-		EventInput limitTop = EventMixing.filterEvent(Igneous.makeDigitalInput(2), true, Igneous.globalPeriodic);
-		EventInput limitBottom = EventMixing.filterEvent(Igneous.makeDigitalInput(3), true, Igneous.globalPeriodic);
+		BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
+		BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
 
 		FloatStatus min = ControlInterface.mainTuning.getFloat("main-clamp-min", 0.0f);
 		FloatStatus max = ControlInterface.mainTuning.getFloat("main-clamp-max", 1.0f);
 
-		FloatMixing.pumpWhen(limitTop, encoder, max);
-		FloatMixing.pumpWhen(limitBottom, encoder, min);
+		FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
+		FloatMixing.pumpWhen(BooleanMixing.onPress(limitBottom), encoder, min);
 
 		FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
 		FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
@@ -46,11 +44,28 @@ public class Clamp {
 
 		heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
-		PIDControl pid = new PIDControl(heightReadout, desiredHeight, p, i, d);
+		PIDControl pid = new PIDControl(heightReadout, heightControl, p, i, d);
 
 		QuasarHelios.globalControl.send(pid);
-
-		pid.send(speedControl);
+		
+		FloatOutput out = new FloatOutput() {
+			@Override
+			public void set(float value) {
+				if (limitTop.get()) {
+					value = Math.max(value, 0);
+				} 
+				
+				if (limitBottom.get()) {
+					value = Math.min(value, 0);
+				}
+				speedControl.set(value);
+			}
+		};
+		
+		FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, out);
+		
+		heightInput.send(heightControl);
+		openControl.toggleWhen(openInput);
 
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));

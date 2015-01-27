@@ -61,13 +61,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 	}
 	
 	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-		QuasarHelios.clamp.openControl.set(value);
+		Clamp.openControl.set(value);
 		waitForTime(30);
 	}
 	
 	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-		QuasarHelios.clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(QuasarHelios.clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+		Clamp.heightControl.set(value);
+		waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
 	}
 	
 	protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
