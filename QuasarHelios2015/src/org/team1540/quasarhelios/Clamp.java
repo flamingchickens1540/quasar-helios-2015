@@ -53,7 +53,9 @@ public class Clamp {
 			public void set(float value) {
 				if (limitTop.get()) {
 					value = Math.max(value, 0);
-				} else if (limitBottom.get()) {
+				} 
+				
+				if (limitBottom.get()) {
 					value = Math.min(value, 0);
 				}
 				speedControl.set(value);
