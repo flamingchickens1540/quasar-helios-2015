@@ -7,82 +7,82 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
-	private static final TuningContext context = ControlInterface.autoTuning;
-	private static final FloatInputPoll driveSpeed = context.getFloat("auto-main-driveSpeed", 1.0f);
-	private static final FloatInputPoll rotateSpeed = context.getFloat("auto-main-rotateSpeed", 1.0f);
-	private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-main-clampHeightPadding", 0.01f);
+    private static final TuningContext context = ControlInterface.autoTuning;
+    private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
+    private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
+    private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-clamp-height-padding", 0.01f);
 
-	public AutonomousModeBase(String modeName) {
-		super(modeName);
-	}
+    public AutonomousModeBase(String modeName) {
+        super(modeName);
+    }
 
-	protected void drive(float distance) throws AutonomousModeOverException,
-			InterruptedException {
-		float startingEncoder = DriveCode.leftEncoder.get();
+    protected void drive(float distance) throws AutonomousModeOverException,
+            InterruptedException {
+        float startingEncoder = DriveCode.leftEncoder.get();
 
-		if (distance > 0) {
-			DriveCode.allMotors.set(driveSpeed.get());
-			waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
-		} else {
-			DriveCode.allMotors.set(-driveSpeed.get());
-			waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
-		}
+        if (distance > 0) {
+            DriveCode.allMotors.set(driveSpeed.get());
+            waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
+        } else {
+            DriveCode.allMotors.set(-driveSpeed.get());
+            waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
+        }
 
-		DriveCode.allMotors.set(0.0f);
-	}
-	
-	protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
-		DriveCode.leftJoystickX.set(direction);
-		waitForTime((long) time);
-		DriveCode.leftJoystickX.set(0.0f);
-	}
+        DriveCode.allMotors.set(0.0f);
+    }
 
-	protected void turn(float degree) throws AutonomousModeOverException,
-			InterruptedException {
-		float startingYaw = HeadingSensor.yaw.get();
+    protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
+        DriveCode.leftJoystickX.set(direction);
+        waitForTime((long) time);
+        DriveCode.leftJoystickX.set(0.0f);
+    }
 
-		if (degree > 0) {
-			DriveCode.rotate.set(rotateSpeed.get());
-			waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
-		} else {
-			DriveCode.rotate.set(-rotateSpeed.get());
-			waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
-		}
+    protected void turn(float degree) throws AutonomousModeOverException,
+            InterruptedException {
+        float startingYaw = HeadingSensor.yaw.get();
 
-		DriveCode.rotate.set(0.0f);
-	}
+        if (degree > 0) {
+            DriveCode.rotate.set(rotateSpeed.get());
+            waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
+        } else {
+            DriveCode.rotate.set(-rotateSpeed.get());
+            waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
+        }
 
-	protected void collectTote() throws AutonomousModeOverException,
-			InterruptedException {
-		QuasarHelios.autoLoader.set(true);
-		waitUntil(AutoLoader.done);
-	}
-	
-	protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-		Clamp.openControl.set(value);
-		waitForTime(30);
-	}
-	
-	protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-		Clamp.heightControl.set(value);
-		waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
-	}
-	
-	protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
-		QuasarHelios.autoEjector.set(true);
-		waitUntil(AutoEjector.done);
-	}
+        DriveCode.rotate.set(0.0f);
+    }
 
-	@Override
-	protected void autonomousMain() throws AutonomousModeOverException,
-			InterruptedException {
-		try {
-			runAutonomous();
-		} finally {
-			DriveCode.allMotors.set(0);
-		}
-	}
+    protected void collectTote() throws AutonomousModeOverException,
+            InterruptedException {
+        QuasarHelios.autoLoader.set(true);
+        waitUntil(AutoLoader.done);
+    }
 
-	protected abstract void runAutonomous() throws InterruptedException,
-			AutonomousModeOverException;
+    protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
+        Clamp.openControl.set(value);
+        waitForTime(30);
+    }
+
+    protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+        Clamp.heightControl.set(value);
+        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+    }
+
+    protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
+        QuasarHelios.autoEjector.set(true);
+        waitUntil(AutoEjector.done);
+    }
+
+    @Override
+    protected void autonomousMain() throws AutonomousModeOverException,
+            InterruptedException {
+        try {
+            runAutonomous();
+        } finally {
+            DriveCode.allMotors.set(0);
+        }
+    }
+
+    protected abstract void runAutonomous() throws InterruptedException,
+            AutonomousModeOverException;
 }

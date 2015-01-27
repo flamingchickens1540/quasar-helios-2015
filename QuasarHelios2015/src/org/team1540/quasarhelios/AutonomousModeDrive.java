@@ -5,19 +5,18 @@ import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeDrive extends AutonomousModeBase {
-	protected FloatInputPoll driveDistance;
-	
-	public AutonomousModeDrive() {
-		super("Drive");
-	}
+    protected FloatInputPoll driveDistance;
 
-	@Override
-	protected void runAutonomous() throws InterruptedException,
-			AutonomousModeOverException {
-		drive(driveDistance.get());
-	}
-	
-	public void loadSettings(TuningContext context) {
-		this.driveDistance = context.getFloat("auto-drive-distance", 2.0f);
-	}
+    public AutonomousModeDrive() {
+        super("Drive");
+    }
+
+    @Override
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
+        drive(driveDistance.get());
+    }
+
+    public void loadSettings(TuningContext context) {
+        this.driveDistance = context.getFloat("auto-drive-distance", 2.0f);
+    }
 }
