@@ -4,6 +4,7 @@ import ccre.channel.BooleanInput;
 import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
+import ccre.channel.EventStatus;
 import ccre.channel.FloatFilter;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -32,11 +33,11 @@ public class Clamp {
 		BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
 		BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
 
-		FloatStatus min = ControlInterface.mainTuning.getFloat("main-clamp-min", 0.0f);
-		FloatStatus max = ControlInterface.mainTuning.getFloat("main-clamp-max", 1.0f);
+		FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
+		FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
 
-		FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
 		FloatMixing.pumpWhen(BooleanMixing.onPress(limitBottom), encoder, min);
+		FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
 
 		FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
 		FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
@@ -72,5 +73,8 @@ public class Clamp {
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Top", limitTop);
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Bottom", limitBottom);
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Motor Speed", speedControl);
+		
+		Cluck.publish("Clamp Max Set", FloatMixing.pumpEvent(encoder, max));
+		Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, min));
 	}
 }
