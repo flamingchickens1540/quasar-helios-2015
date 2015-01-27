@@ -140,7 +140,6 @@ public class DriveCode {
 
 	public static void setup() {
 		centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
-		Cluck.publish("Centric Angle Offset", centricAngleOffset);
 		Cluck.publish("Calibrate Field Centric Angle", calibrate);
 		Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
 		recalibrateButton.send(calibrate);
@@ -153,7 +152,6 @@ public class DriveCode {
 		pid.setOutputBounds(-1f, 1f);
 		pid.setIntegralBounds(-.5f, .5f);
 		
-		Cluck.publish("Yaw", HeadingSensor.yaw);
 		Cluck.publish("Desired Angle", desiredAngle);
 		Cluck.publish("PID", (FloatInput) pid);
 
