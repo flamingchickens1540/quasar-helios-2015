@@ -15,10 +15,10 @@ public class ControlInterface {
 	}
 	
 	public static void setupJoysticks() {
-		FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickX);
-		FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickY);
-		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .2f).send(DriveCode.rightJoystickX);
-		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f).send(DriveCode.rightJoystickY);	
+		FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .3f).send(DriveCode.leftJoystickX);
+		FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .3f).send(DriveCode.leftJoystickY);
+		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .3f).send(DriveCode.rightJoystickX);
+		FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .3f).send(DriveCode.rightJoystickY);	
 		DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
 		DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 		
