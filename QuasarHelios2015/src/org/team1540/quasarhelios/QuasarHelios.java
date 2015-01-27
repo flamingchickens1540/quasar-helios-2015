@@ -10,11 +10,11 @@ import ccre.igneous.IgneousApplication;
  * The main class for QuasarHelios. This dispatches to all of the other modules.
  */
 public class QuasarHelios implements IgneousApplication {
-	public static BooleanStatus autoLoader;
-	public static BooleanStatus autoEjector;
-	public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
-	public static final String testPrefix = "(Test) ";
-	
+    public static BooleanStatus autoLoader;
+    public static BooleanStatus autoEjector;
+    public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
+    public static final String testPrefix = "(Test) ";
+
     public void setupRobot() {
         ControlInterface.setup();
         HeadingSensor.setup();
@@ -25,7 +25,7 @@ public class QuasarHelios implements IgneousApplication {
         Autonomous.setup();
         Suspension.setup();
         Pressure.setup();
-		autoLoader = AutoLoader.create();
-		autoEjector = AutoEjector.create();
+        autoLoader = AutoLoader.create();
+        autoEjector = AutoEjector.create();
     }
 }

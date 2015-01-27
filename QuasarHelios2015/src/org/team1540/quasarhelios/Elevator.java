@@ -23,12 +23,12 @@ public class Elevator {
 
     public static EventInput raisingInput;
     public static EventInput loweringInput;
-    
+
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
-    
+
     public static void setup() {
-    	raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
-    	lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
+        raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
+        lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
 
         raising.toggleWhen(raisingInput);
         raising.setFalseWhen(loweringInput);
@@ -36,7 +36,7 @@ public class Elevator {
         lowering.setFalseWhen(raisingInput);
 
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(raising, Mixing.select(lowering, FloatMixing.always(0.0f), winchSpeed), Mixing.select(lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed))), winch);
-        
+
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", topLimitSwitch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", bottomLimitSwitch);
