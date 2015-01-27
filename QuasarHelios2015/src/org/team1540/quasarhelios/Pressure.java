@@ -17,7 +17,7 @@ public class Pressure {
 	public static final BooleanOutput compressor = Igneous.usePCMCompressor();
 	
 	public static void setup() {
-		FloatInputPoll pressureInput = Igneous.makeAnalogInput(0);
+		FloatInput pressureInput = FloatMixing.createDispatch(Igneous.makeAnalogInput(0), Igneous.globalPeriodic);
 		
 		FloatStatus min = ControlInterface.mainTuning.getFloat("pressure-min", 0.0f);
 		FloatStatus max = ControlInterface.mainTuning.getFloat("pressure-max", 1.0f);
@@ -26,6 +26,7 @@ public class Pressure {
 		
 		Cluck.publish("Pressure Switch", pressureSwitch);
 		Cluck.publish("Pressure Gauge", pressureGauge);
+		Cluck.publish("Pressure Gauge Raw", pressureInput);
 		Cluck.publish("Compressor Enable", compressor);
 		Cluck.publish("Pressure Min Set", FloatMixing.pumpEvent(pressureInput, min));
 		Cluck.publish("Pressure Max Set", FloatMixing.pumpEvent(pressureInput, max));
