@@ -35,12 +35,9 @@ public class Clamp {
 
 		FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
 		FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
-		
-		EventStatus setMin = new EventStatus();
-		EventStatus setMax = new EventStatus();
 
-		FloatMixing.pumpWhen(EventMixing.combine(BooleanMixing.onPress(limitBottom), setMin), encoder, min);
-		FloatMixing.pumpWhen(EventMixing.combine(BooleanMixing.onPress(limitTop), setMax), encoder, max);
+		FloatMixing.pumpWhen(BooleanMixing.onPress(limitBottom), encoder, min);
+		FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
 
 		FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
 		FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
@@ -76,7 +73,8 @@ public class Clamp {
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Top", limitTop);
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Bottom", limitBottom);
 		Cluck.publish(QuasarHelios.testPrefix + "Clamp Motor Speed", speedControl);
-		Cluck.publish("Clamp Max Set", setMax);
-		Cluck.publish("Clamp Min Set", setMin);
+		
+		Cluck.publish("Clamp Max Set", FloatMixing.pumpEvent(encoder, max));
+		Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, min));
 	}
 }

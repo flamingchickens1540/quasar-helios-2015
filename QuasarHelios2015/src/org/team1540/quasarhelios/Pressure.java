@@ -22,18 +22,12 @@ public class Pressure {
 		FloatStatus min = ControlInterface.mainTuning.getFloat("pressure-min", 0.0f);
 		FloatStatus max = ControlInterface.mainTuning.getFloat("pressure-max", 1.0f);
 		
-		EventStatus setMin = new EventStatus();
-		EventStatus setMax = new EventStatus();
-		
-		FloatMixing.pumpWhen(setMin, pressureInput, min);
-		FloatMixing.pumpWhen(setMax, pressureInput, max);
-		
 		pressureGauge = FloatMixing.createDispatch(FloatMixing.normalizeFloat(pressureInput, min, max), Igneous.globalPeriodic);
 		
 		Cluck.publish("Pressure Switch", pressureSwitch);
 		Cluck.publish("Pressure Gauge", pressureGauge);
 		Cluck.publish("Compressor Enable", compressor);
-		Cluck.publish("Pressure Min Set", setMin);
-		Cluck.publish("Pressure Max Set", setMax);
+		Cluck.publish("Pressure Min Set", FloatMixing.pumpEvent(pressureInput, min));
+		Cluck.publish("Pressure Max Set", FloatMixing.pumpEvent(pressureInput, max));
 	}
 }
