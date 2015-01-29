@@ -10,12 +10,12 @@ import ccre.igneous.Igneous;
 public class CurrentMonitoring {
     public static void setup() {
         for (int i = 0; i < 16; i++) {
-            FloatStatus zero = ControlInterface.mainTuning.getFloat("current-zero", 0.0f);
+            FloatStatus zero = ControlInterface.mainTuning.getFloat("current-zero-" + i, 0.0f);
             FloatInput current = FloatMixing.createDispatch(Igneous.getPDPChannelCurrent(i), Igneous.globalPeriodic);
 
-            Cluck.publish("Zero Current (channel " + i + ")", FloatMixing.pumpEvent(current, zero));
+            Cluck.publish("Zero Current " + i, FloatMixing.pumpEvent(current, zero));
 
-            Cluck.publish("Current (channel " + i + ")", FloatMixing.subtraction.of(current, (FloatInput) zero));
+            Cluck.publish("Current " + i, FloatMixing.subtraction.of(current, (FloatInput) zero));
         }
     }
 }
