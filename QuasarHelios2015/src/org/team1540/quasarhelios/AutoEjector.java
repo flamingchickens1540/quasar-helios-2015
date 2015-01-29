@@ -28,8 +28,7 @@ public class AutoEjector extends InstinctModule {
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
             done.set(false);
-            Elevator.lowering.set(true);
-            Elevator.raising.set(false);
+            Elevator.setMiddle.event();
 
             waitUntil(Elevator.bottomLimitSwitch);
 
