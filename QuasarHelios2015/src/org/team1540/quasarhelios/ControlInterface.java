@@ -37,11 +37,12 @@ public class ControlInterface {
         Elevator.goTopInput = Igneous.joystick2.getButtonSource(1);
         Elevator.goBottomInput = Igneous.joystick2.getButtonSource(2);
         Elevator.goMiddleInput = Igneous.joystick2.getButtonSource(3);
-        Rollers.runRollersButton = Igneous.joystick2.getButtonSource(4);
-        Rollers.toggleRollersButton = Igneous.joystick2.getButtonSource(5);
-        Rollers.toggleOpenButton = Igneous.joystick2.getButtonSource(6);
+        Elevator.stopInput = Igneous.joystick2.getButtonSource(4);
+        Rollers.runRollersButton = Igneous.joystick2.getButtonSource(5);
+        Rollers.toggleRollersButton = Igneous.joystick2.getButtonSource(6);
+        Rollers.toggleOpenButton = Igneous.joystick2.getButtonSource(7);
         Clamp.heightInput = Igneous.joystick2.getAxisSource(1);
-        Clamp.openInput = Igneous.joystick2.getButtonSource(7);
+        Clamp.openInput = Igneous.joystick2.getButtonSource(8);
     }
 
     public static void setupCluck() {
