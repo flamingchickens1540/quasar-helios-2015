@@ -9,14 +9,17 @@ import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
+import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
+import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class Elevator {
-    private static final FloatOutput winch = Igneous.makeJaguarMotor(3, Igneous.MOTOR_FORWARD, 0.4f);
+    private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
+    private static final FloatOutput winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
 
     public static EventOutput setTop;
     public static EventOutput setMiddle;
@@ -42,6 +45,17 @@ public class Elevator {
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
 
     public static void setup() {
+
+        Ticker updateCAN = new Ticker(100);
+        Cluck.publish("CAN Elevator Enable", winchCAN.asEnable());
+        Cluck.publish("CAN Elevator Bus Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Elevator Output Current", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
+        Cluck.publish("CAN Elevator Output Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Elevator Temperature", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
+        Cluck.publish("CAN Elevator Any Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
+        Cluck.publish("CAN Elevator Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
+        Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
+        
         raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
 
