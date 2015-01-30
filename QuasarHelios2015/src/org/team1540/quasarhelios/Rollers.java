@@ -25,9 +25,9 @@ public class Rollers {
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
     private static final FloatInput motorSpeed = Mixing.select(running, Mixing.select(direction, actualSpeed, FloatMixing.negate(actualSpeed)), FloatMixing.always(0.0f));
 
-    public static EventOutput toggleRollersButton = direction.getToggleEvent();
-    public static EventOutput runRollersButton = running.getToggleEvent();
-    public static EventOutput toggleOpenButton = open.getToggleEvent();
+    public static final EventOutput toggleRollersButton = direction.getToggleEvent();
+    public static final EventOutput runRollersButton = running.getToggleEvent();
+    public static final EventOutput toggleOpenButton = open.getToggleEvent();
 
     public static void setup() {
         motorSpeed.send(allRollers);

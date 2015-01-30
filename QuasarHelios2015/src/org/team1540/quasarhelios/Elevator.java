@@ -22,10 +22,10 @@ public class Elevator {
     private static final BooleanStatus lowering = new BooleanStatus();
     private static final BooleanStatus goingToMiddle = new BooleanStatus();
 
-    public static EventOutput setTop = EventMixing.combine(BooleanMixing.getSetEvent(raising, true), BooleanMixing.getSetEvent(lowering, false), BooleanMixing.getSetEvent(goingToMiddle, false));
-    public static EventOutput setMiddle = BooleanMixing.getSetEvent(goingToMiddle, true);
-    public static EventOutput setBottom = EventMixing.combine(BooleanMixing.getSetEvent(raising, false), BooleanMixing.getSetEvent(lowering, true), BooleanMixing.getSetEvent(goingToMiddle, false));
-    public static EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering, goingToMiddle), false);
+    public final static EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent(), goingToMiddle.getSetFalseEvent());
+    public final static EventOutput setMiddle = goingToMiddle.getSetTrueEvent();
+    public final static EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent(), goingToMiddle.getSetFalseEvent());
+    public final static EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering, goingToMiddle), false);
 
     public static final BooleanInput topLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
     public static final BooleanInput bottomLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
