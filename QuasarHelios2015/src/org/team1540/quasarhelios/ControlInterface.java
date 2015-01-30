@@ -44,8 +44,8 @@ public class ControlInterface {
         Clamp.heightInput = Igneous.joystick2.getAxisSource(1);
         Clamp.openInput = Igneous.joystick2.getButtonSource(8);
         
-        QuasarHelios.autoLoader.toggleWhen(Igneous.joystick2.getButtonSource(1)); // TODO: Pick buttons
-        QuasarHelios.autoEjector.toggleWhen(Igneous.joystick2.getButtonSource(2)); // TODO: Pick buttons
+        QuasarHelios.autoLoader.toggleWhen(Igneous.joystick2.getButtonSource(9));
+        QuasarHelios.autoEjector.toggleWhen(Igneous.joystick2.getButtonSource(10));
     }
 
     public static void setupCluck() {
