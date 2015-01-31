@@ -30,7 +30,6 @@ public class DriveCode {
     public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
     public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
     public static final FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
-    // This is in ??? units.
     public static final FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
     public static final FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
     public static final FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
@@ -40,6 +39,7 @@ public class DriveCode {
     private static FloatStatus centricAngleOffset;
     private static final FloatStatus calibratedAngle = new FloatStatus(0);
     private static final BooleanStatus fieldCentric = new BooleanStatus();
+    private static final BooleanStatus headingControl = new BooleanStatus(true);
 
     private static final FloatStatus adjustedYaw = new FloatStatus();
     private static final FloatStatus desiredAngle = new FloatStatus();
@@ -78,10 +78,12 @@ public class DriveCode {
                 angle -= angleOffset;
             }
 
-            if (rotationspeed == 0 && speed > 0) {
-                rotationspeed = -pid.get();
-            } else {
-                desiredAngle.set(currentAngle);
+            if (headingControl.get()) {
+            	if (rotationspeed == 0 && speed > 0) {
+            		rotationspeed = -pid.get();
+            	} else {
+            		desiredAngle.set(currentAngle);
+            	}
             }
 
             float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
@@ -140,8 +142,6 @@ public class DriveCode {
 
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
-        Cluck.publish("Calibrate Field Centric Angle", calibrate);
-        Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
         recalibrateButton.send(calibrate);
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", 0.01f);
@@ -151,9 +151,6 @@ public class DriveCode {
         pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
-
-        Cluck.publish("Desired Angle", desiredAngle);
-        Cluck.publish("PID", (FloatInput) pid);
 
         Igneous.globalPeriodic.send(pid);
 
@@ -178,5 +175,9 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Rightr", rightEncoderRaw);
+        Cluck.publish("Calibrate Field Centric Angle", calibrate);
+        Cluck.publish("Toggle Field Centric", fieldCentric);
+        Cluck.publish("Toggle Heading Control", headingControl);
+        Cluck.publish("Drive PID", (FloatInput) pid);
     }
 }
