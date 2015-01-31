@@ -39,12 +39,15 @@ public class DriveCode {
 
     private static FloatStatus centricAngleOffset;
     private static final FloatStatus calibratedAngle = new FloatStatus(0);
+    
     private static final BooleanStatus fieldCentric = new BooleanStatus();
+    private static final BooleanStatus keepStraight = new BooleanStatus(true);
 
     private static final FloatStatus adjustedYaw = new FloatStatus();
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
     private static PIDControl pid;
+    private static final BooleanStatus isMoving = new BooleanStatus();
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
@@ -77,11 +80,19 @@ public class DriveCode {
                 angleOffset -= centric;
                 angle -= angleOffset;
             }
-
-            if (rotationspeed == 0 && speed > 0) {
-                rotationspeed = -pid.get();
-            } else {
-                desiredAngle.set(currentAngle);
+            
+            if (keepStraight.get()) {
+            	if (speed > 0) {
+            		isMoving.set(true);
+            	}
+            	if (rotationspeed == 0 && isMoving.get()) {
+            		rotationspeed = -pid.get();
+            		if (Math.abs(pid.get()) < 0.01) {
+            			isMoving.set(false);
+            		}
+            	} else {
+            		desiredAngle.set(currentAngle);
+            	}
             }
 
             float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
@@ -141,7 +152,6 @@ public class DriveCode {
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
         Cluck.publish("Calibrate Field Centric Angle", calibrate);
-        Cluck.publish("Zero Gyro", HeadingSensor.zeroGyro);
         recalibrateButton.send(calibrate);
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", 0.01f);
@@ -152,7 +162,6 @@ public class DriveCode {
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
 
-        Cluck.publish("Desired Angle", desiredAngle);
         Cluck.publish("PID", (FloatInput) pid);
 
         Igneous.globalPeriodic.send(pid);
@@ -178,5 +187,7 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Rightr", rightEncoderRaw);
+        Cluck.publish("Switch Field Centric", fieldCentric);
+        Cluck.publish("Switch Keep Straight", keepStraight);
     }
 }
