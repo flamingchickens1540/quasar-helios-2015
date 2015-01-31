@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatOutput;
@@ -21,25 +20,19 @@ public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
     private static final FloatOutput winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
 
-    public static EventOutput setTop;
-    public static EventOutput setMiddle;
-    public static EventOutput setBottom;
-    public static EventOutput stop;
-
     private static final BooleanStatus raising = new BooleanStatus();
     private static final BooleanStatus lowering = new BooleanStatus();
     private static final BooleanStatus goingToMiddle = new BooleanStatus();
+
+    public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent(), goingToMiddle.getSetFalseEvent());
+    public static final EventOutput setMiddle = goingToMiddle.getSetTrueEvent();
+    public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent(), goingToMiddle.getSetFalseEvent());
+    public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering, goingToMiddle), false);
 
     public static final BooleanInput topLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
     public static final BooleanInput bottomLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
     public static final BooleanInput middleUpperLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
     public static final BooleanInput middleLowerLimitSwitch = BooleanMixing.alwaysFalse; //BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
-
-    public static EventInput goTopInput;
-    public static EventInput goMiddleInput;
-    public static EventInput goBottomInput;
-    public static EventInput stopInput;
-
     private static BooleanStatus lastLimitSide = new BooleanStatus(); // true = top, false = bottom
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
@@ -58,16 +51,6 @@ public class Elevator {
         
         raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
-
-        stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering, goingToMiddle), false);
-        setTop = EventMixing.combine(BooleanMixing.getSetEvent(raising, true), BooleanMixing.getSetEvent(lowering, false), BooleanMixing.getSetEvent(goingToMiddle, false));
-        setBottom = EventMixing.combine(BooleanMixing.getSetEvent(raising, false), BooleanMixing.getSetEvent(lowering, true), BooleanMixing.getSetEvent(goingToMiddle, false));
-        setMiddle = BooleanMixing.getSetEvent(goingToMiddle, true);
-
-        goTopInput.send(setTop);
-        goMiddleInput.send(setMiddle);
-        goBottomInput.send(setBottom);
-        stopInput.send(stop);
 
         Cluck.publish("Elevator Stop", stop);
         Cluck.publish("Elevator Top", setTop);
