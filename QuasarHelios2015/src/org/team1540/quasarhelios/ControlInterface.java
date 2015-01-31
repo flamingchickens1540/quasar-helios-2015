@@ -34,13 +34,19 @@ public class ControlInterface {
         DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 
-        Elevator.raisingInput = Igneous.joystick2.getButtonSource(1);
-        Elevator.loweringInput = Igneous.joystick2.getButtonSource(2);
-        Rollers.runRollersButton = Igneous.joystick2.getButtonSource(3);
-        Rollers.toggleRollersButton = Igneous.joystick2.getButtonSource(4);
-        Rollers.toggleOpenButton = Igneous.joystick2.getButtonSource(5);
+        Igneous.joystick2.getButtonSource(1).send(Elevator.setTop);
+        Igneous.joystick2.getButtonSource(2).send(Elevator.setBottom);
+        Igneous.joystick2.getButtonSource(3).send(Elevator.setMiddle);
+        Igneous.joystick2.getButtonSource(4).send(Elevator.stop);
+
+        Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
+        Igneous.joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
+        Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
         Clamp.heightInput = Igneous.joystick2.getAxisSource(1);
-        Clamp.openInput = Igneous.joystick2.getButtonSource(6);
+        Clamp.openInput = Igneous.joystick2.getButtonSource(8);
+        
+        QuasarHelios.autoLoader.toggleWhen(Igneous.joystick2.getButtonSource(9));
+        QuasarHelios.autoEjector.toggleWhen(Igneous.joystick2.getButtonSource(10));
     }
 
     public static void setupCluck() {

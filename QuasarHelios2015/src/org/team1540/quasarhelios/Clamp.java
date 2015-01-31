@@ -1,18 +1,14 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
-import ccre.channel.EventStatus;
-import ccre.channel.FloatFilter;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
@@ -30,8 +26,8 @@ public class Clamp {
         FloatInputPoll encoder = Igneous.makeEncoder(4, 5, false);
         FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
-        BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
+        BooleanInput limitTop = BooleanMixing.alwaysFalse; // BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
+        BooleanInput limitBottom = BooleanMixing.alwaysFalse; // BooleanMixing.createDispatch(Igneous.makeDigitalInput(4), Igneous.globalPeriodic);
 
         FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
