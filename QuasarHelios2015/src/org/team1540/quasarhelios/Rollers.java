@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
+import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
@@ -22,14 +23,14 @@ public class Rollers {
     private static final FloatOutput externalRollers = FloatMixing.combine(armRollers, frontRollers);
     private static final FloatOutput allRollers = FloatMixing.combine(externalRollers, internalRollers);
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
-    private static final FloatInput motorSpeed = Mixing.select(running, Mixing.select(direction, actualSpeed, FloatMixing.negate(actualSpeed)), FloatMixing.always(0.0f));
+    private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualSpeed), actualSpeed);
 
     public static final EventOutput toggleRollersButton = direction.getToggleEvent();
     public static final EventOutput runRollersButton = running.getToggleEvent();
     public static final EventOutput toggleOpenButton = open.getToggleEvent();
 
     public static void setup() {
-        motorSpeed.send(allRollers);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, allRollers);
 
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Arm", armRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
