@@ -35,8 +35,8 @@ public class ControlInterface {
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 
         Igneous.joystick2.getButtonSource(1).send(Elevator.setTop);
-        Igneous.joystick2.getButtonSource(2).send(Elevator.setBottom);
-        Igneous.joystick2.getButtonSource(3).send(Elevator.setMiddle);
+        Igneous.joystick2.getButtonSource(2).send(Elevator.setMiddle);
+        Igneous.joystick2.getButtonSource(3).send(Elevator.setBottom);
         Igneous.joystick2.getButtonSource(4).send(Elevator.stop);
 
         Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
