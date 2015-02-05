@@ -2,11 +2,13 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
+import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
@@ -25,6 +27,9 @@ public class Elevator {
     private static final BooleanStatus raising = new BooleanStatus(false);
     private static final BooleanStatus lowering = new BooleanStatus(false);
     private static final BooleanStatus goingToMiddle = new BooleanStatus(false);
+    
+    private static final BooleanStatus overrideEnabled = new BooleanStatus(false);
+    private static final FloatStatus overrideValue = new FloatStatus(0.0f);
 
     public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent(), goingToMiddle.getSetFalseEvent());
     public static final EventOutput setMiddle = goingToMiddle.getSetTrueEvent();
@@ -33,6 +38,7 @@ public class Elevator {
 
     public static final BooleanStatus atTop = new BooleanStatus(false);
     public static final BooleanStatus atBottom = new BooleanStatus(true);
+    
     private static BooleanStatus lastLimitSide = new BooleanStatus(false); // true = top, false = bottom
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
@@ -102,9 +108,28 @@ public class Elevator {
         module.setShouldBeRunning(goingToMiddle);
         module.updateWhen(QuasarHelios.globalControl);
 
+        /*
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(raising,
                 Mixing.select(lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed)),
-                Mixing.select(lowering, winchSpeed, FloatMixing.always(0.0f))), winch);
+                Mixing.select(lowering, winchSpeed, FloatMixing.always(0.0f))), winch);*/
+        
+        FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
+        FloatInputPoll override = new FloatInputPoll() {
+            @Override
+            public float get() {
+                float f = overrideValue.get();
+                if (limitTop.get()) {
+                    f = Math.min(0, f);
+                }
+                
+                if (limitBottom.get()) {
+                    f = Math.max(0, f);
+                }
+                
+                return f;
+            }
+        };
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
