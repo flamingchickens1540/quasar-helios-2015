@@ -31,9 +31,9 @@ public class AutoLoader extends InstinctModule {
         try {
             done.set(false);
             Elevator.setBottom.event();
-            waitUntil(Elevator.bottomLimitSwitch);
+            waitUntil(Elevator.atBottom);
             Elevator.setTop.event();
-            waitUntil(Elevator.topLimitSwitch);
+            waitUntil(Elevator.atTop);
 
             boolean r = Rollers.running.get();
             boolean d = Rollers.direction.get();

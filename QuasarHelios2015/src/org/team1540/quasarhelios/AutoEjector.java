@@ -30,7 +30,7 @@ public class AutoEjector extends InstinctModule {
             done.set(false);
             Elevator.setMiddle.event();
 
-            waitUntil(Elevator.bottomLimitSwitch);
+            waitUntil(Elevator.atBottom);
 
             Rollers.open.set(true);
             Rollers.direction.set(false);
