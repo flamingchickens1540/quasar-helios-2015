@@ -4,14 +4,14 @@ import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
-public class AutonomousModeFull extends AutonomousModeBase {
+public class AutonomousModeThreeTotes extends AutonomousModeBase {
     public FloatInputPoll nudge;
     public FloatInputPoll toteDistance;
     public FloatInputPoll autoZoneDistance;
     public FloatInputPoll strafeTime;
 
-    public AutonomousModeFull() {
-        super("Full Auto");
+    public AutonomousModeThreeTotes() {
+        super("Three Tote Auto");
     }
 
     @Override
