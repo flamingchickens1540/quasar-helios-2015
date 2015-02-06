@@ -86,9 +86,11 @@ public class DriveCode {
             	}
             	if (rotationspeed == 0 && isMoving.get()) {
             		rotationspeed = -pid.get();
-            		if (Math.abs(pid.get()) < 0.01) {
+            		if (Math.abs(pid.get()) < 0.005) {
             			isMoving.set(false);
             		}
+            	} else {
+            		desiredAngle.set(currentAngle);
             	}
             }
 
@@ -149,10 +151,21 @@ public class DriveCode {
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
         recalibrateButton.send(calibrate);
+        
+        FloatStatus k1 = ControlInterface.mainTuning.getFloat("drive-PID-constant-1", .0162f);
+        FloatStatus k2 = ControlInterface.mainTuning.getFloat("drive-PID-constant-2", 2f);
+        
+        FloatInput p = FloatMixing.multiplication.of((FloatInput) k1, .6f);
+        FloatInput i = FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) k2);
+        FloatInput d = FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) k2), 8f);
+        
+        Cluck.publish("Drive PID P",p);
+        Cluck.publish("Drive PID I",i);
+        Cluck.publish("Drive PID D",d);
 
-        FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", 0.01f);
-        FloatStatus i = ControlInterface.mainTuning.getFloat("main-drive-i", 0f);
-        FloatStatus d = ControlInterface.mainTuning.getFloat("main-drive-d", 0f);
+        //FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", k1.get()*.6f);
+        //FloatStatus i = ControlInterface.mainTuning.getFloat("main-drive-i", p.get()*2/k2.get());
+        //FloatStatus d = ControlInterface.mainTuning.getFloat("main-drive-d", p.get()*k2.get()/8);
 
         pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
@@ -170,6 +183,7 @@ public class DriveCode {
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         Igneous.globalPeriodic.send(updateYaw);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.yaw, desiredAngle);
+        FloatMixing.pumpWhen(Igneous.startDisabled, HeadingSensor.yaw, desiredAngle);
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
                 DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
