@@ -144,9 +144,16 @@ public class DriveCode {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
         recalibrateButton.send(calibrate);
 
-        FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", 0.01f);
-        FloatStatus i = ControlInterface.mainTuning.getFloat("main-drive-i", 0f);
-        FloatStatus d = ControlInterface.mainTuning.getFloat("main-drive-d", 0f);
+        FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
+        FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
+
+        FloatInput p = FloatMixing.multiplication.of((FloatInput) ultgain, .6f);
+        FloatInput i = FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) period);
+        FloatInput d = FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) period), 8f);
+
+        Cluck.publish("Drive PID P",p);
+        Cluck.publish("Drive PID I",i);
+        Cluck.publish("Drive PID D",d);
 
         pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
