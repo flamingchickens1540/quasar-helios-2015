@@ -33,8 +33,6 @@ public class AutoLoader extends InstinctModule {
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            Elevator.setBottom.event();
-            waitUntil(Elevator.atBottom);
             Elevator.setTop.event();
             waitUntil(Elevator.atTop);
 

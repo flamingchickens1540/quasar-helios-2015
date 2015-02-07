@@ -23,7 +23,8 @@ public class Clamp {
 
     public static void setup() {
 
-        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
+//        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
+        FloatInputPoll encoder = FloatMixing.always(0.0f);
         FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
