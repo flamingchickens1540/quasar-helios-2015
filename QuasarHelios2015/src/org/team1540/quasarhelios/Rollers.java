@@ -37,11 +37,6 @@ public class Rollers {
 
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.addition.of((FloatInputPoll) spinOverride, motorSpeed), allRollers);
-        Igneous.joystick3.getButtonSource(1).send(new EventOutput() {
-            public void event() {
-                frontRollers.set(1.0f);
-            }
-        });
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Arm", armRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
