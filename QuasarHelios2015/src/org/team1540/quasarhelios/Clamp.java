@@ -27,7 +27,7 @@ public class Clamp {
         FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(4), Igneous.globalPeriodic);
+        BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
 
         FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
