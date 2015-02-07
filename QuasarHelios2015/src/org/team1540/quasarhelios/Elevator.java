@@ -13,6 +13,7 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExtendedMotor;
+import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.Ticker;
@@ -22,7 +23,15 @@ import ccre.instinct.InstinctModule;
 
 public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
-    private static final FloatOutput winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+    private static final FloatOutput winch;
+
+    static {
+        try {
+            winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+        } catch (ExtendedMotorFailureException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final BooleanStatus raising = new BooleanStatus(false);
     private static final BooleanStatus lowering = new BooleanStatus(false);
