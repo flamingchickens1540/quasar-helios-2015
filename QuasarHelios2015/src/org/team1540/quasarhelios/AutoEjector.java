@@ -8,11 +8,11 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
-    private final BooleanStatus status;
+    private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
 
     private AutoEjector(BooleanStatus status) {
-        this.status = status;
+        this.running = status;
     }
 
     public static BooleanStatus create() {
@@ -43,6 +43,6 @@ public class AutoEjector extends InstinctModule {
 
         Rollers.running.set(false);
         
-        status.set(false);
+        running.set(false);
     }
 }

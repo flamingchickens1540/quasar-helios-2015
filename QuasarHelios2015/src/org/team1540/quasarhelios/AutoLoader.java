@@ -9,11 +9,11 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
-    private final BooleanStatus status;
+    private final BooleanStatus running;
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
 
     private AutoLoader(BooleanStatus status) {
-        this.status = status;
+        this.running = status;
     }
 
     public static BooleanStatus create() {
@@ -52,6 +52,6 @@ public class AutoLoader extends InstinctModule {
         Rollers.open.set(o);
 
         Elevator.setBottom.event();
-        status.set(false);
+        running.set(false);
     }
 }

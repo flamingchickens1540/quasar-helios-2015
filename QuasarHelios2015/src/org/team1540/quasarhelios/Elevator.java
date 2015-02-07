@@ -33,18 +33,21 @@ public class Elevator {
         }
     }
 
-    private static final BooleanStatus raising = new BooleanStatus(false);
-    private static final BooleanStatus lowering = new BooleanStatus(false);
+    private static final BooleanStatus raising = new BooleanStatus();
+    private static final BooleanStatus lowering = new BooleanStatus();
 
-    public static final BooleanStatus overrideEnabled = new BooleanStatus(false);
+    public static final BooleanStatus overrideEnabled = new BooleanStatus();
     public static final FloatStatus overrideValue = new FloatStatus(0.0f);
 
     public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent());
     public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent());
     public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false);
 
-    public static final BooleanStatus atTop = new BooleanStatus(false);
-    public static final BooleanStatus atBottom = new BooleanStatus(true);
+    private static final BooleanStatus atTopStatus = new BooleanStatus();
+    private static final BooleanStatus atBottomStatus = new BooleanStatus();
+    
+    public static final BooleanInput atTop = atTopStatus;
+    public static final BooleanInput atBottom = atBottomStatus;
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
 
@@ -63,14 +66,14 @@ public class Elevator {
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
 
-        atTop.setTrueWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onPress(limitTop)));
-        atBottom.setTrueWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onPress(limitBottom)));
+        atTopStatus.setTrueWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onPress(limitTop)));
+        atBottomStatus.setTrueWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onPress(limitBottom)));
 
-        atTop.setFalseWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onRelease(limitTop)));
-        atBottom.setFalseWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onRelease(limitBottom)));
+        atTopStatus.setFalseWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onRelease(limitTop)));
+        atBottomStatus.setFalseWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onRelease(limitBottom)));
 
-        atTop.setFalseWhen(BooleanMixing.onPress(limitBottom));
-        atBottom.setFalseWhen(BooleanMixing.onPress(limitTop));
+        atTopStatus.setFalseWhen(BooleanMixing.onPress(limitBottom));
+        atBottomStatus.setFalseWhen(BooleanMixing.onPress(limitTop));
 
         raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.globalPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.globalPeriodic));
