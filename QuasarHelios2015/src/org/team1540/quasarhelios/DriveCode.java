@@ -146,10 +146,11 @@ public class DriveCode {
 
         FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
         FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
+        BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
 
-        FloatInput p = FloatMixing.multiplication.of((FloatInput) ultgain, .6f);
-        FloatInput i = FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) period);
-        FloatInput d = FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) period), 8f);
+        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, .6f), ultgain);
+        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) period), FloatMixing.always(0));
+        FloatInput d = Mixing.select(calibrating, FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) period), 8f), FloatMixing.always(0));
 
         Cluck.publish("Drive PID P",p);
         Cluck.publish("Drive PID I",i);
