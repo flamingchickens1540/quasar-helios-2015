@@ -146,11 +146,16 @@ public class DriveCode {
 
         FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
         FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
+        FloatStatus pconstant = ControlInterface.mainTuning.getFloat("drive-PID-P-constant", .6f);
+        FloatStatus iconstant = ControlInterface.mainTuning.getFloat("drive-PID-I-constant", 2f);
+        FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
         BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
 
-        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, .6f), ultgain);
-        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) period), FloatMixing.always(0));
-        FloatInput d = Mixing.select(calibrating, FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) period), 8f), FloatMixing.always(0));
+        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
+        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
+                FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
+        FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
+                FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
 
         Cluck.publish("Drive PID P",p);
         Cluck.publish("Drive PID I",i);
