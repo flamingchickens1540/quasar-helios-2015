@@ -17,8 +17,8 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class Elevator {
-    private static final ExtendedMotor winchCAN = null;//Igneous.makeCANTalon(0);
-    private static final FloatOutput winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+    private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
+    private static final FloatOutput winch = FloatMixing.ignoredFloatOutput;//winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
 
     private static final BooleanStatus raising = new BooleanStatus();
     private static final BooleanStatus lowering = new BooleanStatus();
@@ -37,7 +37,7 @@ public class Elevator {
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
 
-    public static void setup() {/*
+    public static void setup() {
 
         Ticker updateCAN = new Ticker(100);
         Cluck.publish("CAN Elevator Enable", winchCAN.asEnable());
@@ -92,6 +92,6 @@ public class Elevator {
 
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", topLimitSwitch);
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", bottomLimitSwitch);*/
+        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", bottomLimitSwitch);
     }
 }

@@ -152,20 +152,22 @@ public class DriveCode {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
         recalibrateButton.send(calibrate);
         
-        FloatStatus k1 = ControlInterface.mainTuning.getFloat("drive-PID-constant-1", .0162f);
-        FloatStatus k2 = ControlInterface.mainTuning.getFloat("drive-PID-constant-2", 2f);
-        
-        FloatInput p = FloatMixing.multiplication.of((FloatInput) k1, .6f);
-        FloatInput i = FloatMixing.division.of(FloatMixing.multiplication.of(p, 2f), (FloatInput) k2);
-        FloatInput d = FloatMixing.division.of(FloatMixing.multiplication.of(p, (FloatInput) k2), 8f);
-        
+        FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
+        FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
+        FloatStatus pconstant = ControlInterface.mainTuning.getFloat("drive-PID-P-constant", .6f);
+        FloatStatus iconstant = ControlInterface.mainTuning.getFloat("drive-PID-I-constant", 2f);
+        FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
+        BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
+
+        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
+        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
+                FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
+        FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
+                FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
+
         Cluck.publish("Drive PID P",p);
         Cluck.publish("Drive PID I",i);
         Cluck.publish("Drive PID D",d);
-
-        //FloatStatus p = ControlInterface.mainTuning.getFloat("main-drive-p", k1.get()*.6f);
-        //FloatStatus i = ControlInterface.mainTuning.getFloat("main-drive-i", p.get()*2/k2.get());
-        //FloatStatus d = ControlInterface.mainTuning.getFloat("main-drive-d", p.get()*k2.get()/8);
 
         pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
