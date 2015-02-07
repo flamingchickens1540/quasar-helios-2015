@@ -36,19 +36,18 @@ public class ControlInterface {
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 
         Igneous.joystick2.getButtonSource(1).send(Elevator.setTop);
-        Igneous.joystick2.getButtonSource(2).send(Elevator.setMiddle);
-        Igneous.joystick2.getButtonSource(3).send(Elevator.setBottom);
-        Igneous.joystick2.getButtonSource(4).send(Elevator.stop);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, Igneous.joystick2.getButtonChannel(5), Elevator.overrideEnabled);
+        Igneous.joystick2.getButtonSource(2).send(Elevator.setBottom);
+        Igneous.joystick2.getButtonSource(3).send(Elevator.stop);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, Igneous.joystick2.getButtonChannel(4), Elevator.overrideEnabled);
         Igneous.joystick2.getAxisSource(1).send(Elevator.overrideValue);
 
-        Igneous.joystick2.getButtonSource(6).send(Rollers.runRollersButton);
-        Igneous.joystick2.getButtonSource(7).send(Rollers.toggleRollersButton);
-        Igneous.joystick2.getButtonSource(8).send(Rollers.toggleOpenButton);
-        Igneous.joystick2.getAxisSource(2).send(Rollers.controlArmsIndependently);
-        Igneous.joystick2.getAxisSource(3).send(Rollers.controlRollersManually);
+        Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
+        Igneous.joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
+        Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
+        Igneous.joystick2.getAxisSource(3).send(Rollers.controlArmsIndependently);
+        Igneous.joystick2.getAxisSource(4).send(Rollers.controlRollersManually);
 
-        Clamp.heightInput = Igneous.joystick2.getAxisSource(1);
+        Clamp.heightInput = Igneous.joystick2.getAxisSource(2);
         Clamp.openInput = Igneous.joystick2.getButtonSource(8);
 
         QuasarHelios.autoLoader.toggleWhen(Igneous.joystick2.getButtonSource(9));

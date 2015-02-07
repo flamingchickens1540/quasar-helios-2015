@@ -8,12 +8,16 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
-    public static final BooleanStatus done = new BooleanStatus(false);
+    private final BooleanStatus status;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
+
+    private AutoEjector(BooleanStatus status) {
+        this.status = status;
+    }
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
-        AutoEjector a = new AutoEjector();
+        AutoEjector a = new AutoEjector(b);
 
         a.setShouldBeRunning(b);
         a.updateWhen(Igneous.constantPeriodic);
@@ -26,22 +30,19 @@ public class AutoEjector extends InstinctModule {
 
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-        try {
-            done.set(false);
-            Elevator.setMiddle.event();
+        Elevator.setBottom.event();
 
-            waitUntil(Elevator.atBottom);
+        waitUntil(Elevator.atBottom);
 
-            Rollers.open.set(true);
-            Rollers.direction.set(false);
-            Rollers.running.set(true);
+        Rollers.open.set(true);
+        Rollers.direction.set(false);
+        Rollers.running.set(true);
 
-            waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
-            waitForTime(timeout);
+        waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
+        waitForTime(timeout);
 
-            Rollers.running.set(false);
-        } finally {
-            done.set(true);
-        }
+        Rollers.running.set(false);
+        
+        status.set(false);
     }
 }

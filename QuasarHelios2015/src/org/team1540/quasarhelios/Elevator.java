@@ -26,20 +26,16 @@ public class Elevator {
 
     private static final BooleanStatus raising = new BooleanStatus(false);
     private static final BooleanStatus lowering = new BooleanStatus(false);
-    private static final BooleanStatus goingToMiddle = new BooleanStatus(false);
 
     public static final BooleanStatus overrideEnabled = new BooleanStatus(false);
     public static final FloatStatus overrideValue = new FloatStatus(0.0f);
 
-    public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent(), goingToMiddle.getSetFalseEvent());
-    public static final EventOutput setMiddle = goingToMiddle.getSetTrueEvent();
-    public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent(), goingToMiddle.getSetFalseEvent());
-    public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering, goingToMiddle), false);
+    public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent());
+    public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent());
+    public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false);
 
     public static final BooleanStatus atTop = new BooleanStatus(false);
     public static final BooleanStatus atBottom = new BooleanStatus(true);
-
-    private static BooleanStatus lastLimitSide = new BooleanStatus(false); // true = top, false = bottom
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
 
@@ -56,8 +52,6 @@ public class Elevator {
         Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
-        BooleanInput limitMiddleUpper = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
-        BooleanInput limitMiddleLower = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
 
         atTop.setTrueWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onPress(limitTop)));
@@ -66,8 +60,8 @@ public class Elevator {
         atTop.setFalseWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onRelease(limitTop)));
         atBottom.setFalseWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onRelease(limitBottom)));
 
-        atTop.setFalseWhen(BooleanMixing.onPress(BooleanMixing.orBooleans(limitMiddleUpper, limitMiddleLower, limitBottom)));
-        atBottom.setFalseWhen(BooleanMixing.onPress(BooleanMixing.orBooleans(limitMiddleUpper, limitMiddleLower, limitTop)));
+        atTop.setFalseWhen(BooleanMixing.onPress(limitBottom));
+        atBottom.setFalseWhen(BooleanMixing.onPress(limitTop));
 
         raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.globalPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.globalPeriodic));
@@ -75,38 +69,9 @@ public class Elevator {
         Cluck.publish("Elevator Stop", stop);
         Cluck.publish("Elevator Top", setTop);
         Cluck.publish("Elevator Bottom", setBottom);
-        Cluck.publish("Elevator Middle", setMiddle);
 
         Cluck.publish("Elevator Raising", raising);
         Cluck.publish("Elevator Lowering", lowering);
-        Cluck.publish("Elevator Aligning", goingToMiddle);
-
-        lastLimitSide.setTrueWhen(BooleanMixing.onPress(BooleanMixing.orBooleans(limitTop, limitMiddleUpper)));
-        lastLimitSide.setFalseWhen(BooleanMixing.onPress(BooleanMixing.orBooleans(limitBottom, limitMiddleLower)));
-
-        InstinctModule module = new InstinctModule() {
-            @Override
-            protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-                while (!(limitMiddleLower.get() && limitMiddleUpper.get())) {
-                    if (lastLimitSide.get()) {
-                        raising.set(false);
-                        lowering.set(true);
-                        waitUntil(BooleanMixing.invert((BooleanInputPoll) lastLimitSide));
-                    } else {
-                        raising.set(true);
-                        lowering.set(false);
-                        waitUntil(lastLimitSide);
-                    }
-                }
-
-                raising.set(false);
-                lowering.set(false);
-                goingToMiddle.set(false);
-            }
-        };
-
-        module.setShouldBeRunning(goingToMiddle);
-        module.updateWhen(QuasarHelios.globalControl);
 
         FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
         FloatInputPoll override = new FloatInputPoll() {
@@ -129,7 +94,5 @@ public class Elevator {
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", limitBottom);
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Middle Upper", limitMiddleUpper);
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Middle Lower", limitMiddleLower);
     }
 }
