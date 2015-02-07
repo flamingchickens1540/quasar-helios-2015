@@ -17,7 +17,7 @@ public class Rollers {
     public static final BooleanStatus running = new BooleanStatus(false);
     public static final BooleanStatus open = new BooleanStatus();
 
-    private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f));
+    private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f));
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
 
