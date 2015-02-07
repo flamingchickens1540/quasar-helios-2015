@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
+import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
@@ -10,8 +11,9 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
+    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 500.0f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
-
+    
     private AutoLoader(BooleanStatus running) {
         this.running = running;
     }
@@ -26,7 +28,7 @@ public class AutoLoader extends InstinctModule {
         BooleanMixing.onRelease(b).send(Elevator.setBottom);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
-        ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 500.0f);
+        
         
         return b;
     }
@@ -46,7 +48,7 @@ public class AutoLoader extends InstinctModule {
             Rollers.open.set(false);
 
             waitUntil(crateInPosition);
-            wait(500);
+            wait((long) timeout.get());
             
             Rollers.running.set(r);
             Rollers.direction.set(d);
