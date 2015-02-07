@@ -16,18 +16,19 @@ import ccre.igneous.Igneous;
 public class Clamp {
     public static FloatInput heightInput;
     public static EventInput openInput;
-    public static final BooleanStatus openControl = new BooleanStatus(BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1)));
+    public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
     public static final FloatStatus heightControl = new FloatStatus();
 
     public static FloatInputPoll heightReadout;
 
     public static void setup() {
 
-        FloatInputPoll encoder = Igneous.makeEncoder(4, 5, false);
-        FloatOutput speedControl = Igneous.makeTalonMotor(11, Igneous.MOTOR_REVERSE, 0.1f);
+//        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
+        FloatInputPoll encoder = FloatMixing.always(0.0f);
+        FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
 
-        BooleanInput limitTop = BooleanMixing.createDispatch(Igneous.makeDigitalInput(2), Igneous.globalPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(Igneous.makeDigitalInput(4), Igneous.globalPeriodic);
+        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
+        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
 
         FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);

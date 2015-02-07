@@ -44,8 +44,8 @@ public class ControlInterface {
         Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
         Igneous.joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
         Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
-        Igneous.joystick2.getAxisSource(5).send(Rollers.controlArmsIndependently);
-        Igneous.joystick2.getAxisSource(6).send(Rollers.controlRollersManually);
+//        Igneous.joystick2.getAxisSource(5).send(Rollers.controlArmsIndependently);
+//        Igneous.joystick2.getAxisSource(6).send(Rollers.controlRollersManually);
 
         Clamp.heightInput = Igneous.joystick2.getAxisSource(2);
         Clamp.openInput = Igneous.joystick2.getButtonSource(8);

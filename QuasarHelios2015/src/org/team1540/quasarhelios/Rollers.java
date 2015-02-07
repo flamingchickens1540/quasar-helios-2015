@@ -37,7 +37,6 @@ public class Rollers {
 
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.addition.of((FloatInputPoll) spinOverride, motorSpeed), allRollers);
-
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Arm", armRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
