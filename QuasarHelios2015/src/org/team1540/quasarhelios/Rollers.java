@@ -15,7 +15,7 @@ import ccre.igneous.Igneous;
 public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(true);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus open = new BooleanStatus();
+    public static final BooleanStatus open = new BooleanStatus(true);
 
     private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f));
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
