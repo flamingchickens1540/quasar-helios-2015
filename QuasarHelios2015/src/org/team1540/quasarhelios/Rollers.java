@@ -44,9 +44,9 @@ public class Rollers {
 
         BooleanMixing.pumpWhen(QuasarHelios.globalControl,
                 BooleanMixing.xorBooleans(open, FloatMixing.floatIsAtMost(pneumaticOverride, -0.3f)),
-                Igneous.makeSolenoid(1));
+                BooleanMixing.invert(Igneous.makeSolenoid(1)));
         BooleanMixing.pumpWhen(QuasarHelios.globalControl,
                 BooleanMixing.xorBooleans(open, FloatMixing.floatIsAtLeast(pneumaticOverride, 0.3f)),
-                Igneous.makeSolenoid(2));
+                BooleanMixing.invert(Igneous.makeSolenoid(2)));
     }
 }
