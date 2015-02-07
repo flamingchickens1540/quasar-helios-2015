@@ -48,7 +48,7 @@ public class AutoLoader extends InstinctModule {
             Rollers.open.set(false);
 
             waitUntil(crateInPosition);
-            wait((long) timeout.get());
+            waitForTime(timeout);
             
             Rollers.running.set(r);
             Rollers.direction.set(d);
