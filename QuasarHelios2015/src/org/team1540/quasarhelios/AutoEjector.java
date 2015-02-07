@@ -11,8 +11,8 @@ public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
 
-    private AutoEjector(BooleanStatus status) {
-        this.running = status;
+    private AutoEjector(BooleanStatus running) {
+        this.running = running;
     }
 
     public static BooleanStatus create() {
