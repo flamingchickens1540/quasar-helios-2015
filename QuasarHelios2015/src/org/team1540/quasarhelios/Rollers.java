@@ -15,9 +15,9 @@ import ccre.igneous.Igneous;
 public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(true);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus open = new BooleanStatus();
+    public static final BooleanStatus open = new BooleanStatus(true);
 
-    private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f));
+    private static final FloatOutput armRollers = FloatMixing.combine(Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f), Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f));
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
 
@@ -44,9 +44,9 @@ public class Rollers {
 
         BooleanMixing.pumpWhen(QuasarHelios.globalControl,
                 BooleanMixing.xorBooleans(open, FloatMixing.floatIsAtMost(pneumaticOverride, -0.3f)),
-                Igneous.makeSolenoid(1));
+                BooleanMixing.invert(Igneous.makeSolenoid(1)));
         BooleanMixing.pumpWhen(QuasarHelios.globalControl,
                 BooleanMixing.xorBooleans(open, FloatMixing.floatIsAtLeast(pneumaticOverride, 0.3f)),
-                Igneous.makeSolenoid(2));
+                BooleanMixing.invert(Igneous.makeSolenoid(2)));
     }
 }
