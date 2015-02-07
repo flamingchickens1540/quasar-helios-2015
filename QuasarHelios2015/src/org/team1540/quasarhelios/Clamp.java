@@ -16,7 +16,7 @@ import ccre.igneous.Igneous;
 public class Clamp {
     public static FloatInput heightInput;
     public static EventInput openInput;
-    public static final BooleanStatus openControl = new BooleanStatus(BooleanMixing.combine(Igneous.makeSolenoid(0), Igneous.makeSolenoid(1)));
+    public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
     public static final FloatStatus heightControl = new FloatStatus();
 
     public static FloatInputPoll heightReadout;
