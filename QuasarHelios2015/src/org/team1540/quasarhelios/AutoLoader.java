@@ -26,7 +26,8 @@ public class AutoLoader extends InstinctModule {
         BooleanMixing.onRelease(b).send(Elevator.setBottom);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
-
+        ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 500.0f);
+        
         return b;
     }
 
