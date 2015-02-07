@@ -9,6 +9,7 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExtendedMotor;
+import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.Ticker;
@@ -18,7 +19,15 @@ import ccre.instinct.InstinctModule;
 
 public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
-    private static final FloatOutput winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+    private static final FloatOutput winch;
+
+    static {
+        try {
+            winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+        } catch (ExtendedMotorFailureException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final BooleanStatus raising = new BooleanStatus();
     private static final BooleanStatus lowering = new BooleanStatus();
@@ -31,8 +40,8 @@ public class Elevator {
 
     public static final BooleanInput topLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
     public static final BooleanInput bottomLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
-    public static final BooleanInput middleUpperLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
-    public static final BooleanInput middleLowerLimitSwitch = BooleanMixing.alwaysFalse; //BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
+    public static final BooleanInput middleUpperLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(6)), Igneous.globalPeriodic);
+    public static final BooleanInput middleLowerLimitSwitch = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(7)), Igneous.globalPeriodic);
     private static BooleanStatus lastLimitSide = new BooleanStatus(); // true = top, false = bottom
 
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
@@ -48,7 +57,7 @@ public class Elevator {
         Cluck.publish("CAN Elevator Any Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
         Cluck.publish("CAN Elevator Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
-        
+
         raising.setFalseWhen(EventMixing.filterEvent(topLimitSwitch, true, Igneous.globalPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(bottomLimitSwitch, true, Igneous.globalPeriodic));
 
@@ -56,7 +65,7 @@ public class Elevator {
         Cluck.publish("Elevator Top", setTop);
         Cluck.publish("Elevator Bottom", setBottom);
         Cluck.publish("Elevator Middle", setMiddle);
-        
+
         Cluck.publish("Elevator Raising", raising);
         Cluck.publish("Elevator Lowering", lowering);
         Cluck.publish("Elevator Aligning", goingToMiddle);
