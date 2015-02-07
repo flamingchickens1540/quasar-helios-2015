@@ -52,7 +52,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("auto-full-nudge", 1.0f);
+        this.nudge = context.getFloat("auto-three-totes-nudge", 1.0f);
         this.toteDistance = context.getFloat("auto-three-totes-tote-distance", 7.0f);
         this.autoZoneDistance = context.getFloat("auto-three-totes-auto-zone-distance", 5.0f);
         this.strafeTime = context.getFloat("auto-three-totes-strafe-time", 1.0f);
