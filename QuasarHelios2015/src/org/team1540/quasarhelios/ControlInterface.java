@@ -1,7 +1,9 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
@@ -44,7 +46,36 @@ public class ControlInterface {
 
         FloatInput axis2 = Igneous.joystick2.getAxisSource(2);
         axis2.send(Elevator.overrideValue);
-
+        
+        EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
+        FloatInput povAngle = Igneous.joystick2.getPOVAngleSource(1);
+        EventInput up = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, -0.1f, 0.1f), true, povPressed);
+        EventInput down = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 179.9f, 180.1f), true, povPressed);
+        EventInput left = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 269.9f, 270.1f), true, povPressed);
+        EventInput right = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
+        
+        up.send(() -> {
+            if (Rollers.direction.get()) {
+                Rollers.running.set(true);
+            } else {
+                Rollers.running.set(!Rollers.running.get());
+            }
+            
+            Rollers.direction.set(false);
+        });
+        
+        down.send(() -> {
+            if (!Rollers.direction.get()) {
+                Rollers.running.set(true);
+            } else {
+                Rollers.running.set(!Rollers.running.get());
+            }
+            
+            Rollers.direction.set(true);
+        });
+        
+        Rollers.open.toggleWhen(left);
+        
         /*
          * Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
          * Igneous
