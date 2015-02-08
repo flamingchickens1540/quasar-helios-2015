@@ -129,10 +129,10 @@ public class DriveCode {
         public void event() {
             float yaw = HeadingSensor.yaw.get();
             float desired = desiredAngle.get();
-            if (Math.abs(yaw - desired) > 270) {
-                if (desired > 270) {
+            if (Math.abs(yaw - desired) > 180) {
+                if (desired > 180) {
                     yaw += 360;
-                } else if (desired < -270) {
+                } else if (desired < -180) {
                     yaw -= 360;
                 }
             }
