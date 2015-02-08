@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
@@ -18,8 +17,6 @@ import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
-import ccre.instinct.AutonomousModeOverException;
-import ccre.instinct.InstinctModule;
 
 public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);

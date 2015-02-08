@@ -18,7 +18,7 @@ import ccre.igneous.Igneous;
 public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(true);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus open = new BooleanStatus();
+    public static final BooleanStatus open = new BooleanStatus(true);
 
     private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f);
@@ -56,6 +56,5 @@ public class Rollers {
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Open", open);
-
     }
 }
