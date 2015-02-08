@@ -1,9 +1,11 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 
@@ -35,23 +37,43 @@ public class ControlInterface {
         DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
 
-        Igneous.joystick2.getButtonSource(1).send(Elevator.setTop);
-        Igneous.joystick2.getButtonSource(2).send(Elevator.setBottom);
-        Igneous.joystick2.getButtonSource(3).send(Elevator.stop);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, Igneous.joystick2.getButtonChannel(4), Elevator.overrideEnabled);
-        Igneous.joystick2.getAxisSource(1).send(Elevator.overrideValue);
+        Igneous.joystick2.getButtonSource(4).send(Elevator.setTop);
+        Igneous.joystick2.getButtonSource(1).send(Elevator.setBottom);
+        Igneous.joystick2.getButtonSource(2).send(Elevator.stop);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, Igneous.joystick2.getButtonChannel(5), Elevator.overrideEnabled);
 
-        Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
-        Igneous.joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
-        Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
-        Igneous.joystick2.getAxisSource(5).send(Rollers.controlArmsIndependently);
-        Igneous.joystick2.getAxisSource(6).send(Rollers.controlRollersManually);
+        FloatInput axis2 = Igneous.joystick2.getAxisSource(2);
+        axis2.send(Elevator.overrideValue);
 
-        Clamp.heightInput = Igneous.joystick2.getAxisSource(2);
-        Clamp.openInput = Igneous.joystick2.getButtonSource(8);
+        /*
+         * Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
+         * Igneous
+         * .joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
+         * Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
+         */
 
-        QuasarHelios.autoLoader.toggleWhen(Igneous.joystick2.getButtonSource(9));
-        QuasarHelios.autoEjector.toggleWhen(Igneous.joystick2.getButtonSource(10));
+        FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
+        BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(6);
+
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtMost(
+                Igneous.joystick2.getAxisChannel(1), cutoffRollers)), Rollers.leftPneumaticOverride);
+
+        axis2.send(Rollers.leftRollerOverride);
+
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtLeast(
+                Igneous.joystick2.getAxisChannel(5), FloatMixing.negate(cutoffRollers))), Rollers.rightPneumaticOverride);
+
+        
+        FloatInput axis6 = Igneous.joystick2.getAxisSource(6);
+        axis6.send(Rollers.rightRollerOverride);
+
+        FloatMixing.pumpWhen(EventMixing.filterEvent(overrideRollers, false, QuasarHelios.globalControl), axis6, Clamp.height);
+        Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
+
+        FloatInput cutoffAuto = mainTuning.getFloat("autoloader-button-threshold", 0.5f);
+
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
     }
 
     public static void setupCluck() {

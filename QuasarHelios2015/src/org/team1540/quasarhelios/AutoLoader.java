@@ -24,6 +24,8 @@ public class AutoLoader extends InstinctModule {
         a.updateWhen(Igneous.globalPeriodic);
 
         BooleanMixing.onRelease(b).send(Elevator.setBottom);
+        
+        b.setFalseWhen(Igneous.startDisabled);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
 

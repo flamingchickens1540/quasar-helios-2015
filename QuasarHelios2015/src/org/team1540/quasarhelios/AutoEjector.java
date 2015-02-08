@@ -24,6 +24,8 @@ public class AutoEjector extends InstinctModule {
 
         Rollers.running.setFalseWhen(BooleanMixing.onRelease(b));
         Rollers.direction.setTrueWhen(BooleanMixing.onRelease(b));
+        
+        b.setFalseWhen(Igneous.startDisabled);
 
         return b;
     }
