@@ -19,7 +19,6 @@ public class HeadingSensor {
 
     public static EventOutput zeroGyro;
 
-    private static final FloatStatus oldYaw = new FloatStatus();
     private static final FloatStatus accumulator = new FloatStatus();
 
     public static FloatInput absoluteYaw;
@@ -39,30 +38,28 @@ public class HeadingSensor {
 
         zeroGyro = sensor.zeroGyro;
 
-        absoluteYaw = FloatMixing.addition.of(FloatMixing.multiplication.of((FloatInput) accumulator, 360), yaw);
+        absoluteYaw = FloatMixing.addition.of((FloatInput) accumulator, yaw);
 
         Igneous.globalPeriodic.send(new EventOutput() {
+            float oldyaw = 0;
             public void event() {
                 float currentyaw = yaw.get();
-                float oldyaw = oldYaw.get();
                 if (Math.abs(currentyaw - oldyaw) > 180) {
                     if (oldyaw > 180) {
-                        accumulator.set(accumulator.get() + 1);
+                        accumulator.set(accumulator.get() + 360);
                     } else if (oldyaw < -180) {
-                        accumulator.set(accumulator.get() - 1);
+                        accumulator.set(accumulator.get() - 360);
                     }
                 }
-                oldYaw.set(yaw.get());
+                oldyaw = yaw.get();
             }
         });
-
-        Cluck.publish("Accumulator", accumulator);
-        Cluck.publish("Absolute Yaw", absoluteYaw);
 
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Zero", zeroGyro);
 
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch", pitch);
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw", yaw);
+        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Absolute Yaw", absoluteYaw);
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Roll", roll);
 
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch Rate", pitchRate);
