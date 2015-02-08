@@ -75,13 +75,6 @@ public class ControlInterface {
         });
         
         Rollers.open.toggleWhen(left);
-        
-        /*
-         * Igneous.joystick2.getButtonSource(5).send(Rollers.runRollersButton);
-         * Igneous
-         * .joystick2.getButtonSource(6).send(Rollers.toggleRollersButton);
-         * Igneous.joystick2.getButtonSource(7).send(Rollers.toggleOpenButton);
-         */
 
         FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
         BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(6);
