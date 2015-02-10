@@ -1,8 +1,11 @@
 package org.team1540.quasarhelios;
 
+import java.util.logging.Level;
+
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventLogger;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -11,12 +14,15 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
+import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.log.LogLevel;
+import ccre.log.Logger;
 
 public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
@@ -107,7 +113,16 @@ public class Elevator {
             }
         };
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
+        
+        FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 1.0f);
+        
+        ExpirationTimer timer = new ExpirationTimer();
 
+        timer.schedule(elevatorTimeout, BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
+        
+        timer.startWhen(EventMixing.combine(BooleanMixing.onPress(raising), BooleanMixing.onPress(lowering)));
+        timer.stopWhen(EventMixing.combine(BooleanMixing.onRelease(raising), BooleanMixing.onRelease(lowering)));
+        
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", limitBottom);
