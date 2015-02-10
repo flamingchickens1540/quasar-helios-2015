@@ -10,7 +10,7 @@ public class Autonomous {
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
         mainModule.addMode(new AutonomousModeOneTote());
-        mainModule.addMode(new AutonomousModeFull());
+        mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));
         Igneous.registerAutonomous(mainModule);
     }

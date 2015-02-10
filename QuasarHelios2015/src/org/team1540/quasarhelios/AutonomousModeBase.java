@@ -1,6 +1,8 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInput;
 import ccre.channel.FloatInputPoll;
+import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
@@ -39,7 +41,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turn(float degree) throws AutonomousModeOverException,
             InterruptedException {
-        float startingYaw = HeadingSensor.yaw.get();
+        float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
             DriveCode.rotate.set(rotateSpeed.get());
@@ -55,7 +57,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void collectTote() throws AutonomousModeOverException,
             InterruptedException {
         QuasarHelios.autoLoader.set(true);
-        waitUntil(AutoLoader.done);
+        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
@@ -70,7 +72,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
         QuasarHelios.autoEjector.set(true);
-        waitUntil(AutoEjector.done);
+        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
 
     @Override

@@ -4,14 +4,14 @@ import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
-public class AutonomousModeFull extends AutonomousModeBase {
+public class AutonomousModeThreeTotes extends AutonomousModeBase {
     public FloatInputPoll nudge;
     public FloatInputPoll toteDistance;
     public FloatInputPoll autoZoneDistance;
     public FloatInputPoll strafeTime;
 
-    public AutonomousModeFull() {
-        super("Full Auto");
+    public AutonomousModeThreeTotes() {
+        super("Three Tote Auto");
     }
 
     @Override
@@ -52,10 +52,9 @@ public class AutonomousModeFull extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("auto-full-nudge", 1.0f);
-        this.toteDistance = context.getFloat("auto-full-tote-distance", 7.0f);
-        this.autoZoneDistance = context.getFloat("auto-full-auto-zone-distance", 5.0f);
-        this.strafeTime = context.getFloat("auto-full-strafe-time", 1.0f);
+        this.nudge = context.getFloat("auto-three-totes-nudge", 1.0f);
+        this.toteDistance = context.getFloat("auto-three-totes-tote-distance", 7.0f);
+        this.autoZoneDistance = context.getFloat("auto-three-totes-auto-zone-distance", 5.0f);
+        this.strafeTime = context.getFloat("auto-three-totes-strafe-time", 1.0f);
     }
-
 }

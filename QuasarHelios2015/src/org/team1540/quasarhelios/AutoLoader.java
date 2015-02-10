@@ -9,17 +9,21 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
-    public static BooleanStatus done = new BooleanStatus(false);
+    private final BooleanStatus running;
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
+
+    private AutoLoader(BooleanStatus running) {
+        this.running = running;
+    }
 
     public static BooleanStatus create() {
         BooleanStatus b = new BooleanStatus(false);
-        AutoLoader a = new AutoLoader();
+        AutoLoader a = new AutoLoader(b);
 
         a.setShouldBeRunning(b);
         a.updateWhen(Igneous.globalPeriodic);
 
-        BooleanMixing.onRelease(b).send(Elevator.setMiddle);
+        BooleanMixing.onRelease(b).send(Elevator.setBottom);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
 
@@ -29,11 +33,10 @@ public class AutoLoader extends InstinctModule {
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            done.set(false);
             Elevator.setBottom.event();
-            waitUntil(Elevator.bottomLimitSwitch);
+            waitUntil(Elevator.atBottom);
             Elevator.setTop.event();
-            waitUntil(Elevator.topLimitSwitch);
+            waitUntil(Elevator.atTop);
 
             boolean r = Rollers.running.get();
             boolean d = Rollers.direction.get();
@@ -49,9 +52,9 @@ public class AutoLoader extends InstinctModule {
             Rollers.direction.set(d);
             Rollers.open.set(o);
 
-            Elevator.setMiddle.event();
+            Elevator.setBottom.event();
         } finally {
-            done.set(true);
+            running.set(false);
         }
     }
 }
