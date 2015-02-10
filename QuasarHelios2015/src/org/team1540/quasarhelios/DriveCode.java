@@ -28,11 +28,6 @@ public class DriveCode {
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
     public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
     public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
-    public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
-    public static final FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
-    public static final FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
-    public static final FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
-    public static final FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
 
     private static final double π = Math.PI;
 
@@ -179,8 +174,6 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Rear", rightBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Forward", rightFrontMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Rightr", rightEncoderRaw);
         Cluck.publish("Calibrate Field Centric Angle", calibrate);
         Cluck.publish("Toggle Field Centric", fieldCentric);
         Cluck.publish("Toggle Keep Straight", keepStraight);

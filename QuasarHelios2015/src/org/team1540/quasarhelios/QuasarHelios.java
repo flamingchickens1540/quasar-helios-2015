@@ -19,13 +19,5 @@ public class QuasarHelios implements IgneousApplication {
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();
-        //Elevator.setup();
-        //Clamp.setup();
-        //Rollers.setup();
-        //Autonomous.setup();
-        //Suspension.setup();
-        //Pressure.setup();
-        //autoLoader = AutoLoader.create();
-        //autoEjector = AutoEjector.create();
     }
 }
