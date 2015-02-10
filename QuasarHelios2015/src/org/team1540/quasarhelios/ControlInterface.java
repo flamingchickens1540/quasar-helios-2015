@@ -34,8 +34,7 @@ public class ControlInterface {
         EventInput povUp = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, -0.1f, 0.1f), true, povPressed);
         EventInput povDown = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 179.9f, 180.1f), true, povPressed);
         EventInput povLeft = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 269.9f, 270.1f), true, povPressed);
-        // Uncomment this if you need it: 
-        // EventInput povRight = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
+        EventInput povRight = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
 
         povUp.send(() -> {
             if (Rollers.direction.get()) {
@@ -57,7 +56,7 @@ public class ControlInterface {
             Rollers.direction.set(true);
         });
 
-        Rollers.open.toggleWhen(povLeft);
+        Rollers.open.toggleWhen(EventMixing.combine(povLeft, povRight));
         
         FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
         BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(6);
