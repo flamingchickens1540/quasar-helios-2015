@@ -63,11 +63,19 @@ public class Elevator {
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
 
-        atTopStatus.setTrueWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onPress(limitTop)));
-        atBottomStatus.setTrueWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onPress(limitBottom)));
+        BooleanInputPoll reallyRaising = BooleanMixing.orBooleans(
+                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), raising), 
+                BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtLeast(overrideValue, 0)));
+        
+        BooleanInputPoll reallyLowering = BooleanMixing.orBooleans(
+                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), lowering), 
+                BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtMost(overrideValue, 0)));
 
-        atTopStatus.setFalseWhen(EventMixing.filterEvent(lowering, true, BooleanMixing.onRelease(limitTop)));
-        atBottomStatus.setFalseWhen(EventMixing.filterEvent(raising, true, BooleanMixing.onRelease(limitBottom)));
+        atTopStatus.setTrueWhen(EventMixing.filterEvent(reallyRaising, true, BooleanMixing.onPress(limitTop)));
+        atBottomStatus.setTrueWhen(EventMixing.filterEvent(reallyLowering, true, BooleanMixing.onPress(limitBottom)));
+
+        atTopStatus.setFalseWhen(EventMixing.filterEvent(reallyLowering, true, BooleanMixing.onRelease(limitTop)));
+        atBottomStatus.setFalseWhen(EventMixing.filterEvent(reallyRaising, true, BooleanMixing.onRelease(limitBottom)));
 
         atTopStatus.setFalseWhen(BooleanMixing.onPress(limitBottom));
         atBottomStatus.setFalseWhen(BooleanMixing.onPress(limitTop));
@@ -87,11 +95,11 @@ public class Elevator {
             @Override
             public float get() {
                 float f = overrideValue.get();
-                if (limitTop.get()) {
+                if (atTop.get()) {
                     f = Math.min(0, f);
                 }
 
-                if (limitBottom.get()) {
+                if (atBottom.get()) {
                     f = Math.max(0, f);
                 }
 

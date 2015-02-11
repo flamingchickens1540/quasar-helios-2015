@@ -2,8 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventInput;
-import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
@@ -16,10 +14,9 @@ import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
 
 public class Clamp {
-    public static FloatInput heightInput;
-    public static EventInput openInput;
+    public static FloatStatus height = new FloatStatus();
+    public static BooleanStatus open = new BooleanStatus();
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
-    public static final FloatStatus heightControl = new FloatStatus();
 
     public static FloatInputPoll heightReadout;
 
@@ -51,7 +48,7 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
-        PIDControl pid = new PIDControl(heightReadout, heightControl, p, i, d);
+        PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
         QuasarHelios.globalControl.send(pid);
 
@@ -70,9 +67,6 @@ public class Clamp {
         };
 
         FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, FloatMixing.deadzone(out, 0.1f));
-
-        heightInput.send(heightControl);
-        openControl.toggleWhen(openInput);
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
