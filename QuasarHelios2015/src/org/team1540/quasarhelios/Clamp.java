@@ -9,6 +9,8 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.ExtendedMotor;
+import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
@@ -25,7 +27,14 @@ public class Clamp {
 
 //        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         FloatInputPoll encoder = FloatMixing.always(0.0f);
-        FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
+        //FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
+        ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
+        FloatOutput speedControl;
+        try {
+            speedControl = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+        } catch (ExtendedMotorFailureException e) {
+            throw new RuntimeException(e);
+        }
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
@@ -60,7 +69,7 @@ public class Clamp {
             }
         };
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, out);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, FloatMixing.deadzone(out, 0.1f));
 
         heightInput.send(heightControl);
         openControl.toggleWhen(openInput);
@@ -70,6 +79,7 @@ public class Clamp {
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Top", limitTop);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Bottom", limitBottom);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Motor Speed", speedControl);
+        Cluck.publish(QuasarHelios.testPrefix + "Clamp PID Output", (FloatInput) pid);
 
         Cluck.publish("Clamp Max Set", FloatMixing.pumpEvent(encoder, max));
         Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, min));
