@@ -19,9 +19,11 @@ public class HeadingSensor {
 
     public static EventOutput zeroGyro;
 
-    public static final FloatStatus accumulator = new FloatStatus();
+    private static final FloatStatus accumulator = new FloatStatus();
 
     public static FloatInput absoluteYaw;
+
+    public static final EventOutput resetAccumulator = accumulator.getSetEvent(0);
 
     public static void setup() {
         UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
@@ -56,7 +58,7 @@ public class HeadingSensor {
         });
 
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Zero", zeroGyro);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Reset Accumulator", FloatMixing.getSetEvent(accumulator, 0));
+        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Reset Accumulator", resetAccumulator);
 
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch", pitch);
         Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw", yaw);

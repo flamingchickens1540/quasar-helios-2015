@@ -82,7 +82,7 @@ public class DriveCode {
             		rotationspeed = -pid.get();
             	} else {
             		desiredAngle.set(HeadingSensor.absoluteYaw.get());
-            		HeadingSensor.accumulator.set(0);
+            		HeadingSensor.resetAccumulator.event();
             	}
             }
 
@@ -115,7 +115,7 @@ public class DriveCode {
 
     private static EventOutput calibrate = new EventOutput() {
         public void event() {
-            HeadingSensor.accumulator.set(0);
+            HeadingSensor.resetAccumulator.event();
             float yaw = HeadingSensor.yaw.get();
             desiredAngle.set(HeadingSensor.absoluteYaw.get());
             if (isDisabled.get()) {
