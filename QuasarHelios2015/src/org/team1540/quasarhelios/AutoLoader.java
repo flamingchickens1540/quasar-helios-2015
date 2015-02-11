@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
+import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
@@ -10,8 +11,9 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
-    public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(3), Igneous.globalPeriodic);
-
+    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 0.5f);
+    public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
+    
     private AutoLoader(BooleanStatus running) {
         this.running = running;
     }
@@ -24,17 +26,18 @@ public class AutoLoader extends InstinctModule {
         a.updateWhen(Igneous.globalPeriodic);
 
         BooleanMixing.onRelease(b).send(Elevator.setBottom);
+        
+        b.setFalseWhen(Igneous.startDisabled);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
-
+        
+        
         return b;
     }
 
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            Elevator.setBottom.event();
-            waitUntil(Elevator.atBottom);
             Elevator.setTop.event();
             waitUntil(Elevator.atTop);
 
@@ -47,7 +50,8 @@ public class AutoLoader extends InstinctModule {
             Rollers.open.set(false);
 
             waitUntil(crateInPosition);
-
+            waitForTime(timeout);
+            
             Rollers.running.set(r);
             Rollers.direction.set(d);
             Rollers.open.set(o);
