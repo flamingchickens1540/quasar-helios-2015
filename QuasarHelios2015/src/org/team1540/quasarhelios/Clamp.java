@@ -8,13 +8,13 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
-import ccre.log.LogLevel;
 import ccre.log.Logger;
 
 public class Clamp {
@@ -22,6 +22,8 @@ public class Clamp {
     public static BooleanStatus mode = new BooleanStatus(); // true = speed,
                                                             // false = height
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
+
+    private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
 
     public static FloatInputPoll heightReadout;
 
@@ -35,7 +37,7 @@ public class Clamp {
         } catch (ExtendedMotorFailureException e) {
             Logger.severe("Exception thrown when creating clamp motor", e);
         }
-        
+
         final FloatOutput speedControl = temp;
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
@@ -44,8 +46,8 @@ public class Clamp {
         FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
 
-        FloatMixing.pumpWhen(BooleanMixing.onPress(limitBottom), encoder, min);
-        FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitBottom)), encoder, min);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitTop)), encoder, max);
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
         FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
@@ -68,7 +70,7 @@ public class Clamp {
             speedControl.set(value);
         };
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(mode, pid, heightOrSpeed), FloatMixing.deadzone(out, 0.1f));
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()), pid, heightOrSpeed), FloatMixing.deadzone(out, 0.1f));
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
