@@ -10,7 +10,6 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
@@ -20,8 +19,9 @@ public class Rollers {
     public static final BooleanStatus running = new BooleanStatus(false);
     public static final BooleanStatus open = new BooleanStatus(true);
 
-    private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, 0.1f);
-    private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f);
+    // These will need individual tuning for speed.
+    private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
+    private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
     
