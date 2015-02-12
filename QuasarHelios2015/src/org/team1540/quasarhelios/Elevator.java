@@ -66,8 +66,8 @@ public class Elevator {
         Cluck.publish("CAN Elevator Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
-        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.globalPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.globalPeriodic);
+        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
+        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
 
         BooleanInputPoll reallyRaising = BooleanMixing.orBooleans(
                 BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), raising),
@@ -86,8 +86,8 @@ public class Elevator {
         atTopStatus.setFalseWhen(BooleanMixing.onPress(limitBottom));
         atBottomStatus.setFalseWhen(BooleanMixing.onPress(limitTop));
 
-        raising.setFalseWhen(EventMixing.filterEvent(atTop, true, QuasarHelios.globalControl));
-        lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, QuasarHelios.globalControl));
+        raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.constantPeriodic));
+        lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.constantPeriodic));
 
         Cluck.publish("Elevator Stop", stop);
         Cluck.publish("Elevator Top", setTop);
@@ -110,7 +110,7 @@ public class Elevator {
             return f;
         };
         
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
+        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 1.0f);
 
