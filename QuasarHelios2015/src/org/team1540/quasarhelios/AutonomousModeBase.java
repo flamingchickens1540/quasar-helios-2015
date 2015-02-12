@@ -66,7 +66,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-        Clamp.height.set(value);
+        Clamp.heightOrSpeed.set(value);
         waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
     }
 

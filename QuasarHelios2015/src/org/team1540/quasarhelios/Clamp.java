@@ -8,11 +8,14 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
+import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.igneous.Igneous;
 
 public class Clamp {
-    public static FloatStatus height = new FloatStatus();
+    public static FloatStatus heightOrSpeed = new FloatStatus();
+    public static BooleanStatus mode = new BooleanStatus(); // true = speed,
+                                                            // false = height
     public static BooleanStatus open = new BooleanStatus();
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
 
@@ -20,8 +23,7 @@ public class Clamp {
 
     public static void setup() {
 
-//        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
-        FloatInputPoll encoder = FloatMixing.always(0.0f);
+        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
@@ -39,25 +41,22 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
-        PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
+        PIDControl pid = new PIDControl(heightReadout, heightOrSpeed, p, i, d);
 
         QuasarHelios.globalControl.send(pid);
 
-        FloatOutput out = new FloatOutput() {
-            @Override
-            public void set(float value) {
-                if (limitTop.get()) {
-                    value = Math.max(value, 0);
-                }
-
-                if (limitBottom.get()) {
-                    value = Math.min(value, 0);
-                }
-                speedControl.set(value);
+        FloatOutput out = (value) -> {
+            if (limitTop.get()) {
+                value = Math.max(value, 0);
             }
+
+            if (limitBottom.get()) {
+                value = Math.min(value, 0);
+            }
+            speedControl.set(value);
         };
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, out);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(mode, heightOrSpeed, pid), out);
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
