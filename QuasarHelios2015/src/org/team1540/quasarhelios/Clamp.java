@@ -14,6 +14,7 @@ import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
+import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.log.Logger;
 
@@ -31,14 +32,26 @@ public class Clamp {
 
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
-        FloatOutput temp = FloatMixing.ignoredFloatOutput;
+        FloatOutput clampSpeedTemp = FloatMixing.ignoredFloatOutput;
         try {
-            temp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            clampSpeedTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            if (clampSpeedTemp == null) {
+                clampSpeedTemp = FloatMixing.ignoredFloatOutput;
+            }
         } catch (ExtendedMotorFailureException e) {
             Logger.severe("Exception thrown when creating clamp motor", e);
         }
+        Cluck.publish("CAN Clamp Enable", clampCAN.asEnable());
+        Ticker updateCAN = new Ticker(100);
+        Cluck.publish("CAN Clamp Bus Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Clamp Output Current", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
+        Cluck.publish("CAN Clamp Output Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Clamp Temperature", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
+        Cluck.publish("CAN Clamp Any Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
+        Cluck.publish("CAN Clamp Bus Voltage Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
+        Cluck.publish("CAN Clamp Temperature Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
-        final FloatOutput speedControl = temp;
+        final FloatOutput speedControl = FloatMixing.addRamping(0.2f, Igneous.constantPeriodic, clampSpeedTemp);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
