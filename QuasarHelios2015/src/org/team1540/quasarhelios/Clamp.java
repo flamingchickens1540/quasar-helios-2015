@@ -1,7 +1,5 @@
 package org.team1540.quasarhelios;
 
-import java.util.logging.Level;
-
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
@@ -32,14 +30,14 @@ public class Clamp {
 
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
-        FloatOutput f = new FloatStatus();
+        FloatOutput temp = FloatMixing.ignoredFloatOutput;
         try {
-            f = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            temp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
         } catch (ExtendedMotorFailureException e) {
-            Logger.log(LogLevel.SEVERE, "Exception throw when creating clamp motor: ", e);
+            Logger.severe("Exception thrown when creating clamp motor", e);
         }
         
-        final FloatOutput speedControl = f;
+        final FloatOutput speedControl = temp;
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
@@ -71,7 +69,7 @@ public class Clamp {
             speedControl.set(value);
         };
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(mode, heightOrSpeed, pid), FloatMixing.deadzone(out, 0.1f));
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(mode, pid, heightOrSpeed), FloatMixing.deadzone(out, 0.1f));
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));

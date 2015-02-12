@@ -39,8 +39,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         DriveCode.leftJoystickX.set(0.0f);
     }
 
-    protected void turn(float degree) throws AutonomousModeOverException,
-            InterruptedException {
+    protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
         float startingYaw = HeadingSensor.yaw.get();
 
         if (degree > 0) {
@@ -54,8 +53,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         DriveCode.rotate.set(0.0f);
     }
 
-    protected void collectTote() throws AutonomousModeOverException,
-            InterruptedException {
+    protected void collectTote() throws AutonomousModeOverException, InterruptedException {
         QuasarHelios.autoLoader.set(true);
         waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
@@ -66,6 +64,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+        Clamp.mode.set(false);
         Clamp.heightOrSpeed.set(value);
         waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
     }
