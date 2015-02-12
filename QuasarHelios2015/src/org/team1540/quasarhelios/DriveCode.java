@@ -41,7 +41,6 @@ public class DriveCode {
     private static final BooleanStatus fieldCentric = new BooleanStatus();
     private static final BooleanStatus headingControl = new BooleanStatus(true);
 
-    private static final FloatStatus adjustedYaw = new FloatStatus();
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
     private static PIDControl pid;
@@ -82,7 +81,8 @@ public class DriveCode {
             	if (rotationspeed == 0 && speed > 0) {
             		rotationspeed = -pid.get();
             	} else {
-            		desiredAngle.set(currentAngle);
+            		desiredAngle.set(HeadingSensor.absoluteYaw.get());
+            		HeadingSensor.resetAccumulator.event();
             	}
             }
 
@@ -115,28 +115,14 @@ public class DriveCode {
 
     private static EventOutput calibrate = new EventOutput() {
         public void event() {
+            HeadingSensor.resetAccumulator.event();
             float yaw = HeadingSensor.yaw.get();
-            desiredAngle.set(yaw);
+            desiredAngle.set(HeadingSensor.absoluteYaw.get());
             if (isDisabled.get()) {
                 yaw -= centricAngleOffset.get();
             }
             calibratedAngle.set((float) (yaw / 180 * π));
             Logger.info("Calibrated Angle: " + yaw);
-        }
-    };
-
-    private static EventOutput updateYaw = new EventOutput() {
-        public void event() {
-            float yaw = HeadingSensor.yaw.get();
-            float desired = desiredAngle.get();
-            if (Math.abs(yaw - desired) > 270) {
-                if (desired > 270) {
-                    yaw += 360;
-                } else if (desired < -270) {
-                    yaw -= 360;
-                }
-            }
-            adjustedYaw.set(yaw);
         }
     };
 
@@ -161,7 +147,7 @@ public class DriveCode {
         Cluck.publish("Drive PID I",i);
         Cluck.publish("Drive PID D",d);
 
-        pid = new PIDControl(adjustedYaw, desiredAngle, p, i, d);
+        pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
 
@@ -175,8 +161,7 @@ public class DriveCode {
         fieldCentric.setFalseWhen(Igneous.startAuto);
         fieldCentric.setTrueWhen(Igneous.startTele);
         octocanumShifting.toggleWhen(octocanumShiftingButton);
-        Igneous.globalPeriodic.send(updateYaw);
-        FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.yaw, desiredAngle);
+        FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
                 DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
