@@ -107,8 +107,8 @@ public class Elevator {
 
         BooleanInput maxCurrent = BooleanMixing.createDispatch(FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
                 ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 40)), QuasarHelios.globalControl);
-
-        BooleanMixing.onPress(maxCurrent).send(BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
+        
+        BooleanMixing.setWhen(BooleanMixing.onPress(maxCurrent), BooleanMixing.combine(raising, lowering), false);
 
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
