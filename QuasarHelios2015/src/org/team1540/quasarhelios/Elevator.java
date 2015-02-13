@@ -113,8 +113,7 @@ public class Elevator {
 
         timer.schedule(elevatorTimeout, BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
         
-        raising.send(timer.getRunningControl());
-        lowering.send(timer.getRunningControl());
+        BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);

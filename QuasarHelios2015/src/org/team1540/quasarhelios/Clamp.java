@@ -29,14 +29,14 @@ public class Clamp {
 
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
-        FloatOutput temp = FloatMixing.ignoredFloatOutput;
+        FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
         try {
-            temp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            motorControlTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
         } catch (ExtendedMotorFailureException e) {
             Logger.severe("Exception thrown when creating clamp motor", e);
         }
         
-        final FloatOutput speedControl = temp;
+        final FloatOutput speedControl = motorControlTemp;
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
@@ -54,6 +54,8 @@ public class Clamp {
         heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
         PIDControl pid = new PIDControl(heightReadout, heightOrSpeed, p, i, d);
+        
+        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
 
         QuasarHelios.globalControl.send(pid);
 
