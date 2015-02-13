@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
@@ -16,13 +17,21 @@ import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.instinct.AutonomousModeOverException;
+import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
 
 public class Clamp {
-    public static FloatStatus heightOrSpeed = new FloatStatus();
+    public static final boolean MODE_SPEED = true;
+    public static final boolean MODE_HEIGHT = false;
+    
+    public static FloatStatus height = new FloatStatus();
+    public static FloatStatus speed = new FloatStatus();
     public static BooleanStatus mode = new BooleanStatus(); // true = speed,
                                                             // false = height
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
+    
+    public static final EventOutput setBottom = EventMixing.combine(mode.getSetFalseEvent(), height.getSetEvent(0));
 
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
 
@@ -30,12 +39,12 @@ public class Clamp {
 
     public static void setup() {
 
-        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
+        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
         FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
         
         try {
-            motorControlTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            motorControlTemp = FloatMixing.negate(clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL));
             
             if (motorControlTemp == null) {
                 motorControlTemp = FloatMixing.ignoredFloatOutput;
@@ -71,7 +80,7 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
-        PIDControl pid = new PIDControl(heightReadout, heightOrSpeed, p, i, d);
+        PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
         
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
 
@@ -87,8 +96,11 @@ public class Clamp {
             }
             speedControl.set(value);
         };
+        
+        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
+        mode.setTrueWhen(Igneous.startTele);
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()), pid, heightOrSpeed), FloatMixing.deadzone(out, 0.1f));
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()), pid, speed), FloatMixing.deadzone(out, 0.1f));
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));

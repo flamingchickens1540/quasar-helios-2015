@@ -5,7 +5,7 @@ import ccre.channel.BooleanInputPoll;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatOutput;
+import ccre.channel.FloatOutput; 
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
@@ -25,9 +25,8 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.heightOrSpeed);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.speed);
         Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
-        Clamp.mode.toggleWhen(Igneous.joystick2.getButtonSource(7));
     }
 
     private static void setupRollers() {
