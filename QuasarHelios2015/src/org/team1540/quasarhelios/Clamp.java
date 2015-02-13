@@ -44,7 +44,6 @@ public class Clamp {
             Logger.severe("Exception thrown when creating clamp motor", e);
         }
         
-        
         Cluck.publish("CAN Clamp Enable", clampCAN.asEnable());
         Ticker updateCAN = new Ticker(100);
         Cluck.publish("CAN Clamp Bus Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
