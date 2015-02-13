@@ -40,7 +40,7 @@ public class ControlInterface {
         EventInput povRight = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
 
         povDown.send(() -> {
-            if (Rollers.direction.get()) {
+            if (Rollers.direction.get() && Rollers.running.get()) {
                 Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
@@ -50,7 +50,7 @@ public class ControlInterface {
         });
 
         povUp.send(() -> {
-            if (!Rollers.direction.get()) {
+            if (!Rollers.direction.get() && Rollers.running.get()) {
                 Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
