@@ -14,10 +14,10 @@ public class DriveCode {
 
     public static EventInput octocanumShiftingButton;
     public static EventInput recalibrateButton;
-    private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
-    private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
-    private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f);
+    private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, .1f);
+    private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_FORWARD, .1f);
+    private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
+    private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
     private static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
@@ -158,7 +158,7 @@ public class DriveCode {
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
-        
+
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
