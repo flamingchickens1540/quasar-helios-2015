@@ -32,7 +32,7 @@ public class DriveCode {
     private static final double π = Math.PI;
 
     private static FloatStatus centricAngleOffset;
-    private static final FloatStatus calibratedAngle = new FloatStatus(0);
+    private static final FloatStatus calibratedAngle = new FloatStatus();
     private static final BooleanStatus fieldCentric = new BooleanStatus();
     private static final BooleanStatus headingControl = new BooleanStatus(true);
 
@@ -123,6 +123,7 @@ public class DriveCode {
 
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
+        BooleanStatus startFieldCentric = ControlInterface.mainTuning.getBoolean("drive-field-centric", false);
         recalibrateButton.send(calibrate);
 
         FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
@@ -154,7 +155,7 @@ public class DriveCode {
         timer.start();
 
         fieldCentric.setFalseWhen(Igneous.startAuto);
-        fieldCentric.setTrueWhen(Igneous.startTele);
+        fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
@@ -168,9 +169,9 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right", rightEncoderRaw);
-        Cluck.publish("Calibrate Field Centric Angle", calibrate);
-        Cluck.publish("Toggle Field Centric", fieldCentric);
-        Cluck.publish("Toggle Heading Control", headingControl);
-        Cluck.publish("Drive PID", (FloatInput) pid);
+        Cluck.publish(QuasarHelios.testPrefix + "Calibrate Field Centric Angle", calibrate);
+        Cluck.publish(QuasarHelios.testPrefix + "Toggle Field Centric", fieldCentric);
+        Cluck.publish(QuasarHelios.testPrefix + "Toggle Heading Control", headingControl);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive PID", (FloatInput) pid);
     }
 }
