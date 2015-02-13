@@ -40,7 +40,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
-        float startingYaw = HeadingSensor.yaw.get();
+        float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
             DriveCode.rotate.set(rotateSpeed.get());

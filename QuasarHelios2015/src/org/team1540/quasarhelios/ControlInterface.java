@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
-import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
