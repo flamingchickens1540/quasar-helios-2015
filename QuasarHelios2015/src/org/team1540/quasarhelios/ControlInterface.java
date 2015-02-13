@@ -91,8 +91,8 @@ public class ControlInterface {
 
     private static void setupDrive() {
         FloatInput leftXAxis = Igneous.joystick1.getXAxisSource();
-        FloatInput rightXAxis = Igneous.joystick1.getAxisSource(5);
         FloatInput leftYAxis = Igneous.joystick1.getYAxisSource();
+        FloatInput rightXAxis = Igneous.joystick1.getAxisSource(5);
         FloatInput rightYAxis = Igneous.joystick1.getAxisSource(6);
 
         Cluck.publish("Right Joystick X", rightXAxis);

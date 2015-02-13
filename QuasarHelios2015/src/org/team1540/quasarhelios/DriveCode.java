@@ -7,15 +7,10 @@ import ccre.igneous.*;
 import ccre.log.Logger;
 
 public class DriveCode {
-    private static FloatStatus leftJoystickChannelX = new FloatStatus();
-    private static FloatStatus leftJoystickChannelY = new FloatStatus();
-    private static FloatStatus rightJoystickChannelX = new FloatStatus();
-    private static FloatStatus rightJoystickChannelY = new FloatStatus();
-
-    public static FloatOutput leftJoystickX = leftJoystickChannelX;
-    public static FloatOutput leftJoystickY = leftJoystickChannelY;
-    public static FloatOutput rightJoystickX = rightJoystickChannelX;
-    public static FloatOutput rightJoystickY = rightJoystickChannelY;
+    public static final FloatStatus leftJoystickX = new FloatStatus();
+    public static final FloatStatus leftJoystickY = new FloatStatus();
+    public static final FloatStatus rightJoystickX = new FloatStatus();
+    public static final FloatStatus rightJoystickY = new FloatStatus();
 
     public static EventInput octocanumShiftingButton;
     public static EventInput recalibrateButton;
@@ -37,7 +32,7 @@ public class DriveCode {
     private static final double π = Math.PI;
 
     private static FloatStatus centricAngleOffset;
-    private static final FloatStatus calibratedAngle = new FloatStatus(0);
+    private static final FloatStatus calibratedAngle = new FloatStatus();
     private static final BooleanStatus fieldCentric = new BooleanStatus();
     private static final BooleanStatus headingControl = new BooleanStatus(true);
 
@@ -47,13 +42,13 @@ public class DriveCode {
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
-            float distanceY = leftJoystickChannelY.get();
-            float distanceX = leftJoystickChannelX.get();
+            float distanceY = leftJoystickY.get();
+            float distanceX = leftJoystickX.get();
             float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             if (speed > 1) {
                 speed = 1;
             }
-            float rotationspeed = rightJoystickChannelX.get();
+            float rotationspeed = rightJoystickX.get();
             double angle;
             if (distanceX == 0) {
                 if (distanceY > 0) {
@@ -128,6 +123,7 @@ public class DriveCode {
 
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
+        BooleanStatus startFieldCentric = ControlInterface.mainTuning.getBoolean("drive-field-centric", false);
         recalibrateButton.send(calibrate);
 
         FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
@@ -159,12 +155,12 @@ public class DriveCode {
         timer.start();
 
         fieldCentric.setFalseWhen(Igneous.startAuto);
-        fieldCentric.setTrueWhen(Igneous.startTele);
+        fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
-                DriverImpls.createTankDriverEvent(leftJoystickChannelY, rightJoystickChannelY, leftMotors, rightMotors)));
+                DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Rear", leftBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Forward", leftFrontMotor);
@@ -173,9 +169,9 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right", rightEncoderRaw);
-        Cluck.publish("Calibrate Field Centric Angle", calibrate);
-        Cluck.publish("Toggle Field Centric", fieldCentric);
-        Cluck.publish("Toggle Heading Control", headingControl);
-        Cluck.publish("Drive PID", (FloatInput) pid);
+        Cluck.publish(QuasarHelios.testPrefix + "Calibrate Field Centric Angle", calibrate);
+        Cluck.publish(QuasarHelios.testPrefix + "Toggle Field Centric", fieldCentric);
+        Cluck.publish(QuasarHelios.testPrefix + "Toggle Heading Control", headingControl);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive PID", (FloatInput) pid);
     }
 }
