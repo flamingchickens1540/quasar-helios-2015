@@ -25,8 +25,9 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.height);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.heightOrSpeed);
         Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
+        Clamp.mode.toggleWhen(Igneous.joystick2.getButtonSource(7));
     }
 
     private static void setupRollers() {

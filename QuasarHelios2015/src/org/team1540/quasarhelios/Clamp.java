@@ -8,30 +8,54 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
+import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
+import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.log.Logger;
 
 public class Clamp {
-    public static FloatStatus height = new FloatStatus();
+    public static FloatStatus heightOrSpeed = new FloatStatus();
+    public static BooleanStatus mode = new BooleanStatus(); // true = speed,
+                                                            // false = height
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
+
+    private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
 
     public static FloatInputPoll heightReadout;
 
     public static void setup() {
 
-//        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
-        FloatInputPoll encoder = FloatMixing.always(0.0f);
-        //FloatOutput speedControl = Igneous.makeTalonMotor(2, Igneous.MOTOR_REVERSE, 0.1f);
+        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, false);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
-        FloatOutput speedControl;
+        FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
+        
         try {
-            speedControl = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            motorControlTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            
+            if (motorControlTemp == null) {
+                motorControlTemp = FloatMixing.ignoredFloatOutput;
+            }
         } catch (ExtendedMotorFailureException e) {
-            throw new RuntimeException(e);
+            Logger.severe("Exception thrown when creating clamp motor", e);
         }
+        
+        
+        Cluck.publish("CAN Clamp Enable", clampCAN.asEnable());
+        Ticker updateCAN = new Ticker(100);
+        Cluck.publish("CAN Clamp Bus Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Clamp Output Current", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
+        Cluck.publish("CAN Clamp Output Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
+        Cluck.publish("CAN Clamp Temperature", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
+        Cluck.publish("CAN Clamp Any Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
+        Cluck.publish("CAN Clamp Bus Voltage Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
+        Cluck.publish("CAN Clamp Temperature Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
+
+        final FloatOutput speedControl = FloatMixing.addRamping(0.2f, Igneous.constantPeriodic, motorControlTemp);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
@@ -39,8 +63,8 @@ public class Clamp {
         FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
 
-        FloatMixing.pumpWhen(BooleanMixing.onPress(limitBottom), encoder, min);
-        FloatMixing.pumpWhen(BooleanMixing.onPress(limitTop), encoder, max);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitBottom)), encoder, min);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitTop)), encoder, max);
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
         FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
@@ -48,25 +72,24 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
 
-        PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
+        PIDControl pid = new PIDControl(heightReadout, heightOrSpeed, p, i, d);
+        
+        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
 
         QuasarHelios.globalControl.send(pid);
 
-        FloatOutput out = new FloatOutput() {
-            @Override
-            public void set(float value) {
-                if (limitTop.get()) {
-                    value = Math.max(value, 0);
-                }
-
-                if (limitBottom.get()) {
-                    value = Math.min(value, 0);
-                }
-                speedControl.set(value);
+        FloatOutput out = (value) -> {
+            if (limitTop.get()) {
+                value = Math.max(value, 0);
             }
+
+            if (limitBottom.get()) {
+                value = Math.min(value, 0);
+            }
+            speedControl.set(value);
         };
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, pid, FloatMixing.deadzone(out, 0.1f));
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()), pid, heightOrSpeed), FloatMixing.deadzone(out, 0.1f));
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));

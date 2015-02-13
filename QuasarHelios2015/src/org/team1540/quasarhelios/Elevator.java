@@ -11,6 +11,7 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
+import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
@@ -36,13 +37,13 @@ public class Elevator {
     public static final BooleanStatus overrideEnabled = new BooleanStatus();
     public static final FloatStatus overrideValue = new FloatStatus(0.0f);
 
-    public static final EventOutput setTop = EventMixing.combine(raising.getSetTrueEvent(), lowering.getSetFalseEvent());
+    public static final EventOutput setTop = EventMixing.combine(lowering.getSetFalseEvent(), raising.getSetTrueEvent());
     public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent());
     public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false);
 
     private static final BooleanStatus atTopStatus = new BooleanStatus();
     private static final BooleanStatus atBottomStatus = new BooleanStatus();
-    
+
     public static final BooleanInput atTop = atTopStatus;
     public static final BooleanInput atBottom = atBottomStatus;
 
@@ -64,11 +65,11 @@ public class Elevator {
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
 
         BooleanInputPoll reallyRaising = BooleanMixing.orBooleans(
-                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), raising), 
+                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), raising),
                 BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtLeast(overrideValue, 0)));
-        
+
         BooleanInputPoll reallyLowering = BooleanMixing.orBooleans(
-                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), lowering), 
+                BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), lowering),
                 BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtMost(overrideValue, 0)));
 
         atTopStatus.setTrueWhen(EventMixing.filterEvent(reallyRaising, true, BooleanMixing.onPress(limitTop)));
@@ -91,22 +92,28 @@ public class Elevator {
         Cluck.publish("Elevator Lowering", lowering);
 
         FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
-        FloatInputPoll override = new FloatInputPoll() {
-            @Override
-            public float get() {
-                float f = overrideValue.get();
-                if (atTop.get()) {
-                    f = Math.min(0, f);
-                }
-
-                if (atBottom.get()) {
-                    f = Math.max(0, f);
-                }
-
-                return f;
+        FloatInputPoll override = () -> {
+            float f = overrideValue.get();
+            if (atTop.get()) {
+                f = Math.min(0, f);
             }
+
+            if (atBottom.get()) {
+                f = Math.max(0, f);
+            }
+
+            return f;
         };
+        
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
+
+        FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
+
+        ExpirationTimer timer = new ExpirationTimer();
+
+        timer.schedule(elevatorTimeout, BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
+        
+        BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
