@@ -1,12 +1,14 @@
 package org.team1540.quasarhelios;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
+import ccre.channel.EventOutput;
+import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
@@ -15,8 +17,8 @@ import ccre.igneous.Igneous;
 import ccre.igneous.IgneousApplication;
 import ccre.log.Logger;
 import ccre.rconf.RConf;
-import ccre.rconf.RConfable;
 import ccre.rconf.RConf.Entry;
+import ccre.rconf.RConfable;
 
 /**
  * The main class for QuasarHelios. This dispatches to all of the other modules.
@@ -78,5 +80,18 @@ public class QuasarHelios implements IgneousApplication {
 
     public static void publishFault(String name, BooleanInputPoll object) {
         publishFault(name, BooleanMixing.createDispatch(object, readoutUpdate));
+    }
+
+    public static FloatStatus integrate(FloatInputPoll value, EventInput updateWhen) {
+        FloatStatus output = new FloatStatus();
+        updateWhen.send(new EventOutput() {
+            private long lastRun = System.nanoTime();
+            public void event() {
+                long now = System.nanoTime();
+                float add = value.get() * (lastRun - now) / 1000000000f;
+                output.set(output.get() + add);
+            }
+        });
+        return output;
     }
 }

@@ -20,8 +20,8 @@ public class Rollers {
     public static final BooleanStatus open = new BooleanStatus(true);
 
     // These will need individual tuning for speed.
-    private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
-    private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
+    private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_FORWARD, 0.1f);
+    private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_REVERSE, 0.1f);
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
     
@@ -56,5 +56,7 @@ public class Rollers {
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Open", open);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Open Left", leftPneumatic);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Open Right", rightPneumatic);
     }
 }

@@ -25,7 +25,8 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.heightOrSpeed);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl),
+                Igneous.joystick2.getAxisChannel(2), FloatMixing.deadzone((FloatOutput) Clamp.deltaHeightOrSpeed, 0.3f));
         Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
         Clamp.mode.toggleWhen(Igneous.joystick2.getButtonSource(7));
     }
@@ -38,9 +39,9 @@ public class ControlInterface {
         EventInput povLeft = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 269.9f, 270.1f), true, povPressed);
         EventInput povRight = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
 
-        povUp.send(() -> {
+        povDown.send(() -> {
             if (Rollers.direction.get()) {
-                Rollers.running.set(true);
+                Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
             }
@@ -48,9 +49,9 @@ public class ControlInterface {
             Rollers.direction.set(false);
         });
 
-        povDown.send(() -> {
+        povUp.send(() -> {
             if (!Rollers.direction.get()) {
-                Rollers.running.set(true);
+                Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
             }
