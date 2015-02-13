@@ -27,8 +27,7 @@ public class Clamp {
     
     public static FloatStatus height = new FloatStatus();
     public static FloatStatus speed = new FloatStatus();
-    public static BooleanStatus mode = new BooleanStatus(); // true = speed,
-                                                            // false = height
+    public static BooleanStatus mode = new BooleanStatus();
 
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
     

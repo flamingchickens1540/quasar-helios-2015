@@ -59,7 +59,7 @@ public class ControlInterface {
             Rollers.direction.set(true);
         });
 
-        Rollers.open.toggleWhen(EventMixing.combine(povLeft, povRight));
+        Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
         FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
         BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(5);

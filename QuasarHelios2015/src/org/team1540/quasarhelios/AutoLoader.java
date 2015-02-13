@@ -42,18 +42,18 @@ public class AutoLoader extends InstinctModule {
 
             boolean r = Rollers.running.get();
             boolean d = Rollers.direction.get();
-            boolean o = Rollers.open.get();
+            boolean o = Rollers.closed.get();
 
             Rollers.direction.set(false);
             Rollers.running.set(true);
-            Rollers.open.set(true);
+            Rollers.closed.set(true);
 
             waitUntil(crateInPosition);
             waitForTime(timeout);
 
             Rollers.running.set(r);
             Rollers.direction.set(d);
-            Rollers.open.set(o);
+            Rollers.closed.set(o);
 
             Elevator.setBottom.event();
             waitUntil(Elevator.atBottom);

@@ -17,7 +17,7 @@ import ccre.igneous.Igneous;
 public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(true);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus open = new BooleanStatus(true);
+    public static final BooleanStatus closed = new BooleanStatus(true);
 
     // These will need individual tuning for speed.
     private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
@@ -39,14 +39,14 @@ public class Rollers {
 
     public static final EventOutput toggleRollersButton = direction.getToggleEvent();
     public static final EventOutput runRollersButton = running.getToggleEvent();
-    public static final EventOutput toggleOpenButton = open.getToggleEvent();
+    public static final EventOutput toggleOpenButton = closed.getToggleEvent();
 
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, leftRollerOverride), leftArmRoller);
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, rightRollerOverride), rightArmRoller);
         
-        BooleanInput normalPneumatics = BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideRollers), open);
+        BooleanInput normalPneumatics = BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideRollers), closed);
         
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, leftPneumaticOverride), leftPneumatic);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, rightPneumaticOverride), rightPneumatic);
@@ -55,7 +55,7 @@ public class Rollers {
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
-        Cluck.publish(QuasarHelios.testPrefix + "Roller Open", open);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Closed", closed);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Open Left", leftPneumatic);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Open Right", rightPneumatic);
     }
