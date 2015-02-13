@@ -105,7 +105,12 @@ public class Elevator {
             return f;
         };
         
-        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
+        BooleanInput maxCurrent = BooleanMixing.createDispatch(FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), 
+                ControlInterface.mainTuning.getFloat("elevator-max-current", 40)), QuasarHelios.globalControl);
+        
+        BooleanMixing.onPress(maxCurrent).send(BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
+        
+        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(overrideEnabled, main, override), winch);
 
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
 
@@ -114,7 +119,9 @@ public class Elevator {
         timer.schedule(elevatorTimeout, BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
         
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
-
+        
+        
+        
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
         Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", limitBottom);
