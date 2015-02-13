@@ -111,7 +111,7 @@ public class Elevator {
         BooleanMixing.onPress(maxCurrent).send(BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
         
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(overrideEnabled, main, override), winch);
-
+        
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
 
         ExpirationTimer timer = new ExpirationTimer();
