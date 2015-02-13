@@ -158,10 +158,11 @@ public class DriveCode {
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
-        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false, mecanum));
-        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true,
+        
+        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, mecanum));
+        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
-
+        
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Rear", leftBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Forward", leftFrontMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Rear", rightBackMotor);
