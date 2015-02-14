@@ -13,6 +13,8 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
     private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
     private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-clamp-height-padding", 0.01f);
+    public static final float STRAFE_RIGHT = 1.0f;
+    public static final float STRAFE_LEFT = -1.0f;
 
     public AutonomousModeBase(String modeName) {
         super(modeName);
