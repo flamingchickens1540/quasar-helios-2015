@@ -37,14 +37,22 @@ public class AutoEjector extends InstinctModule {
 
             waitUntil(Elevator.atBottom);
 
-            Rollers.closed.set(true);
-            Rollers.direction.set(true);
-            Rollers.running.set(true);
+            boolean r = Rollers.running.get();
+            boolean d = Rollers.direction.get();
+            boolean o = Rollers.closed.get();
 
-            waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
-            waitForTime(timeout);
+            try{
+                Rollers.closed.set(true);
+                Rollers.direction.set(true);
+                Rollers.running.set(true);
 
-            Rollers.running.set(false);
+                waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
+                waitForTime(timeout);
+            } finally {
+                Rollers.running.set(r);
+                Rollers.direction.set(d);
+                Rollers.direction.set(o);
+            }
         } finally {
             running.set(false);
         }

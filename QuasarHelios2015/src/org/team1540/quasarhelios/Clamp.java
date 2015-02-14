@@ -17,8 +17,6 @@ import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
-import ccre.instinct.AutonomousModeOverException;
-import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
 
 public class Clamp {
