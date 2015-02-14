@@ -22,12 +22,6 @@ public class ControlInterface {
         setupClamp();
         setupElevator();
         setupRollers();
-        setupPost();
-    }
-    
-    private static void setupPost() {
-        Rollers.closed.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout, 
-                mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
     }
 
     private static void setupClamp() {

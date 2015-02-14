@@ -10,6 +10,7 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
@@ -50,6 +51,9 @@ public class Rollers {
         
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(leftPneumaticOverride.asInput())), leftPneumatic);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(rightPneumaticOverride.asInput())), rightPneumatic);
+        
+        closed.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout, 
+                ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
         
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Left Arm", leftArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);
