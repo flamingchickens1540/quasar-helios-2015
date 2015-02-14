@@ -33,7 +33,7 @@ public class Autonomous {
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
         Igneous.duringAuto.send(pid);
-        PIDValue = Mixing.select(usePID, FloatMixing.always(0), pid);
+        PIDValue = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), Igneous.duringAuto);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
