@@ -17,8 +17,6 @@ import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
-import ccre.instinct.AutonomousModeOverException;
-import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
 
 public class Clamp {
@@ -38,8 +36,11 @@ public class Clamp {
     public static FloatInputPoll heightReadout;
 
     public static void setup() {
+        QuasarHelios.publishFault("clamp-encoder-disabled", useEncoder);
 
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true);
+        QuasarHelios.publishFault("clamp-encoder-zero", FloatMixing.floatIsInRange(encoder, -0.1f, 0.1f));
+
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
         FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
 
@@ -61,7 +62,7 @@ public class Clamp {
         Cluck.publish("CAN Clamp Output Current", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
         Cluck.publish("CAN Clamp Output Voltage", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
         Cluck.publish("CAN Clamp Temperature", FloatMixing.createDispatch(clampCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
-        Cluck.publish("CAN Clamp Any Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
+        Cluck.publish("CAN Clamp Any Fault", QuasarHelios.publishFault("clamp-can", clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
         Cluck.publish("CAN Clamp Bus Voltage Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("CAN Clamp Temperature Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
