@@ -32,7 +32,7 @@ public class Autonomous {
         PIDControl pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
-        Igneous.globalPeriodic.send(pid);
+        Igneous.duringAuto.send(pid);
         PIDValue = Mixing.select(usePID, FloatMixing.always(0), pid);
 
         mainModule.publishDefaultControls(true, true);
