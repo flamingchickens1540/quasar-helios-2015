@@ -22,6 +22,9 @@ public class DriveCode {
     private static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
     public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
+    public static final FloatOutput strafe = FloatMixing.combine(
+            FloatMixing.combine(leftFrontMotor, rightBackMotor),
+            FloatMixing.negate(FloatMixing.combine(leftBackMotor, rightFrontMotor)));
     public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
     public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
     public static final FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
