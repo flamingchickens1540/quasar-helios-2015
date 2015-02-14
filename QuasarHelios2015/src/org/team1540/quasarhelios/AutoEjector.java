@@ -11,7 +11,7 @@ import ccre.instinct.InstinctModule;
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
-    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("auto-clamp-height-padding", 0.01f);
+    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("main-clamp-height-padding", 0.01f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
