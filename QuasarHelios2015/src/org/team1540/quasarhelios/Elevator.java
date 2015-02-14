@@ -17,7 +17,6 @@ import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
-import ccre.ctrl.PauseTimer;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.log.Logger;
