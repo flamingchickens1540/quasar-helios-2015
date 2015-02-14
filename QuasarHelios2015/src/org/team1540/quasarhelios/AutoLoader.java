@@ -37,26 +37,32 @@ public class AutoLoader extends InstinctModule {
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            Elevator.setTop.event();
-            waitUntil(Elevator.atTop);
+            if (!Elevator.atTopStatus.get()) {
+                Elevator.setTop.event();
+                waitUntil(Elevator.atTopStatus);
+            }
+            try {
 
-            boolean r = Rollers.running.get();
-            boolean d = Rollers.direction.get();
-            boolean o = Rollers.closed.get();
+                boolean running = Rollers.running.get();
+                boolean direction = Rollers.direction.get();
+                boolean closed = Rollers.closed.get();
 
-            Rollers.direction.set(false);
-            Rollers.running.set(true);
-            Rollers.closed.set(true);
+                try {
+                    Rollers.direction.set(Rollers.REVERSE);
+                    Rollers.running.set(true);
+                    Rollers.closed.set(true);
 
-            waitUntil(crateInPosition);
-            waitForTime(timeout);
-
-            Rollers.running.set(r);
-            Rollers.direction.set(d);
-            Rollers.closed.set(o);
-
-            Elevator.setBottom.event();
-            waitUntil(Elevator.atBottom);
+                    waitUntil(crateInPosition);
+                    waitForTime(timeout);
+                } finally {
+                    Rollers.running.set(running);
+                    Rollers.direction.set(direction);
+                    Rollers.closed.set(closed);
+                }
+            } finally {
+		Elevator.setBottom.event();
+            }
+            waitUntil(Elevator.atBottomStatus);
             waitForTime(1000);
         } finally {
             running.set(false);

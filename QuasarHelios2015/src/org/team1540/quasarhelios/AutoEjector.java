@@ -36,6 +36,7 @@ public class AutoEjector extends InstinctModule {
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
             float currentClampHeight = Clamp.height.get();
+<<<<<<< HEAD
             setClampHeight(1.0f);
             Elevator.setBottom.event();
 
@@ -44,6 +45,19 @@ public class AutoEjector extends InstinctModule {
             Rollers.closed.set(true);
             Rollers.direction.set(true);
             Rollers.running.set(true);
+=======
+
+            setClampHeight(1.0f);
+            
+            if (!Elevator.atBottomStatus.get()) {
+                Elevator.setBottom.event();
+                waitUntil(Elevator.atBottomStatus);
+            }
+            
+            boolean running = Rollers.running.get();
+            boolean direction = Rollers.direction.get();
+            boolean closed = Rollers.closed.get();
+>>>>>>> 9588c99... Fix AutoLoader/Ejector.
 
             waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
             waitForTime(timeout);
