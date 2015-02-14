@@ -28,11 +28,14 @@ public class HeadingSensor {
     public static void setup() {
         UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
         sensor.autoreportFaults.set(true);
+        QuasarHelios.publishFault("heading-sensor-any", () -> sensor.hasFault());
         sensor.start();
 
         pitch = sensor.pitch;
         yaw = sensor.yaw;
         roll = sensor.roll;
+
+        QuasarHelios.publishFault("heading-sensor-all-zeroes", () -> pitch.get() == 0 && yaw.get() == 0 && roll.get() == 0);
 
         pitchRate = sensor.pitchRate;
         yawRate = sensor.yawRate;
@@ -44,6 +47,7 @@ public class HeadingSensor {
 
         Igneous.globalPeriodic.send(new EventOutput() {
             float oldyaw = 0;
+
             public void event() {
                 float currentyaw = yaw.get();
                 if (Math.abs(currentyaw - oldyaw) > 180) {

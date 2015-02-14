@@ -5,7 +5,7 @@ import ccre.channel.BooleanInputPoll;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatOutput;
+import ccre.channel.FloatOutput; 
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
@@ -25,9 +25,10 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.heightOrSpeed);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), Igneous.joystick2.getAxisChannel(2), Clamp.speed);
+
         Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
-        Clamp.mode.toggleWhen(Igneous.joystick2.getButtonSource(7));
+        Igneous.joystick2.getButtonSource(7).send(Clamp.setBottom);
     }
 
     private static void setupRollers() {
@@ -38,9 +39,9 @@ public class ControlInterface {
         EventInput povLeft = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 269.9f, 270.1f), true, povPressed);
         EventInput povRight = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, 89.9f, 90.1f), true, povPressed);
 
-        povUp.send(() -> {
-            if (Rollers.direction.get()) {
-                Rollers.running.set(true);
+        povDown.send(() -> {
+            if (Rollers.direction.get() && Rollers.running.get()) {
+                Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
             }
@@ -48,9 +49,9 @@ public class ControlInterface {
             Rollers.direction.set(false);
         });
 
-        povDown.send(() -> {
-            if (!Rollers.direction.get()) {
-                Rollers.running.set(true);
+        povUp.send(() -> {
+            if (!Rollers.direction.get() && Rollers.running.get()) {
+                Rollers.running.set(false);
             } else {
                 Rollers.running.set(!Rollers.running.get());
             }
@@ -58,18 +59,21 @@ public class ControlInterface {
             Rollers.direction.set(true);
         });
 
-        Rollers.open.toggleWhen(EventMixing.combine(povLeft, povRight));
+        Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
         FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
         BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(5);
 
         BooleanMixing.pumpWhen(Igneous.globalPeriodic, overrideRollers, Rollers.overrideRollers);
 
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtMost(
-                Igneous.joystick2.getAxisChannel(1), cutoffRollers)), Rollers.leftPneumaticOverride);
-
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtLeast(
-                Igneous.joystick2.getAxisChannel(5), FloatMixing.negate(cutoffRollers))), Rollers.rightPneumaticOverride);
+        FloatInput leftStickX = Igneous.joystick2.getAxisSource(1);
+        FloatInput rightStickX = Igneous.joystick2.getAxisSource(5);
+        
+        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(leftStickX, cutoffRollers)).send(Rollers.leftPneumaticOverride.getSetTrueEvent());
+        BooleanMixing.onPress(FloatMixing.floatIsAtMost(leftStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.leftPneumaticOverride.getSetFalseEvent());
+        
+        BooleanMixing.onPress(FloatMixing.floatIsAtMost(rightStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
+        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(rightStickX, cutoffRollers)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
 
         Igneous.joystick2.getAxisSource(2).send(Rollers.leftRollerOverride);
         Igneous.joystick2.getAxisSource(6).send(Rollers.rightRollerOverride);
