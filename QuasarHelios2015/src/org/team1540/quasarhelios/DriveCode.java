@@ -14,10 +14,10 @@ public class DriveCode {
 
     public static EventInput octocanumShiftingButton;
     public static EventInput recalibrateButton;
-    private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_REVERSE, .1f);
-    private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_REVERSE, .1f);
+    private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
+    private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
+    private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
+    private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f);
     private static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
     private static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
@@ -73,12 +73,12 @@ public class DriveCode {
             }
 
             if (headingControl.get()) {
-            	if (rotationspeed == 0 && speed > 0) {
-            		rotationspeed = -pid.get();
-            	} else {
-            		desiredAngle.set(HeadingSensor.absoluteYaw.get());
-            		HeadingSensor.resetAccumulator.event();
-            	}
+                if (rotationspeed == 0 && speed > 0) {
+                    rotationspeed = -pid.get();
+                } else {
+                    desiredAngle.set(HeadingSensor.absoluteYaw.get());
+                    HeadingSensor.resetAccumulator.event();
+                }
             }
 
             float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
@@ -139,9 +139,9 @@ public class DriveCode {
         FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
                 FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
 
-        Cluck.publish("Drive PID P",p);
-        Cluck.publish("Drive PID I",i);
-        Cluck.publish("Drive PID D",d);
+        Cluck.publish("Drive PID P", p);
+        Cluck.publish("Drive PID I", i);
+        Cluck.publish("Drive PID D", d);
 
         pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
@@ -162,7 +162,7 @@ public class DriveCode {
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
-        
+
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Rear", leftBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Forward", leftFrontMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Rear", rightBackMotor);

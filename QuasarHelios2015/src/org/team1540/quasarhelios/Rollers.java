@@ -43,13 +43,13 @@ public class Rollers {
 
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, leftRollerOverride), leftArmRoller);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, rightRollerOverride), rightArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
         
         BooleanInput normalPneumatics = BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideRollers), closed);
         
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, leftPneumaticOverride), leftPneumatic);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, rightPneumaticOverride), rightPneumatic);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(leftPneumaticOverride.asInput())), leftPneumatic);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(rightPneumaticOverride.asInput())), rightPneumatic);
         
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Left Arm", leftArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);

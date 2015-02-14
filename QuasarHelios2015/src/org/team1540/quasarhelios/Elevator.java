@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -16,19 +17,41 @@ import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
+import ccre.ctrl.PauseTimer;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.log.Logger;
+import ccre.util.Utils;
 
 public class Elevator {
     private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
     private static final FloatOutput winch;
 
     static {
+        FloatOutput raw = FloatMixing.ignoredFloatOutput;
         try {
-            winch = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
+            raw = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
         } catch (ExtendedMotorFailureException e) {
-            throw new RuntimeException(e);
+            Logger.severe("Could not initialize elevator CAN", e);
         }
+        FloatStatus winchS = new FloatStatus();
+        winch = winchS;
+        final FloatOutput target = raw;
+        BooleanStatus doRamping = new BooleanStatus(true);
+        Cluck.publish("elevator-do-ramping", doRamping);
+        Igneous.constantPeriodic.send(new EventOutput() {
+            private float last = winchS.get();
+
+            public void event() {
+                float wanted = winchS.get();
+                if (Math.abs(wanted) < Math.abs(last) || !doRamping.get()) {
+                    last = wanted;
+                } else {
+                    last = Utils.updateRamping(last, wanted, 0.05f);
+                }
+                target.set(last);
+            }
+        });
     }
 
     private static final BooleanStatus raising = new BooleanStatus();
@@ -57,7 +80,7 @@ public class Elevator {
         Cluck.publish("CAN Elevator Output Current", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
         Cluck.publish("CAN Elevator Output Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
         Cluck.publish("CAN Elevator Temperature", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
-        Cluck.publish("CAN Elevator Any Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT), updateCAN));
+        Cluck.publish("CAN Elevator Any Fault", QuasarHelios.publishFault("elevator-can", winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
         Cluck.publish("CAN Elevator Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
@@ -92,6 +115,7 @@ public class Elevator {
         Cluck.publish("Elevator Lowering", lowering);
 
         FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
+        QuasarHelios.publishFault("elevator-both-directions", BooleanMixing.andBooleans(raising, lowering));
         FloatInputPoll override = () -> {
             float f = overrideValue.get();
             if (atTop.get()) {
@@ -105,18 +129,29 @@ public class Elevator {
             return f;
         };
 
-        BooleanInputPoll maxCurrent = FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
-                ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 40));
-        
-        BooleanMixing.setWhen(EventMixing.filterEvent(maxCurrent, true, QuasarHelios.globalControl), BooleanMixing.combine(raising, lowering), false);
+        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
+                ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 30));
+        EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
+
+        PauseTimer currentFaultReporter = new PauseTimer(5000);
+        maxCurrentEvent.send(currentFaultReporter);
+
+        QuasarHelios.publishFault("elevator-current-fault", currentFaultReporter);
+        QuasarHelios.publishFault("elevator-current-fault-instant", maxCurrentNow);
+
+        BooleanMixing.setWhen(maxCurrentEvent, BooleanMixing.combine(raising, lowering), false);
 
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
 
-        ExpirationTimer timer = new ExpirationTimer();
+        PauseTimer timeoutFaultReporter = new PauseTimer(5000);
+        QuasarHelios.publishFault("elevator-timeout-fault", timeoutFaultReporter);
 
-        timer.schedule(elevatorTimeout, BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false));
+        ExpirationTimer timer = new ExpirationTimer();
+        timer.schedule(elevatorTimeout, EventMixing.combine(
+                timeoutFaultReporter,
+                BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false)));
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 

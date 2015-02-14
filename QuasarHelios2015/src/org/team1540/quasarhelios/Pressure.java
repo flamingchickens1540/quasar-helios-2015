@@ -22,6 +22,9 @@ public class Pressure {
 
         pressureGauge = FloatMixing.createDispatch(FloatMixing.normalizeFloat(pressureInput, min, max), Igneous.globalPeriodic);
 
+        QuasarHelios.publishFault("underpressure", FloatMixing.floatIsAtMost(pressureGauge, 0.30f));
+        QuasarHelios.publishFault("overpressure", FloatMixing.floatIsAtLeast(pressureGauge, 1.05f));
+
         Cluck.publish("Pressure Switch", pressureSwitch);
         Cluck.publish("Pressure Gauge", pressureGauge);
         Cluck.publish("Pressure Gauge Raw", pressureInput);

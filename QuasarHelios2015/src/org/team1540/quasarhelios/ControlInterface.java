@@ -66,11 +66,14 @@ public class ControlInterface {
 
         BooleanMixing.pumpWhen(Igneous.globalPeriodic, overrideRollers, Rollers.overrideRollers);
 
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtMost(
-                Igneous.joystick2.getAxisChannel(1), cutoffRollers)), Rollers.leftPneumaticOverride);
-
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.andBooleans(overrideRollers, FloatMixing.floatIsAtLeast(
-                Igneous.joystick2.getAxisChannel(5), FloatMixing.negate(cutoffRollers))), Rollers.rightPneumaticOverride);
+        FloatInput leftStickX = Igneous.joystick2.getAxisSource(1);
+        FloatInput rightStickX = Igneous.joystick2.getAxisSource(5);
+        
+        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(leftStickX, cutoffRollers)).send(Rollers.leftPneumaticOverride.getSetTrueEvent());
+        BooleanMixing.onPress(FloatMixing.floatIsAtMost(leftStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.leftPneumaticOverride.getSetFalseEvent());
+        
+        BooleanMixing.onPress(FloatMixing.floatIsAtMost(rightStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
+        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(rightStickX, cutoffRollers)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
 
         Igneous.joystick2.getAxisSource(2).send(Rollers.leftRollerOverride);
         Igneous.joystick2.getAxisSource(6).send(Rollers.rightRollerOverride);

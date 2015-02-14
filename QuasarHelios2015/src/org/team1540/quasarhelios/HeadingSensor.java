@@ -35,6 +35,8 @@ public class HeadingSensor {
         yaw = sensor.yaw;
         roll = sensor.roll;
 
+        QuasarHelios.publishFault("heading-sensor-all-zeroes", () -> pitch.get() == 0 && yaw.get() == 0 && roll.get() == 0);
+
         pitchRate = sensor.pitchRate;
         yawRate = sensor.yawRate;
         rollRate = sensor.rollRate;
@@ -45,6 +47,7 @@ public class HeadingSensor {
 
         Igneous.globalPeriodic.send(new EventOutput() {
             float oldyaw = 0;
+
             public void event() {
                 float currentyaw = yaw.get();
                 if (Math.abs(currentyaw - oldyaw) > 180) {
