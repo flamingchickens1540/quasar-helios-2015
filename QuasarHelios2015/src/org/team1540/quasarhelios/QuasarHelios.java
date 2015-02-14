@@ -43,6 +43,18 @@ public class QuasarHelios implements IgneousApplication {
         Autonomous.setup();
         Pressure.setup();
         publishFaultRConf();
+
+        // This is to provide diagnostics in case of another crash due to OOM.
+        new Ticker(60000).send(() -> {
+            Logger.info("Current memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+            System.gc();
+            Logger.info("Post-GC-1 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+            System.gc();
+            Logger.info("Post-GC-2 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+            System.gc();
+            Logger.info("Post-GC-3 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+            MemoryDumper.dumpHeap();
+        });
     }
 
     private static final ArrayList<String> faultNames = new ArrayList<>();
