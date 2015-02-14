@@ -64,8 +64,8 @@ public class Elevator {
     public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent());
     public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false);
 
-    public static final BooleanStatus atTopStatus = new BooleanStatus();
-    public static final BooleanStatus atBottomStatus = new BooleanStatus();
+    private static final BooleanStatus atTopStatus = new BooleanStatus();
+    private static final BooleanStatus atBottomStatus = new BooleanStatus();
 
     public static final BooleanInput atTop = atTopStatus;
     public static final BooleanInput atBottom = atBottomStatus;

@@ -38,9 +38,9 @@ public class AutoEjector extends InstinctModule {
             float currentClampHeight = Clamp.height.get();
             setClampHeight(1.0f);
             
-            if (!Elevator.atBottomStatus.get()) {
+            if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
-                waitUntil(Elevator.atBottomStatus);
+                waitUntil(Elevator.atBottom);
             }
             
             boolean running = Rollers.running.get();
