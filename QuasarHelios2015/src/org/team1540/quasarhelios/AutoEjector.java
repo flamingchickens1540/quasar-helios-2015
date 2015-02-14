@@ -35,7 +35,7 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            float currentClampHeight = Clamp.heightOrSpeed.get();
+            float currentClampHeight = Clamp.height.get();
             setClampHeight(1.0f);
             Elevator.setBottom.event();
 
@@ -56,8 +56,8 @@ public class AutoEjector extends InstinctModule {
     }
     
     private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-        Clamp.mode.set(false);
-        Clamp.heightOrSpeed.set(value);
+        Clamp.mode.set(Clamp.MODE_HEIGHT);
+        Clamp.height.set(value);
         waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
     }
 
