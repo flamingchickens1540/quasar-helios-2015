@@ -11,6 +11,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     public FloatInputPoll autoZoneDistance;
     public FloatInputPoll strafeTime;
     
+    public BooleanInputPoll collectContainers;
     public BooleanInputPoll containerToCollect; // true is first, false is second
 
     public AutonomousModeThreeTotes() {
@@ -23,7 +24,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         // Collect first tote + container
         setClampHeight(1.0f);
         collectTote();
-        if (containerToCollect.get()) {
+        if (containerToCollect.get() && collectContainers.get()) {
             setClampHeight(0.0f);
             setClampOpen(true);
             drive(nudge.get());
@@ -34,7 +35,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         drive(toteDistance.get());
         // Collect next tote + container
         collectTote();
-        if (!containerToCollect.get()) {
+        if (!containerToCollect.get() && collectContainers.get()) {
             setClampHeight(0.0f);
             setClampOpen(true);
             drive(nudge.get());
@@ -47,11 +48,13 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         turn(90);
         drive(autoZoneDistance.get());
         // Drop everything off
-        setClampHeight(0.0f);
-        setClampOpen(true);
-        setClampHeight(1.0f);
-        DriveCode.octocanumShifting.set(true);
-        strafe(1.0f, strafeTime.get());
+        if (collectContainers.get()) {
+            setClampHeight(0.0f);
+            setClampOpen(true);
+            setClampHeight(1.0f);
+            DriveCode.octocanumShifting.set(true);
+            strafe(1.0f, strafeTime.get());
+        }
         ejectTotes();
         DriveCode.octocanumShifting.set(false);
     }
@@ -62,5 +65,6 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         this.autoZoneDistance = context.getFloat("auto-three-totes-auto-zone-distance", 5.0f);
         this.strafeTime = context.getFloat("auto-three-totes-strafe-time", 1.0f);
         this.containerToCollect = context.getBoolean("auto-three-totes-container-to-collect", true);
+        this.collectContainers = context.getBoolean("auto-three-totes-collect-containers", true);
     }
 }
