@@ -133,11 +133,7 @@ public class Elevator {
                 ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 30));
         EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
 
-        PauseTimer currentFaultReporter = new PauseTimer(5000);
-        maxCurrentEvent.send(currentFaultReporter);
-
-        QuasarHelios.publishFault("elevator-current-fault", currentFaultReporter);
-        QuasarHelios.publishFault("elevator-current-fault-instant", maxCurrentNow);
+        QuasarHelios.publishStickyFault("elevator-current-fault", maxCurrentEvent);
 
         BooleanMixing.setWhen(maxCurrentEvent, BooleanMixing.combine(raising, lowering), false);
 
@@ -145,13 +141,10 @@ public class Elevator {
 
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
 
-        PauseTimer timeoutFaultReporter = new PauseTimer(5000);
-        QuasarHelios.publishFault("elevator-timeout-fault", timeoutFaultReporter);
-
         ExpirationTimer timer = new ExpirationTimer();
-        timer.schedule(elevatorTimeout, EventMixing.combine(
-                timeoutFaultReporter,
-                BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false)));
+        EventInput elevatorTimedOut = timer.schedule(elevatorTimeout);
+        QuasarHelios.publishStickyFault("elevator-timeout-fault", elevatorTimedOut);
+        BooleanMixing.setWhen(elevatorTimedOut, BooleanMixing.combine(raising, lowering), false);
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 

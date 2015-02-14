@@ -47,6 +47,7 @@ public class QuasarHelios implements IgneousApplication {
 
     private static final ArrayList<String> faultNames = new ArrayList<>();
     private static final ArrayList<BooleanInputPoll> faults = new ArrayList<>();
+    private static final ArrayList<EventOutput> faultClears = new ArrayList<>();
 
     private static void publishFaultRConf() {
         if (faultNames.size() != faults.size()) {
@@ -55,15 +56,24 @@ public class QuasarHelios implements IgneousApplication {
         }
         Cluck.publishRConf("quasar-faults", new RConfable() {
             public boolean signalRConf(int field, byte[] data) throws InterruptedException {
+                field -= 2; // so that it's relative to faultClears.
+                if (field >= 0 && field < faultClears.size()) {
+                    EventOutput out = faultClears.get(field);
+                    if (out != null) {
+                        out.event();
+                        return true;
+                    }
+                }
                 return false;
             }
 
             public Entry[] queryRConf() throws InterruptedException {
                 synchronized (QuasarHelios.class) {
-                    Entry[] entries = new Entry[1 + faultNames.size()];
+                    Entry[] entries = new Entry[2 + faultNames.size()];
                     entries[0] = RConf.title("ALL FAULTS");
-                    for (int i = 1; i < entries.length; i++) {
-                        entries[i] = RConf.string(faultNames.get(i - 1) + ": " + (faults.get(i - 1).get() ? "FAULTING" : "nominal"));
+                    entries[1] = RConf.string("(click to clear sticky faults)");
+                    for (int i = 2; i < entries.length; i++) {
+                        entries[i] = RConf.string(faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal"));
                     }
                     return entries;
                 }
@@ -71,10 +81,34 @@ public class QuasarHelios implements IgneousApplication {
         });
     }
 
-    // Should not be called once publishFaultRConf is called.
+    // These should not be called once publishFaultRConf is called.
+    public static EventOutput publishStickyFault(String name) {
+        BooleanStatus stickyValue = new BooleanStatus();
+        publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
+        return stickyValue.getSetTrueEvent();
+    }
+
+    public static BooleanInput publishStickyFault(String name, EventInput fault) {
+        BooleanStatus stickyValue = new BooleanStatus();
+        stickyValue.setTrueWhen(fault);
+        return publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
+    }
+
+    public static BooleanInput publishStickyFault(String name, EventInput fault, EventInput clearFault) {
+        BooleanStatus stickyValue = new BooleanStatus();
+        stickyValue.setTrueWhen(fault);
+        stickyValue.setFalseWhen(clearFault);
+        return publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
+    }
+
     public static BooleanInput publishFault(String name, BooleanInput object) {
+        return publishFault(name, object, null);
+    }
+
+    public static BooleanInput publishFault(String name, BooleanInput object, EventOutput stickyClear) {
         faultNames.add(name);
         faults.add(object);
+        faultClears.add(stickyClear);
         Cluck.publish("fault-" + name, object);
         return object;
     }
@@ -87,6 +121,7 @@ public class QuasarHelios implements IgneousApplication {
         FloatStatus output = new FloatStatus();
         updateWhen.send(new EventOutput() {
             private long lastRun = System.nanoTime();
+
             public void event() {
                 long now = System.nanoTime();
                 float add = value.get() * (lastRun - now) / 1000000000f;
