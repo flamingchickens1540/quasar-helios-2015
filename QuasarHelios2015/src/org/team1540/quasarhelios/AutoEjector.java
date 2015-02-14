@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -10,6 +11,7 @@ import ccre.instinct.InstinctModule;
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
+    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("auto-clamp-height-padding", 0.01f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
@@ -33,10 +35,12 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
+            setClampHeight(1.0f);
             Elevator.setBottom.event();
 
             waitUntil(Elevator.atBottom);
 
+            float currentClampHeight = Clamp.height.get();
             boolean running = Rollers.running.get();
             boolean direction = Rollers.direction.get();
             boolean open = Rollers.closed.get();
@@ -52,9 +56,17 @@ public class AutoEjector extends InstinctModule {
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
                 Rollers.direction.set(open);
+                setClampHeight(currentClampHeight);
             }
         } finally {
             running.set(false);
         }
     }
+    
+    private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+        Clamp.mode.set(Clamp.MODE_HEIGHT);
+        Clamp.height.set(value);
+        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+    }
+
 }
