@@ -34,9 +34,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
-        DriveCode.leftJoystickX.set(direction);
+        DriveCode.strafe.set(direction);
         waitForTime((long) time);
-        DriveCode.leftJoystickX.set(0.0f);
+        DriveCode.strafe.set(0.0f);
     }
 
     protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
