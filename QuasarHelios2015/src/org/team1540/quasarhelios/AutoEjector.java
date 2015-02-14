@@ -11,7 +11,6 @@ import ccre.instinct.InstinctModule;
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
-    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("auto-clamp-height-padding", 0.01f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
@@ -66,7 +65,7 @@ public class AutoEjector extends InstinctModule {
     private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
         Clamp.mode.set(Clamp.MODE_HEIGHT);
         Clamp.height.set(value);
-        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
     }
 
 }

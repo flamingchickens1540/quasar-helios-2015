@@ -12,7 +12,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
     private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
     private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
-    private static final FloatInputPoll clampHeightPadding = context.getFloat("auto-clamp-height-padding", 0.01f);
 
     public AutonomousModeBase(String modeName) {
         super(modeName);
@@ -66,7 +65,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
         Clamp.mode.set(Clamp.MODE_HEIGHT);
         Clamp.height.set(value);
-        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - clampHeightPadding.get(), value + clampHeightPadding.get()));
+        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
     }
 
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {

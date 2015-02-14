@@ -38,20 +38,18 @@ public class Rollers {
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("main-rollers-speed", 1.0f);
     private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualSpeed), actualSpeed);
 
-    public static final EventOutput toggleRollersButton = direction.getToggleEvent();
-    public static final EventOutput runRollersButton = running.getToggleEvent();
-    public static final EventOutput toggleOpenButton = closed.getToggleEvent();
-
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
 
-        BooleanInput normalPneumatics = BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideRollers), closed);
+        BooleanInput normalPneumatics = BooleanMixing.andBooleans(overrideRollers.asInvertedInput(), closed);
+        BooleanInput overrideLeft = BooleanMixing.andBooleans(overrideRollers.asInput(), leftPneumaticOverride);
+        BooleanInput overrideRight = BooleanMixing.andBooleans(overrideRollers.asInput(), rightPneumaticOverride);
 
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(leftPneumaticOverride.asInput())), leftPneumatic);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(rightPneumaticOverride.asInput())), rightPneumatic);
-
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideLeft), leftPneumatic);
+        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideRight), rightPneumatic);
+        
         closed.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout,
                 ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
 
@@ -60,7 +58,7 @@ public class Rollers {
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Internal", internalRollers);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Closed", closed);
-        Cluck.publish(QuasarHelios.testPrefix + "Roller Open Left", leftPneumatic);
-        Cluck.publish(QuasarHelios.testPrefix + "Roller Open Right", rightPneumatic);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Closed Left", leftPneumatic);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Closed Right", rightPneumatic);
     }
 }

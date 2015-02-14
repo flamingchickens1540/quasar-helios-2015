@@ -35,6 +35,8 @@ public class Clamp {
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
 
     public static FloatInputPoll heightReadout;
+    
+    public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.01f);
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", useEncoder);
@@ -42,6 +44,7 @@ public class Clamp {
         EventStatus zeroEncoder = new EventStatus();
 
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
+        Igneous.startAuto.send(zeroEncoder);
         
         QuasarHelios.publishFault("clamp-encoder-zero", FloatMixing.floatIsInRange(encoder, -0.1f, 0.1f));
 
@@ -69,7 +72,8 @@ public class Clamp {
         Cluck.publish("CAN Clamp Any Fault", QuasarHelios.publishFault("clamp-can", clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
         Cluck.publish("CAN Clamp Bus Voltage Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("CAN Clamp Temperature Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
-
+        Cluck.publish("Clamp Mode", mode);
+        
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
         
@@ -106,7 +110,8 @@ public class Clamp {
         mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
         mode.setTrueWhen(Igneous.startTele);
 
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()), pid, speed), FloatMixing.deadzone(out, 0.1f));
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(mode, 
+                useEncoder.asInvertedInput()), pid, speed), FloatMixing.deadzone(out, 0.1f));
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
