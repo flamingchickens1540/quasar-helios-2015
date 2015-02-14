@@ -18,8 +18,8 @@ public class DriveCode {
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
     private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
-    private static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
+    public static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
+    public static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
     public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
     public static final FloatOutput strafe = FloatMixing.combine(
