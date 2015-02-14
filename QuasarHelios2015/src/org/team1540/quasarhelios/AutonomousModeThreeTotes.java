@@ -4,6 +4,7 @@ import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
+import ccre.log.Logger;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
     private FloatInputPoll nudge;
@@ -11,9 +12,9 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     private FloatInputPoll autoZoneDistance;
     private FloatInputPoll strafeTime;
     
-    private BooleanInputPoll collectContainers;
-    private BooleanInputPoll containerToCollect; // true is first, false is second
-
+    private BooleanInputPoll collectFirstContainer;
+    private BooleanInputPoll collectSecondContainer;
+    
     public AutonomousModeThreeTotes() {
         super("Three Tote Auto");
     }
@@ -21,10 +22,16 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
+        boolean bothEnabled = collectFirstContainer.get() && collectSecondContainer.get();
+        
+        if (bothEnabled) {
+            Logger.warning("Can't collect two containers! Go sit in the corner and think about what you've done.");
+        }
+        
         // Collect first tote + container
         setClampHeight(1.0f);
         collectTote();
-        if (containerToCollect.get() && collectContainers.get()) {
+        if (collectFirstContainer.get() || bothEnabled) {
             setClampHeight(0.0f);
             setClampOpen(true);
             drive(nudge.get());
@@ -35,7 +42,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         drive(toteDistance.get());
         // Collect next tote + container
         collectTote();
-        if (!containerToCollect.get() && collectContainers.get()) {
+        if (collectSecondContainer.get() ^ bothEnabled) {
             setClampHeight(0.0f);
             setClampOpen(true);
             drive(nudge.get());
@@ -48,7 +55,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         turn(90);
         drive(autoZoneDistance.get());
         // Drop everything off
-        if (collectContainers.get()) {
+        if (collectFirstContainer.get() || collectSecondContainer.get()) {
             setClampHeight(0.0f);
             setClampOpen(true);
             setClampHeight(1.0f);
@@ -64,7 +71,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         this.toteDistance = context.getFloat("auto-three-totes-tote-distance", 7.0f);
         this.autoZoneDistance = context.getFloat("auto-three-totes-auto-zone-distance", 5.0f);
         this.strafeTime = context.getFloat("auto-three-totes-strafe-time", 1.0f);
-        this.containerToCollect = context.getBoolean("auto-three-totes-container-to-collect", true);
-        this.collectContainers = context.getBoolean("auto-three-totes-collect-containers", true);
+        this.collectFirstContainer = context.getBoolean("auto-three-totes-collect-first-container", true);
+        this.collectSecondContainer = context.getBoolean("auto-three-totes-collect-second-container", true);
     }
 }
