@@ -25,7 +25,7 @@ public class Rollers {
     private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
-    
+
     private static final BooleanOutput leftPneumatic = Igneous.makeSolenoid(1);
     private static final BooleanOutput rightPneumatic = Igneous.makeSolenoid(2);
 
@@ -46,15 +46,15 @@ public class Rollers {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
-        
+
         BooleanInput normalPneumatics = BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideRollers), closed);
-        
+
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(leftPneumaticOverride.asInput())), leftPneumatic);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, BooleanMixing.invert(rightPneumaticOverride.asInput())), rightPneumatic);
-        
-        closed.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout, 
+
+        closed.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout,
                 ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
-        
+
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Left Arm", leftArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
