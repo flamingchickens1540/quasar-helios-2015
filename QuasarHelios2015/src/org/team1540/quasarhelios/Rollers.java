@@ -15,7 +15,10 @@ import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 
 public class Rollers {
-    public static final BooleanStatus direction = new BooleanStatus(true);
+    public static final boolean FORWARD = true;
+    public static final boolean REVERSE = false;
+
+    public static final BooleanStatus direction = new BooleanStatus(FORWARD);
     public static final BooleanStatus running = new BooleanStatus(false);
     public static final BooleanStatus closed = new BooleanStatus(true);
 

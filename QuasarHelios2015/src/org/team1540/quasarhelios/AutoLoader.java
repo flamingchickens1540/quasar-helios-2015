@@ -44,10 +44,10 @@ public class AutoLoader extends InstinctModule {
 
                 boolean running = Rollers.running.get();
                 boolean direction = Rollers.direction.get();
-                boolean open = Rollers.closed.get();
+                boolean closed = Rollers.closed.get();
 
                 try {
-                    Rollers.direction.set(false);
+                    Rollers.direction.set(Rollers.REVERSE);
                     Rollers.running.set(true);
                     Rollers.closed.set(true);
 
@@ -56,7 +56,7 @@ public class AutoLoader extends InstinctModule {
                 } finally {
                     Rollers.running.set(running);
                     Rollers.direction.set(direction);
-                    Rollers.closed.set(open);
+                    Rollers.closed.set(closed);
                 }
             } finally {
 				Elevator.setBottom.event();

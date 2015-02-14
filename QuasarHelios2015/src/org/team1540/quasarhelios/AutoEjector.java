@@ -43,11 +43,11 @@ public class AutoEjector extends InstinctModule {
             float currentClampHeight = Clamp.height.get();
             boolean running = Rollers.running.get();
             boolean direction = Rollers.direction.get();
-            boolean open = Rollers.closed.get();
+            boolean closed = Rollers.closed.get();
 
             try{
                 Rollers.closed.set(true);
-                Rollers.direction.set(true);
+                Rollers.direction.set(Rollers.FORWARD);
                 Rollers.running.set(true);
 
                 waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
@@ -55,7 +55,7 @@ public class AutoEjector extends InstinctModule {
             } finally {
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
-                Rollers.direction.set(open);
+                Rollers.closed.set(closed);
                 setClampHeight(currentClampHeight);
             }
         } finally {
