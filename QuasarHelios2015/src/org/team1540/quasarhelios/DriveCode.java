@@ -136,7 +136,9 @@ public class DriveCode {
         FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
         BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
 
-        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
+        FloatInput p = FloatMixing.createDispatch(
+                Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
+                EventMixing.filterEvent(calibrating, true, FloatMixing.onUpdate(ultgain)));
         FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
                 FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
         FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(

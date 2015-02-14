@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
@@ -23,7 +24,9 @@ public class Autonomous {
         BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("calibrating-auto-PID", false);
         BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("use-PID-in-auto", false);
 
-        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
+        FloatInput p = FloatMixing.createDispatch(
+                Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
+                EventMixing.filterEvent(calibrating, true, FloatMixing.onUpdate(ultgain)));
         FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
                 FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
         FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
@@ -33,7 +36,7 @@ public class Autonomous {
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
         Igneous.duringAuto.send(pid);
-        PIDValue = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), Igneous.duringAuto);
+        PIDValue = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
