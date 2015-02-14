@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventOutput;
+import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
@@ -24,13 +25,13 @@ import ccre.log.Logger;
 public class Clamp {
     public static final boolean MODE_SPEED = true;
     public static final boolean MODE_HEIGHT = false;
-    
+
     public static FloatStatus height = new FloatStatus();
     public static FloatStatus speed = new FloatStatus();
     public static BooleanStatus mode = new BooleanStatus();
 
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
-    
+
     public static final EventOutput setBottom = EventMixing.combine(mode.getSetFalseEvent(), height.getSetEvent(0));
 
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
@@ -38,14 +39,16 @@ public class Clamp {
     public static FloatInputPoll heightReadout;
 
     public static void setup() {
+        
+        EventStatus zeroEncoder = new EventStatus();
 
-        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true);
+        FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
         FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
 
         try {
             motorControlTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
-            
+
             if (motorControlTemp == null) {
                 motorControlTemp = FloatMixing.ignoredFloatOutput;
             }
@@ -67,21 +70,21 @@ public class Clamp {
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.globalPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.globalPeriodic);
+        
+        FloatStatus distance = ControlInterface.mainTuning.getFloat("clamp-distance", 1.0f);
 
-        FloatStatus min = ControlInterface.mainTuning.getFloat("clamp-min", 0.0f);
-        FloatStatus max = ControlInterface.mainTuning.getFloat("clamp-max", 1.0f);
-
-        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitBottom)), encoder, min);
-        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitTop)), encoder, max);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitBottom)), encoder, FloatMixing.negate((FloatOutput) distance));
+        EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(limitTop)).send(zeroEncoder);
+        
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("clamp-p", 1.0f);
         FloatStatus i = ControlInterface.mainTuning.getFloat("clamp-i", 0.0f);
         FloatStatus d = ControlInterface.mainTuning.getFloat("clamp-d", 0.0f);
 
-        heightReadout = FloatMixing.normalizeFloat(encoder, min, max);
+        heightReadout = FloatMixing.normalizeFloat(encoder, FloatMixing.negate((FloatInput) distance), FloatMixing.always(0.0f));
 
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
-        
+
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
         FloatMixing.pumpWhen(BooleanMixing.onRelease(mode), heightReadout, height);
 
@@ -97,7 +100,7 @@ public class Clamp {
             }
             speedControl.set(value);
         };
-        
+
         mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
         mode.setTrueWhen(Igneous.startTele);
 
@@ -113,7 +116,8 @@ public class Clamp {
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Motor Speed", speedControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp PID Output", (FloatInput) pid);
 
-        Cluck.publish("Clamp Max Set", FloatMixing.pumpEvent(encoder, max));
-        Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, min));
+        Cluck.publish("Clamp Distance", distance);
+        Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, FloatMixing.negate((FloatOutput) distance)));
+        Cluck.publish("Clamp Max Set", zeroEncoder);
     }
 }
