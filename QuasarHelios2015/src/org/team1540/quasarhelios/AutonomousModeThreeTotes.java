@@ -60,7 +60,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             setClampOpen(true);
             setClampHeight(1.0f);
             DriveCode.octocanumShifting.set(true);
-            strafe(1.0f, strafeTime.get());
+            strafe(STRAFE_RIGHT, strafeTime.get());
         }
         ejectTotes();
         DriveCode.octocanumShifting.set(false);
