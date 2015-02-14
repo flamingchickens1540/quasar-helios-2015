@@ -130,7 +130,7 @@ public class Elevator {
         };
 
         BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
-                ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 30));
+                ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 45));
         EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
 
         QuasarHelios.publishStickyFault("elevator-current-fault", maxCurrentEvent);

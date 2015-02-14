@@ -75,18 +75,26 @@ public class QuasarHelios implements IgneousApplication {
                         out.event();
                         return true;
                     }
+                } else if (field == faultClears.size()) {
+                    for (EventOutput out : faultClears) {
+                        if (out != null) {
+                            out.event();
+                        }
+                    }
+                    return true;
                 }
                 return false;
             }
 
             public Entry[] queryRConf() throws InterruptedException {
                 synchronized (QuasarHelios.class) {
-                    Entry[] entries = new Entry[2 + faultNames.size()];
+                    Entry[] entries = new Entry[3 + faultNames.size()];
                     entries[0] = RConf.title("ALL FAULTS");
                     entries[1] = RConf.string("(click to clear sticky faults)");
                     for (int i = 2; i < entries.length; i++) {
-                        entries[i] = RConf.string(faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal"));
+                        entries[i] = RConf.button(faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal"));
                     }
+                    entries[entries.length - 1] = RConf.button("(clear all)");
                     return entries;
                 }
             }
