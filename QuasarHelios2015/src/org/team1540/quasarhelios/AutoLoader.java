@@ -13,7 +13,7 @@ public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 0.5f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
-    
+
     private AutoLoader(BooleanStatus running) {
         this.running = running;
     }
@@ -26,12 +26,11 @@ public class AutoLoader extends InstinctModule {
         a.updateWhen(Igneous.globalPeriodic);
 
         BooleanMixing.onRelease(b).send(Elevator.setBottom);
-        
+
         b.setFalseWhen(Igneous.startDisabled);
 
         Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
-        
-        
+
         return b;
     }
 
@@ -43,20 +42,22 @@ public class AutoLoader extends InstinctModule {
 
             boolean r = Rollers.running.get();
             boolean d = Rollers.direction.get();
-            boolean o = Rollers.open.get();
+            boolean o = Rollers.closed.get();
 
-            Rollers.direction.set(true);
+            Rollers.direction.set(false);
             Rollers.running.set(true);
-            Rollers.open.set(false);
+            Rollers.closed.set(true);
 
             waitUntil(crateInPosition);
             waitForTime(timeout);
-            
+
             Rollers.running.set(r);
             Rollers.direction.set(d);
-            Rollers.open.set(o);
+            Rollers.closed.set(o);
 
             Elevator.setBottom.event();
+            waitUntil(Elevator.atBottom);
+            waitForTime(1000);
         } finally {
             running.set(false);
         }

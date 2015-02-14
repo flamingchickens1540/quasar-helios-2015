@@ -28,6 +28,7 @@ public class HeadingSensor {
     public static void setup() {
         UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
         sensor.autoreportFaults.set(true);
+        QuasarHelios.publishFault("heading-sensor-any", () -> sensor.hasFault());
         sensor.start();
 
         pitch = sensor.pitch;

@@ -37,8 +37,8 @@ public class AutoEjector extends InstinctModule {
 
             waitUntil(Elevator.atBottom);
 
-            Rollers.open.set(true);
-            Rollers.direction.set(false);
+            Rollers.closed.set(true);
+            Rollers.direction.set(true);
             Rollers.running.set(true);
 
             waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
