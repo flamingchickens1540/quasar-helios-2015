@@ -60,7 +60,7 @@ public class AutoLoader extends InstinctModule {
                     Rollers.closed.set(closed);
                 }
             } finally {
-		Elevator.setBottom.event();
+                Elevator.setBottom.event();
             }
             waitUntil(Elevator.atBottomStatus);
             waitForTime(1000);
