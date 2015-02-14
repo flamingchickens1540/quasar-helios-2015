@@ -44,7 +44,7 @@ public class Clamp {
         FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
 
         try {
-            motorControlTemp = FloatMixing.negate(clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL));
+            motorControlTemp = clampCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
             
             if (motorControlTemp == null) {
                 motorControlTemp = FloatMixing.ignoredFloatOutput;
