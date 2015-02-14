@@ -72,14 +72,15 @@ public class QuasarHelios implements IgneousApplication {
     }
 
     // Should not be called once publishFaultRConf is called.
-    public static void publishFault(String name, BooleanInput object) {
+    public static BooleanInput publishFault(String name, BooleanInput object) {
         faultNames.add(name);
         faults.add(object);
         Cluck.publish("fault-" + name, object);
+        return object;
     }
 
-    public static void publishFault(String name, BooleanInputPoll object) {
-        publishFault(name, BooleanMixing.createDispatch(object, readoutUpdate));
+    public static BooleanInput publishFault(String name, BooleanInputPoll object) {
+        return publishFault(name, BooleanMixing.createDispatch(object, readoutUpdate));
     }
 
     public static FloatStatus integrate(FloatInputPoll value, EventInput updateWhen) {
