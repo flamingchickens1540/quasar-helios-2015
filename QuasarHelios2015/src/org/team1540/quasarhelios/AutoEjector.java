@@ -11,7 +11,7 @@ import ccre.instinct.InstinctModule;
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
-    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("auto-clamp-height-padding", 0.01f);
+    private FloatInputPoll clampHeightPadding = ControlInterface.autoTuning.getFloat("main-clamp-height-padding", 0.01f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
@@ -36,17 +36,6 @@ public class AutoEjector extends InstinctModule {
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
             float currentClampHeight = Clamp.height.get();
-<<<<<<< HEAD
-            setClampHeight(1.0f);
-            Elevator.setBottom.event();
-
-            waitUntil(Elevator.atBottom);
-
-            Rollers.closed.set(true);
-            Rollers.direction.set(true);
-            Rollers.running.set(true);
-=======
-
             setClampHeight(1.0f);
             
             if (!Elevator.atBottomStatus.get()) {
@@ -57,13 +46,20 @@ public class AutoEjector extends InstinctModule {
             boolean running = Rollers.running.get();
             boolean direction = Rollers.direction.get();
             boolean closed = Rollers.closed.get();
->>>>>>> 9588c99... Fix AutoLoader/Ejector.
 
-            waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
-            waitForTime(timeout);
+            try{
+                Rollers.closed.set(true);
+                Rollers.direction.set(Rollers.FORWARD);
+                Rollers.running.set(true);
 
-            Rollers.running.set(false);
-            setClampHeight(currentClampHeight);
+                waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
+                waitForTime(timeout);
+            } finally {
+                Rollers.running.set(running);
+                Rollers.direction.set(direction);
+                Rollers.closed.set(closed);
+                setClampHeight(currentClampHeight);
+            }
         } finally {
             running.set(false);
         }
