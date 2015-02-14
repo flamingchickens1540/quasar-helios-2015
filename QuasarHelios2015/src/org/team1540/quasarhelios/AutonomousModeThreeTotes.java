@@ -6,13 +6,13 @@ import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
-    public FloatInputPoll nudge;
-    public FloatInputPoll toteDistance;
-    public FloatInputPoll autoZoneDistance;
-    public FloatInputPoll strafeTime;
+    private FloatInputPoll nudge;
+    private FloatInputPoll toteDistance;
+    private FloatInputPoll autoZoneDistance;
+    private FloatInputPoll strafeTime;
     
-    public BooleanInputPoll collectContainers;
-    public BooleanInputPoll containerToCollect; // true is first, false is second
+    private BooleanInputPoll collectContainers;
+    private BooleanInputPoll containerToCollect; // true is first, false is second
 
     public AutonomousModeThreeTotes() {
         super("Three Tote Auto");
