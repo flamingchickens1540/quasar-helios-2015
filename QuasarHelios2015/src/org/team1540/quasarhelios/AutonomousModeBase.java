@@ -12,6 +12,8 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
     private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
     private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
+    public static final float STRAFE_RIGHT = 1.0f;
+    public static final float STRAFE_LEFT = -1.0f;
 
     public AutonomousModeBase(String modeName) {
         super(modeName);
@@ -33,9 +35,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
-        DriveCode.leftJoystickX.set(direction);
+        DriveCode.strafe.set(direction);
         waitForTime((long) time);
-        DriveCode.leftJoystickX.set(0.0f);
+        DriveCode.strafe.set(0.0f);
     }
 
     protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
