@@ -1,16 +1,11 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatStatus;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.FloatMixing;
-import ccre.ctrl.Mixing;
-import ccre.ctrl.PIDControl;
 import ccre.holders.TuningContext;
-import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 
@@ -25,36 +20,18 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
-        float desiredAngle = HeadingSensor.absoluteYaw.get();
-        FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
-        FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
-        FloatStatus pconstant = ControlInterface.mainTuning.getFloat("drive-PID-P-constant", .6f);
-        FloatStatus iconstant = ControlInterface.mainTuning.getFloat("drive-PID-I-constant", 2f);
-        FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
-        BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
-
-        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
-        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
-                FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
-        FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
-                FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
-
-        PIDControl pid = new PIDControl(HeadingSensor.absoluteYaw, new FloatStatus(desiredAngle), p, i, d);
-        pid.setOutputBounds(-1f, 1f);
-        pid.setIntegralBounds(-.5f, .5f);
-
-        Igneous.globalPeriodic.send(pid);
+        Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
 
         float startingEncoder = DriveCode.leftEncoder.get();
 
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, pid);
-            leftMotorSpeed = FloatMixing.subtraction.of(driveSpeed, pid);
+            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.PIDValue);
+            leftMotorSpeed = FloatMixing.subtraction.of(driveSpeed, Autonomous.PIDValue);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, pid));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.subtraction.of(driveSpeed, pid));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.PIDValue));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.subtraction.of(driveSpeed, Autonomous.PIDValue));
         }
 
         try {
