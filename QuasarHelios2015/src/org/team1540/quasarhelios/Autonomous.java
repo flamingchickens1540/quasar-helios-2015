@@ -13,16 +13,17 @@ import ccre.instinct.InstinctMultiModule;
 public class Autonomous {
     public static InstinctMultiModule mainModule = new InstinctMultiModule(ControlInterface.autoTuning);
     public static FloatInput PIDValue;
+    public static FloatInput reversePID;
     public static final FloatStatus desiredAngle = new FloatStatus();
 
     public static void setup() {
-        FloatStatus ultgain = ControlInterface.autoTuning.getFloat("auto-PID-ultimate-gain", .0162f);
+        FloatStatus ultgain = ControlInterface.autoTuning.getFloat("auto-PID-ultimate-gain", .017f);
         FloatStatus period = ControlInterface.autoTuning.getFloat("auto-PID-oscillation-period", 2f);
         FloatStatus pconstant = ControlInterface.autoTuning.getFloat("auto-PID-P-constant", .6f);
         FloatStatus iconstant = ControlInterface.autoTuning.getFloat("auto-PID-I-constant", 2f);
         FloatStatus dconstant = ControlInterface.autoTuning.getFloat("auto-PID-D-constant", .125f);
         BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("calibrating-auto-PID", false);
-        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("use-PID-in-auto", false);
+        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("use-PID-in-auto", true);
 
         FloatInput p = FloatMixing.createDispatch(
                 Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
@@ -37,6 +38,7 @@ public class Autonomous {
         pid.setIntegralBounds(-.5f, .5f);
         Igneous.duringAuto.send(pid);
         PIDValue = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
+        reversePID = FloatMixing.negate(PIDValue);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
