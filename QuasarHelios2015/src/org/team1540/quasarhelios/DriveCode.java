@@ -14,6 +14,7 @@ public class DriveCode {
 
     public static EventInput octocanumShiftingButton;
     public static EventInput recalibrateButton;
+    public static EventInput strafingButton;
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
@@ -26,6 +27,7 @@ public class DriveCode {
             FloatMixing.combine(leftFrontMotor, rightBackMotor),
             FloatMixing.negate(FloatMixing.combine(leftBackMotor, rightFrontMotor)));
     public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
+    public static final BooleanStatus onlyStrafing = new BooleanStatus();
     public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE), Igneous.globalPeriodic);
     public static final FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD), Igneous.globalPeriodic);
     public static final FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("main-encoder-scaling", 0.1f);
@@ -75,40 +77,48 @@ public class DriveCode {
                 angle -= angleOffset;
             }
 
-            if (headingControl.get()) {
-                if (rotationspeed == 0 && speed > 0) {
-                    rotationspeed = -pid.get();
-                } else {
-                    desiredAngle.set(HeadingSensor.absoluteYaw.get());
-                    HeadingSensor.resetAccumulator.event();
-                }
-            }
-
-            float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
-            float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
-            float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
-            float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-            float normalize = Math.max(
-                    Math.max(Math.abs(leftFront), Math.abs(rightFront)),
-                    Math.max(Math.abs(leftBack), Math.abs(rightBack)));
-            if (normalize > 1) {
-                leftFront /= normalize;
-                rightFront /= normalize;
-                leftBack /= normalize;
-                rightBack /= normalize;
-            }
-            if (normalize < Math.abs(speed)) {
-                float multiplier = Math.abs(speed) / normalize;
-                leftFront *= multiplier;
-                rightFront *= multiplier;
-                leftBack *= multiplier;
-                rightBack *= multiplier;
-            }
-            rightFrontMotor.set(rightFront);
-            leftFrontMotor.set(leftFront);
-            rightBackMotor.set(rightBack);
-            leftBackMotor.set(leftBack);
+            driveInDirection(angle, speed, rotationspeed);
         }
+    };
+
+    private static EventOutput justStrafing = () -> {
+        driveInDirection(0, leftJoystickX.get(), 0);
+    };
+
+    private static void driveInDirection(double angle, float speed, float rotationspeed) {
+        if (headingControl.get()) {
+            if (rotationspeed == 0 && speed > 0) {
+                rotationspeed = -pid.get();
+            } else {
+                desiredAngle.set(HeadingSensor.absoluteYaw.get());
+                HeadingSensor.resetAccumulator.event();
+            }
+        }
+
+        float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
+        float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
+        float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
+        float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
+        float normalize = Math.max(
+                Math.max(Math.abs(leftFront), Math.abs(rightFront)),
+                Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+        if (normalize > 1) {
+            leftFront /= normalize;
+            rightFront /= normalize;
+            leftBack /= normalize;
+            rightBack /= normalize;
+        }
+        if (normalize < Math.abs(speed)) {
+            float multiplier = Math.abs(speed) / normalize;
+            leftFront *= multiplier;
+            rightFront *= multiplier;
+            leftBack *= multiplier;
+            rightBack *= multiplier;
+        }
+        rightFrontMotor.set(rightFront);
+        leftFrontMotor.set(leftFront);
+        rightBackMotor.set(rightBack);
+        leftBackMotor.set(leftBack);
     };
 
     private static EventOutput calibrate = new EventOutput() {
@@ -160,9 +170,11 @@ public class DriveCode {
         fieldCentric.setFalseWhen(Igneous.startAuto);
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
+        onlyStrafing.toggleWhen(strafingButton);
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
-        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, true, mecanum));
+        Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
+        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
