@@ -43,70 +43,72 @@ public class DriveCode {
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
     private static PIDControl pid;
 
-    private static EventOutput mecanum = () -> {
-        float distanceY = leftJoystickY.get();
-        float distanceX = leftJoystickX.get();
-        float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-        if (speed > 1) {
-            speed = 1;
-        }
-        float rotationspeed = rightJoystickX.get();
-        double angle;
-        if (distanceX == 0) {
-            if (distanceY > 0) {
-                angle = π / 2;
+    private static EventOutput mecanum = new EventOutput() {
+        public void event() {
+            float distanceY = leftJoystickY.get();
+            float distanceX = leftJoystickX.get();
+            float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+            if (speed > 1) {
+                speed = 1;
+            }
+            float rotationspeed = rightJoystickX.get();
+            double angle;
+            if (distanceX == 0) {
+                if (distanceY > 0) {
+                    angle = π / 2;
+                } else {
+                    angle = 3 * π / 2;
+                }
             } else {
-                angle = 3 * π / 2;
+                angle = Math.atan(distanceY / distanceX);
+                if (distanceX < 0) {
+                    angle += π;
+                }
             }
-        } else {
-            angle = Math.atan(distanceY / distanceX);
-            if (distanceX < 0) {
-                angle += π;
+
+            float currentAngle = HeadingSensor.yaw.get();
+
+            if (fieldCentric.get()) {
+                double centric = calibratedAngle.get();
+                double angleOffset = currentAngle / 180 * π;
+                angleOffset -= centric;
+                angle -= angleOffset;
             }
-        }
 
-        float currentAngle = HeadingSensor.yaw.get();
-
-        if (fieldCentric.get()) {
-            double centric = calibratedAngle.get();
-            double angleOffset = currentAngle / 180 * π;
-            angleOffset -= centric;
-            angle -= angleOffset;
-        }
-
-        if (headingControl.get()) {
-            if (rotationspeed == 0 && speed > 0) {
-                rotationspeed = -pid.get();
-            } else {
-                desiredAngle.set(HeadingSensor.absoluteYaw.get());
-                HeadingSensor.resetAccumulator.event();
+            if (headingControl.get()) {
+                if (rotationspeed == 0 && speed > 0) {
+                    rotationspeed = -pid.get();
+                } else {
+                    desiredAngle.set(HeadingSensor.absoluteYaw.get());
+                    HeadingSensor.resetAccumulator.event();
+                }
             }
-        }
 
-        float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
-        float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
-        float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
-        float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-        float normalize = Math.max(
-                Math.max(Math.abs(leftFront), Math.abs(rightFront)),
-                Math.max(Math.abs(leftBack), Math.abs(rightBack)));
-        if (normalize > 1) {
-            leftFront /= normalize;
-            rightFront /= normalize;
-            leftBack /= normalize;
-            rightBack /= normalize;
+            float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
+            float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
+            float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
+            float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
+            float normalize = Math.max(
+                    Math.max(Math.abs(leftFront), Math.abs(rightFront)),
+                    Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+            if (normalize > 1) {
+                leftFront /= normalize;
+                rightFront /= normalize;
+                leftBack /= normalize;
+                rightBack /= normalize;
+            }
+            if (normalize < Math.abs(speed)) {
+                float multiplier = Math.abs(speed) / normalize;
+                leftFront *= multiplier;
+                rightFront *= multiplier;
+                leftBack *= multiplier;
+                rightBack *= multiplier;
+            }
+            rightFrontMotor.set(rightFront);
+            leftFrontMotor.set(leftFront);
+            rightBackMotor.set(rightBack);
+            leftBackMotor.set(leftBack);
         }
-        if (normalize < Math.abs(speed)) {
-            float multiplier = Math.abs(speed) / normalize;
-            leftFront *= multiplier;
-            rightFront *= multiplier;
-            leftBack *= multiplier;
-            rightBack *= multiplier;
-        }
-        rightFrontMotor.set(rightFront);
-        leftFrontMotor.set(leftFront);
-        rightBackMotor.set(rightBack);
-        leftBackMotor.set(leftBack);
     };
 
     private static EventOutput calibrate = () -> {
