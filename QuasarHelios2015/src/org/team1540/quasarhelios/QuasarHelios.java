@@ -91,8 +91,13 @@ public class QuasarHelios implements IgneousApplication {
                     Entry[] entries = new Entry[3 + faultNames.size()];
                     entries[0] = RConf.title("ALL FAULTS");
                     entries[1] = RConf.string("(click to clear sticky faults)");
-                    for (int i = 2; i < entries.length; i++) {
-                        entries[i] = RConf.button(faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal"));
+                    for (int i = 2; i < entries.length - 1; i++) {
+                        String str = faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal");
+                        if (faultClears.get(i - 2) == null) {
+                            entries[i] = RConf.string(str); // not interactable
+                        } else {
+                            entries[i] = RConf.button(str); // interactable
+                        }
                     }
                     entries[entries.length - 1] = RConf.button("(clear all)");
                     return entries;
