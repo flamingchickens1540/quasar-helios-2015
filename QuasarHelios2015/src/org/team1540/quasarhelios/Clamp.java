@@ -29,7 +29,7 @@ public class Clamp {
 
     public static FloatStatus height = new FloatStatus();
     public static FloatStatus speed = new FloatStatus();
-    public static BooleanStatus mode = new BooleanStatus();
+    public static BooleanStatus mode = new BooleanStatus(MODE_SPEED);
 
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
 
@@ -128,5 +128,6 @@ public class Clamp {
         Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, FloatMixing.negate((FloatOutput) distance)));
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
+        Cluck.publish("Clamp Speed", speed);
     }
 }
