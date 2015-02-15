@@ -7,6 +7,7 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.FloatMixing;
 import ccre.drivers.chrobotics.UM7LT;
 import ccre.igneous.Igneous;
+import ccre.log.Logger;
 
 public class HeadingSensor {
     public static FloatInput pitch;
@@ -29,6 +30,41 @@ public class HeadingSensor {
         UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
         sensor.autoreportFaults.set(true);
         QuasarHelios.publishFault("heading-sensor-any", () -> sensor.hasFault());
+        Cluck.publish("Diagnose Heading Sensor", new EventOutput() {
+            public void event() {
+                UM7LT.Faults faults = new UM7LT.Faults();
+                sensor.getFaults(faults);
+                Logger.info("Diagnosing UM7LT...");
+                boolean any = false;
+                if (faults.accelerometer_distorted) {
+                    Logger.warning("UM7LT Accelerometer distorted.");
+                    any = true;
+                }
+                if (faults.accelerometer_failed) {
+                    Logger.warning("UM7LT Accelerometer failed.");
+                    any = true;
+                }
+                if (faults.comm_overflow) {
+                    Logger.warning("UM7LT Comms Overflow.");
+                    any = true;
+                }
+                if (faults.gyro_failed) {
+                    Logger.warning("UM7LT Gyro failed.");
+                    any = true;
+                }
+                if (faults.magnetometer_distorted) {
+                    Logger.warning("UM7LT Magnetometer distorted.");
+                    any = true;
+                }
+                if (faults.magnetometer_failed) {
+                    Logger.warning("UM7LT Magnetometer failed.");
+                    any = true;
+                }
+                if (!any) {
+                    Logger.info("No faults detected.");
+                }
+            }
+        });
         sensor.start();
 
         pitch = sensor.pitch;

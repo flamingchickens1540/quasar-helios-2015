@@ -59,12 +59,17 @@ public class AutoLoader extends InstinctModule {
                     Rollers.closed.set(closed);
                 }
             } finally {
-				Elevator.setBottom.event();
+                Elevator.setBottom.event();
             }
             waitUntil(Elevator.atBottom);
             waitForTime(1000);
         } finally {
             running.set(false);
         }
+    }
+
+    @Override
+    protected String getTypeName() {
+        return "auto loader";
     }
 }

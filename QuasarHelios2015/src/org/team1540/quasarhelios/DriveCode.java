@@ -183,8 +183,10 @@ public class DriveCode {
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Rear", rightBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Forward", rightFrontMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoderRaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right", rightEncoderRaw);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left Raw", leftEncoderRaw);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right Raw", rightEncoderRaw);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoder);
+        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right", rightEncoder);
         Cluck.publish(QuasarHelios.testPrefix + "Calibrate Field Centric Angle", calibrate);
         Cluck.publish(QuasarHelios.testPrefix + "Toggle Field Centric", fieldCentric);
         Cluck.publish(QuasarHelios.testPrefix + "Toggle Heading Control", headingControl);

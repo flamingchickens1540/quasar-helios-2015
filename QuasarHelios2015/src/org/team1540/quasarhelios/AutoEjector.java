@@ -61,7 +61,12 @@ public class AutoEjector extends InstinctModule {
             running.set(false);
         }
     }
-    
+
+    @Override
+    protected String getTypeName() {
+        return "auto ejector";
+    }
+
     private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
         Clamp.mode.set(Clamp.MODE_HEIGHT);
         Clamp.height.set(value);
