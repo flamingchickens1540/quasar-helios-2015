@@ -111,5 +111,6 @@ public class ControlInterface {
         FloatMixing.deadzone(rightYAxis, .2f).send(DriveCode.rightJoystickY);
         DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
+        DriveCode.strafingButton = Igneous.joystick1.getButtonSource(4);
     }
 }
