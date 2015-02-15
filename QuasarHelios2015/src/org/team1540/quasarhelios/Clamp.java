@@ -1,7 +1,10 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
+import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
@@ -26,20 +29,20 @@ public class Clamp {
 
     public static FloatStatus height = new FloatStatus();
     public static FloatStatus speed = new FloatStatus();
-    public static BooleanStatus mode = new BooleanStatus();
+    public static BooleanStatus mode = new BooleanStatus(MODE_SPEED);
 
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
 
     public static final EventOutput setBottom = EventMixing.combine(mode.getSetFalseEvent(), height.getSetEvent(0));
 
-    private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", false);
+    private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", true);
 
     public static FloatInputPoll heightReadout;
 
     public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.01f);
 
     public static void setup() {
-        QuasarHelios.publishFault("clamp-encoder-disabled", useEncoder);
+        QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
         EventStatus zeroEncoder = new EventStatus();
 
@@ -125,5 +128,6 @@ public class Clamp {
         Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, FloatMixing.negate((FloatOutput) distance)));
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
+        Cluck.publish("Clamp Speed", speed);
     }
 }

@@ -42,6 +42,7 @@ public class QuasarHelios implements IgneousApplication {
         Rollers.setup();
         Autonomous.setup();
         Pressure.setup();
+        CurrentMonitoring.setup();
         publishFaultRConf();
 
         // This is to provide diagnostics in case of another crash due to OOM.
