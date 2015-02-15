@@ -22,6 +22,7 @@ public class AutonomousModeCalibration extends AutonomousModeBase {
         DriveCode.leftMotors.set(-.5f);
         waitUntil(stopButton);
         straightening.set(true);
+        waitForTime(1000);
         waitUntil(stopButton);
     }
 
