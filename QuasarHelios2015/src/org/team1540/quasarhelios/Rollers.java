@@ -52,7 +52,7 @@ public class Rollers {
 
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideLeft), leftPneumatic);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideRight), rightPneumatic);
-        
+
         closed.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout,
                 ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
 
