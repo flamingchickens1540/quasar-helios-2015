@@ -33,13 +33,13 @@ public class QuasarHelios implements IgneousApplication {
 
     public void setupRobot() {
         Elevator.setup();
-        Rollers.setup();
         autoLoader = AutoLoader.create();
         autoEjector = AutoEjector.create();
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();
         Clamp.setup();
+        Rollers.setup();
         Autonomous.setup();
         Pressure.setup();
         publishFaultRConf();
