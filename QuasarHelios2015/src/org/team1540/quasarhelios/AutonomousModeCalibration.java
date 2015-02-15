@@ -18,8 +18,8 @@ public class AutonomousModeCalibration extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
-        DriveCode.rightMotors.set(.5f);
-        DriveCode.leftMotors.set(-.5f);
+        DriveCode.rightMotors.set(1);
+        DriveCode.leftMotors.set(-1);
         waitUntil(stopButton);
         DriveCode.allMotors.set(0);
         straightening.set(true);
