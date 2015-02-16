@@ -32,10 +32,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.PIDValue);
+            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.autoPID);
             leftMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.reversePID);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.PIDValue));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.autoPID));
             leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.reversePID));
         }
 
@@ -104,7 +104,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.PIDValue)), Autonomous.PIDValue, DriveCode.leftMotors);
+            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.autoPID)), Autonomous.autoPID, DriveCode.leftMotors);
             FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.reversePID)), Autonomous.reversePID, DriveCode.rightMotors);
             runAutonomous();
         } finally {

@@ -13,7 +13,7 @@ import ccre.instinct.InstinctMultiModule;
 
 public class Autonomous {
     public static InstinctMultiModule mainModule = new InstinctMultiModule(ControlInterface.autoTuning);
-    public static FloatInput PIDValue;
+    public static FloatInput autoPID;
     public static FloatInput reversePID;
     public static final FloatStatus desiredAngle = new FloatStatus();
 
@@ -38,10 +38,10 @@ public class Autonomous {
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
         Igneous.duringAuto.send(pid);
-        PIDValue = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
-        reversePID = FloatMixing.negate(PIDValue);
+        autoPID = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
+        reversePID = FloatMixing.negate(autoPID);
 
-        Cluck.publish("Auto PID", PIDValue);
+        Cluck.publish("Auto PID", autoPID);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
