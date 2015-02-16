@@ -173,12 +173,13 @@ public class DriveCode {
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
+        onlyStrafing.setFalseWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(strafingButton,HeadingSensor.absoluteYaw, desiredAngle);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
-        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, true, justStrafing));
+        Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
