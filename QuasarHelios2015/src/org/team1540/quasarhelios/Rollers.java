@@ -1,9 +1,9 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
+import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
@@ -53,9 +53,9 @@ public class Rollers {
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideLeft), leftPneumatic);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideRight), rightPneumatic);
 
-        closed.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(Clamp.heightReadout,
-                ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f)), true, QuasarHelios.globalControl));
-
+        BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f));
+        closed.setFalseWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl));
+        
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Left Arm", leftArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
@@ -63,5 +63,6 @@ public class Rollers {
         Cluck.publish(QuasarHelios.testPrefix + "Roller Closed", closed);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Closed Left", leftPneumatic);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Closed Right", rightPneumatic);
+        Cluck.publish(QuasarHelios.testPrefix + "Roller Force Open", BooleanMixing.createDispatch(clampLow, QuasarHelios.readoutUpdate));
     }
 }

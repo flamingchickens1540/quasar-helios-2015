@@ -25,7 +25,7 @@ public class AutoEjector extends InstinctModule {
 
         Rollers.running.setFalseWhen(BooleanMixing.onRelease(b));
         Rollers.direction.setTrueWhen(BooleanMixing.onRelease(b));
-        
+
         b.setFalseWhen(Igneous.startDisabled);
 
         return b;
@@ -44,7 +44,7 @@ public class AutoEjector extends InstinctModule {
             boolean direction = Rollers.direction.get();
             boolean closed = Rollers.closed.get();
 
-            try{
+            try {
                 Rollers.closed.set(true);
                 Rollers.direction.set(Rollers.FORWARD);
                 Rollers.running.set(true);
@@ -61,7 +61,12 @@ public class AutoEjector extends InstinctModule {
             running.set(false);
         }
     }
-    
+
+    @Override
+    protected String getTypeName() {
+        return "auto ejector";
+    }
+
     private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
         Clamp.mode.set(Clamp.MODE_HEIGHT);
         Clamp.height.set(value);
