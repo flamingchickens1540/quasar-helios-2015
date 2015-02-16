@@ -109,6 +109,8 @@ public class ControlInterface {
         FloatMixing.deadzone(leftYAxis, .2f).send(DriveCode.leftJoystickY);
         FloatMixing.deadzone(rightXAxis, .25f).send(DriveCode.rightJoystickX);
         FloatMixing.deadzone(rightYAxis, .2f).send(DriveCode.rightJoystickY);
+        DriveCode.forwardTrigger = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f);
+        DriveCode.backwardTrigger = FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f);
         DriveCode.octocanumShiftingButton = Igneous.joystick1.getButtonSource(1);
         DriveCode.recalibrateButton = Igneous.joystick1.getButtonSource(2);
         DriveCode.strafingButton = Igneous.joystick1.getButtonSource(4);
