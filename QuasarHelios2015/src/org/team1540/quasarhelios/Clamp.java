@@ -39,7 +39,7 @@ public class Clamp {
 
     public static FloatInputPoll heightReadout;
 
-    public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.01f);
+    public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.1f);
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
