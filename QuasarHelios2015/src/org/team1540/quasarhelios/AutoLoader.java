@@ -11,7 +11,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
-    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 0.5f);
+    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("Loader Timeout +M", 0.5f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
     private AutoLoader(BooleanStatus running) {
@@ -29,7 +29,7 @@ public class AutoLoader extends InstinctModule {
 
         b.setFalseWhen(Igneous.startDisabled);
 
-        Cluck.publish(QuasarHelios.testPrefix + "Crate Loaded", crateInPosition);
+        Cluck.publish("Loader Crate Loaded", crateInPosition);
 
         return b;
     }
