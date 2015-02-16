@@ -3,14 +3,14 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
-    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("ejector-timeout", 2.0f);
+    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoejector-timeout", 2.0f);
+    private FloatInputPoll clampHeight = ControlInterface.mainTuning.getFloat("main-autoejector-clamp-height", 1.0f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
@@ -37,7 +37,7 @@ public class AutoEjector extends InstinctModule {
             float currentClampHeight = Clamp.height.get();
 
             Clamp.mode.set(Clamp.MODE_HEIGHT);
-            Clamp.height.set(1.0f);
+            Clamp.height.set(clampHeight.get());
 
             if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
