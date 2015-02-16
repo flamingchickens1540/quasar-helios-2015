@@ -37,9 +37,9 @@ public class DriveCode {
     private static final double π = Math.PI;
 
     private static FloatStatus centricAngleOffset;
+    private static BooleanStatus headingControl;
     private static final FloatStatus calibratedAngle = new FloatStatus();
     private static final BooleanStatus fieldCentric = new BooleanStatus();
-    private static final BooleanStatus headingControl = new BooleanStatus();
 
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
@@ -137,6 +137,7 @@ public class DriveCode {
 
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
+        headingControl = ControlInterface.mainTuning.getBoolean("heading-control-in-teleop", false);
         BooleanStatus startFieldCentric = ControlInterface.mainTuning.getBoolean("drive-field-centric", false);
         recalibrateButton.send(calibrate);
 
