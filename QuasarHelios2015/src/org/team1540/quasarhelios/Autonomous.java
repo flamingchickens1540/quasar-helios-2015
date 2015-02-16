@@ -1,5 +1,6 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
@@ -38,7 +39,7 @@ public class Autonomous {
         pid.setOutputBounds(-1f, 1f);
         pid.setIntegralBounds(-.5f, .5f);
         Igneous.duringAuto.send(pid);
-        autoPID = FloatMixing.createDispatch(Mixing.select(usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
+        autoPID = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
         reversePID = FloatMixing.negate(autoPID);
 
         Cluck.publish("Auto PID", autoPID);
