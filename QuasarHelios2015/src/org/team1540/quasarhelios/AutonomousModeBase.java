@@ -1,8 +1,11 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
+import ccre.channel.BooleanStatus;
+import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
@@ -15,32 +18,54 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 
+    protected final BooleanStatus straightening = new BooleanStatus();
+
     public AutonomousModeBase(String modeName) {
         super(modeName);
     }
 
-    protected void drive(float distance) throws AutonomousModeOverException,
-            InterruptedException {
+    protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
+
         float startingEncoder = DriveCode.leftEncoder.get();
 
+        FloatInput rightMotorSpeed, leftMotorSpeed;
+
         if (distance > 0) {
-            DriveCode.allMotors.set(driveSpeed.get());
-            waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
+            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.autoPID);
+            leftMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.reversePID);
         } else {
-            DriveCode.allMotors.set(-driveSpeed.get());
-            waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.autoPID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.reversePID));
         }
 
-        DriveCode.allMotors.set(0.0f);
+        try {
+            rightMotorSpeed.send(DriveCode.rightMotors);
+            leftMotorSpeed.send(DriveCode.leftMotors);
+
+            if (distance > 0) {
+                waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
+            } else {
+                waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
+            }
+        } finally {
+            rightMotorSpeed.unsend(DriveCode.rightMotors);
+            leftMotorSpeed.unsend(DriveCode.leftMotors);
+            DriveCode.allMotors.set(0.0f);
+            straightening.set(true);
+        }
     }
 
     protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
+        straightening.set(false);
         DriveCode.strafe.set(direction);
         waitForTime((long) time);
         DriveCode.strafe.set(0.0f);
     }
 
     protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
@@ -55,6 +80,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
         QuasarHelios.autoLoader.set(true);
         waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
@@ -71,6 +97,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
         QuasarHelios.autoEjector.set(true);
         waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
@@ -90,15 +117,16 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
     
     @Override
-    protected void autonomousMain() throws AutonomousModeOverException,
-            InterruptedException {
+    protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
+            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.autoPID)), Autonomous.autoPID, DriveCode.leftMotors);
+            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.reversePID)), Autonomous.reversePID, DriveCode.rightMotors);
             runAutonomous();
         } finally {
+            straightening.set(false);
             DriveCode.allMotors.set(0);
         }
     }
 
-    protected abstract void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException;
+    protected abstract void runAutonomous() throws InterruptedException, AutonomousModeOverException;
 }

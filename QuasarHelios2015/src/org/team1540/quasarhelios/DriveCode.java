@@ -19,8 +19,8 @@ public class DriveCode {
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
     private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
-    private static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
+    public static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
+    public static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
     public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
     public static final FloatOutput strafe = FloatMixing.combine(
@@ -122,17 +122,15 @@ public class DriveCode {
         leftBackMotor.set(leftBack);
     };
 
-    private static EventOutput calibrate = new EventOutput() {
-        public void event() {
-            HeadingSensor.resetAccumulator.event();
-            float yaw = HeadingSensor.yaw.get();
-            desiredAngle.set(HeadingSensor.absoluteYaw.get());
-            if (isDisabled.get()) {
-                yaw -= centricAngleOffset.get();
-            }
-            calibratedAngle.set((float) (yaw / 180 * π));
-            Logger.info("Calibrated Angle: " + yaw);
+    private static EventOutput calibrate = () -> {
+        HeadingSensor.resetAccumulator.event();
+        float yaw = HeadingSensor.yaw.get();
+        desiredAngle.set(HeadingSensor.absoluteYaw.get());
+        if (isDisabled.get()) {
+            yaw -= centricAngleOffset.get();
         }
+        calibratedAngle.set((float) (yaw / 180 * π));
+        Logger.info("Calibrated Angle: " + yaw);
     };
 
     public static void setup() {
@@ -147,7 +145,9 @@ public class DriveCode {
         FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
         BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
 
-        FloatInput p = Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain);
+        FloatInput p = FloatMixing.createDispatch(
+                Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
+                EventMixing.filterEvent(calibrating, true, FloatMixing.onUpdate(ultgain)));
         FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
                 FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
         FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
