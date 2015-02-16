@@ -39,7 +39,7 @@ public class DriveCode {
     private static FloatStatus centricAngleOffset;
     private static final FloatStatus calibratedAngle = new FloatStatus();
     private static final BooleanStatus fieldCentric = new BooleanStatus();
-    private static final BooleanStatus headingControl = new BooleanStatus(true);
+    private static final BooleanStatus headingControl = new BooleanStatus();
 
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
@@ -77,24 +77,25 @@ public class DriveCode {
                 angle -= angleOffset;
             }
 
+            if (headingControl.get()) {
+                if (rotationspeed == 0 && speed > 0) {
+                    rotationspeed = -pid.get();
+                } else {
+                    desiredAngle.set(HeadingSensor.absoluteYaw.get());
+                    HeadingSensor.resetAccumulator.event();
+                }
+            }
+
             driveInDirection(angle, speed, rotationspeed);
         }
     };
 
     private static EventOutput justStrafing = () -> {
-        driveInDirection(0, leftJoystickX.get(), 0);
+        float rotationspeed = -pid.get();
+        driveInDirection(0, leftJoystickX.get(), rotationspeed);
     };
 
     private static void driveInDirection(double angle, float speed, float rotationspeed) {
-        if (headingControl.get()) {
-            if (rotationspeed == 0 && speed > 0) {
-                rotationspeed = -pid.get();
-            } else {
-                desiredAngle.set(HeadingSensor.absoluteYaw.get());
-                HeadingSensor.resetAccumulator.event();
-            }
-        }
-
         float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
         float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
         float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
@@ -171,6 +172,8 @@ public class DriveCode {
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
+        FloatMixing.pumpWhen(strafingButton,HeadingSensor.absoluteYaw, desiredAngle);
+        strafingButton.send(pid.integralTotal.getSetEvent(0));
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
