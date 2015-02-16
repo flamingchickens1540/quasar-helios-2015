@@ -14,6 +14,8 @@ public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("main-autoloader-timeout", 0.5f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
+    
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.5f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
@@ -39,8 +41,8 @@ public class AutoLoader extends InstinctModule {
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
             float currentClampHeight = Clamp.height.get();
-            if (currentClampHeight < 0.5) {
-                setClampHeight(0.5f);
+            if (currentClampHeight < clampHeightThreshold.get()) {
+                setClampHeight(clampHeightThreshold.get());
             }
 
             Elevator.setTop.event();    
