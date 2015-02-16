@@ -2,9 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
@@ -21,6 +19,8 @@ import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.instinct.AutonomousModeOverException;
+import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
 
 public class Clamp {
@@ -32,20 +32,18 @@ public class Clamp {
     public static BooleanStatus mode = new BooleanStatus(MODE_SPEED);
 
     public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
-
     public static final EventOutput setBottom = EventMixing.combine(mode.getSetFalseEvent(), height.getSetEvent(0));
-
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("clamp-use-encoder", true);
-
     public static FloatInputPoll heightReadout;
-
     public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.01f);
+
+    private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
         EventStatus zeroEncoder = new EventStatus();
-
+        needsAutoCalibration.setFalseWhen(zeroEncoder);
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
         Igneous.startAuto.send(zeroEncoder);
 
@@ -99,6 +97,7 @@ public class Clamp {
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
+        pid.setOutputBounds(ControlInterface.mainTuning.getFloat("clamp-max-height-speed", 1.0f));
         FloatMixing.pumpWhen(BooleanMixing.onRelease(mode), heightReadout, height);
 
         QuasarHelios.constantControl.send(pid);
@@ -110,6 +109,9 @@ public class Clamp {
             if (atBottom.get()) {
                 value = Math.min(value, 0);
             }
+            if (value >= -0.1f && value <= 0.1f) {
+                value = 0;
+            }
             speedControl.set(value);
         };
 
@@ -117,7 +119,42 @@ public class Clamp {
         mode.setTrueWhen(Igneous.startTele);
 
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(mode,
-                useEncoder.asInvertedInput()), pid, speed), FloatMixing.deadzone(out, 0.1f));
+                useEncoder.asInvertedInput()), pid, speed), out);
+
+        new InstinctModule(BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()), needsAutoCalibration, ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true), BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
+            private final FloatInputPoll downwardTime = ControlInterface.mainTuning.getFloat("clamp-autocalibration-downward-time", 0.2f);
+
+            @Override
+            protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+                if (limitTop.get() || atTop.get()) {
+                    zeroEncoder.event();
+                    Logger.info("Autocalibrated: already at top.");
+                } else {
+                    Logger.info("Attempting autocalibration: not at top.");
+                    mode.set(MODE_HEIGHT); // to make sure that the automatic set-to-current-value has time to complete, we do this here
+                    waitForTime(200);
+                    Logger.info("Jolting down...");
+                    // first, go down momentarily, so if we're already at the top past the limit switch, we won't break anything
+                    height.set(-1.0f); // make sure to go down even though not calibrated.
+                    mode.set(MODE_HEIGHT);
+                    waitForTime(downwardTime);
+                    height.set(2.0f); // make sure to go up even though not calibrated.
+                    mode.set(MODE_HEIGHT);
+                    Logger.info("Autocalibration: aligning up...");
+                    try {
+                        waitUntil(atTop);
+                    } finally {
+                        height.set(0.0f);
+                        speed.set(0); // will probably be overridden; but just in case.
+                        mode.set(MODE_SPEED);
+                    }
+                }
+            }
+
+            protected String getTypeName() {
+                return "clamp autocalibrator";
+            }
+        }.updateWhen(Igneous.globalPeriodic);
 
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Open Control", openControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
@@ -136,5 +173,6 @@ public class Clamp {
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
         Cluck.publish("Clamp Speed", speed);
+        Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
     }
 }
