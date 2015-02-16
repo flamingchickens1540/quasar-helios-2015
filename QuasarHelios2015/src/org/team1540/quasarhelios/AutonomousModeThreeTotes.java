@@ -32,22 +32,14 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         setClampHeight(1.0f);
         collectTote();
         if (collectFirstContainer.get() || bothEnabled) {
-            setClampHeight(0.0f);
-            setClampOpen(true);
-            drive(nudge.get());
-            setClampOpen(false);
-            setClampHeight(1.0f);
+            pickupContainer(nudge.get());
         }
         // TODO: Hold container with top claw
         drive(toteDistance.get());
         // Collect next tote + container
         collectTote();
         if (collectSecondContainer.get() ^ bothEnabled) {
-            setClampHeight(0.0f);
-            setClampOpen(true);
-            drive(nudge.get());
-            setClampOpen(false);
-            setClampHeight(1.0f);
+            pickupContainer(nudge.get());
         }
         drive(toteDistance.get());
         // Collect last tote and drive to auto zone
@@ -55,14 +47,14 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         turn(90);
         drive(autoZoneDistance.get());
         // Drop everything off
-        if (collectFirstContainer.get() || collectSecondContainer.get()) {
-            setClampHeight(0.0f);
-            setClampOpen(true);
-            setClampHeight(1.0f);
-            DriveCode.octocanumShifting.set(true);
-            strafe(STRAFE_RIGHT, strafeTime.get());
-        }
         ejectTotes();
+        DriveCode.octocanumShifting.set(true);
+        strafe(STRAFE_RIGHT, strafeTime.get());
+
+        if (collectFirstContainer.get() || collectSecondContainer.get()) {
+            depositContainer();
+        }
+        
         DriveCode.octocanumShifting.set(false);
     }
 
