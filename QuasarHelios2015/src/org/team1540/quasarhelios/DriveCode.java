@@ -38,9 +38,9 @@ public class DriveCode {
     private static final double π = Math.PI;
 
     private static FloatStatus centricAngleOffset;
+    private static BooleanStatus headingControl;
     private static final FloatStatus calibratedAngle = new FloatStatus();
     private static final BooleanStatus fieldCentric = new BooleanStatus();
-    private static final BooleanStatus headingControl = new BooleanStatus(true);
 
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
@@ -78,24 +78,25 @@ public class DriveCode {
                 angle -= angleOffset;
             }
 
+            if (headingControl.get()) {
+                if (rotationspeed == 0 && speed > 0) {
+                    rotationspeed = -pid.get();
+                } else {
+                    desiredAngle.set(HeadingSensor.absoluteYaw.get());
+                    HeadingSensor.resetAccumulator.event();
+                }
+            }
+
             driveInDirection(angle, speed, rotationspeed);
         }
     };
 
     private static EventOutput justStrafing = () -> {
-        driveInDirection(0, leftJoystickX.get(), 0);
+        float rotationspeed = -pid.get();
+        driveInDirection(0, leftJoystickX.get(), rotationspeed);
     };
 
     private static void driveInDirection(double angle, float speed, float rotationspeed) {
-        if (headingControl.get()) {
-            if (rotationspeed == 0 && speed > 0) {
-                rotationspeed = -pid.get();
-            } else {
-                desiredAngle.set(HeadingSensor.absoluteYaw.get());
-                HeadingSensor.resetAccumulator.event();
-            }
-        }
-
         float leftFront = (float) (speed * Math.sin(angle - π / 4) - rotationspeed);
         float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
         float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
@@ -135,6 +136,7 @@ public class DriveCode {
 
     public static void setup() {
         centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
+        headingControl = ControlInterface.mainTuning.getBoolean("heading-control-in-teleop", false);
         BooleanStatus startFieldCentric = ControlInterface.mainTuning.getBoolean("drive-field-centric", false);
         recalibrateButton.send(calibrate);
 
@@ -172,10 +174,13 @@ public class DriveCode {
         fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
+        onlyStrafing.setFalseWhen(octocanumShiftingButton);
+        FloatMixing.pumpWhen(strafingButton,HeadingSensor.absoluteYaw, desiredAngle);
+        strafingButton.send(pid.integralTotal.getSetEvent(0));
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
-        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, true, justStrafing));
+        Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
