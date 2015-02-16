@@ -1,19 +1,22 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
+import ccre.cluck.Cluck;
+import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
-import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
+import ccre.log.Logger;
 
 public class AutonomousModeCalibration extends AutonomousModeBase {
     protected FloatInputPoll driveDistance;
 
     public AutonomousModeCalibration() {
         super("Calibration");
+        Cluck.publish("Stop Auto Calibration", stopButton);
     }
 
-    private BooleanInputPoll stopButton = Igneous.joystick1.getButtonChannel(3);
+    private BooleanStatus stopButton = new BooleanStatus();
 
     @Override
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
@@ -23,11 +26,9 @@ public class AutonomousModeCalibration extends AutonomousModeBase {
         waitUntil(stopButton);
         DriveCode.allMotors.set(0);
         straightening.set(true);
-        waitForTime(1000);
-        waitUntil(stopButton);
+        waitUntilNot(stopButton);
     }
 
     public void loadSettings(TuningContext context) {
-        return;
     }
 }

@@ -14,6 +14,7 @@ public class AutonomousModeDrive extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         drive(driveDistance.get());
+        waitForTime(1000);
     }
 
     public void loadSettings(TuningContext context) {
