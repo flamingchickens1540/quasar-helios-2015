@@ -135,17 +135,17 @@ public class DriveCode {
     };
 
     public static void setup() {
-        centricAngleOffset = ControlInterface.mainTuning.getFloat("main-drive-centricAngle", 0);
-        headingControl = ControlInterface.mainTuning.getBoolean("heading-control-in-teleop", false);
-        BooleanStatus startFieldCentric = ControlInterface.mainTuning.getBoolean("drive-field-centric", false);
+        centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
+        headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
+        BooleanStatus startFieldCentric = ControlInterface.teleTuning.getBoolean("Teleop Field Centric Default +T", false);
         recalibrateButton.send(calibrate);
 
-        FloatStatus ultgain = ControlInterface.mainTuning.getFloat("drive-PID-ultimate-gain", .0162f);
-        FloatStatus period = ControlInterface.mainTuning.getFloat("drive-PID-oscillation-period", 2f);
-        FloatStatus pconstant = ControlInterface.mainTuning.getFloat("drive-PID-P-constant", .6f);
-        FloatStatus iconstant = ControlInterface.mainTuning.getFloat("drive-PID-I-constant", 2f);
-        FloatStatus dconstant = ControlInterface.mainTuning.getFloat("drive-PID-D-constant", .125f);
-        BooleanStatus calibrating = ControlInterface.mainTuning.getBoolean("calibrating-drive-PID", false);
+        FloatStatus ultgain = ControlInterface.teleTuning.getFloat("Teleop PID Calibration Ultimate Gain +T", .03f);
+        FloatStatus period = ControlInterface.teleTuning.getFloat("Teleop PID Calibration Oscillation Period +T", 2f);
+        FloatStatus pconstant = ControlInterface.teleTuning.getFloat("Teleop PID Calibration P Constant +T", .6f);
+        FloatStatus iconstant = ControlInterface.teleTuning.getFloat("Teleop PID Calibration I Constant +T", 2f);
+        FloatStatus dconstant = ControlInterface.teleTuning.getFloat("Teleop PID Calibration D Constant +T", .125f);
+        BooleanStatus calibrating = ControlInterface.teleTuning.getBoolean("Teleop PID Calibration +T", false);
 
         FloatInput p = FloatMixing.createDispatch(
                 Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
@@ -155,9 +155,9 @@ public class DriveCode {
         FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
                 FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
 
-        Cluck.publish("Drive PID P", p);
-        Cluck.publish("Drive PID I", i);
-        Cluck.publish("Drive PID D", d);
+        Cluck.publish("Teleop PID P", p);
+        Cluck.publish("Teleop PID I", i);
+        Cluck.publish("Teleop PID D", d);
 
         pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
@@ -184,19 +184,19 @@ public class DriveCode {
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Rear", leftBackMotor);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Forward", leftFrontMotor);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Rear", rightBackMotor);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Right Forward", rightFrontMotor);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Mode", octocanumShifting);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left Raw", leftEncoderRaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right Raw", rightEncoderRaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Left", leftEncoder);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Right", rightEncoder);
-        Cluck.publish(QuasarHelios.testPrefix + "Calibrate Field Centric Angle", calibrate);
-        Cluck.publish(QuasarHelios.testPrefix + "Toggle Field Centric", fieldCentric);
-        Cluck.publish(QuasarHelios.testPrefix + "Toggle Heading Control", headingControl);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive PID", (FloatInput) pid);
-        Cluck.publish(QuasarHelios.testPrefix + "Drive Encoder Reset", (EventOutput) resetEncoders);
+        Cluck.publish("Drive Motor Left Rear", leftBackMotor);
+        Cluck.publish("Drive Motor Left Forward", leftFrontMotor);
+        Cluck.publish("Drive Motor Right Rear", rightBackMotor);
+        Cluck.publish("Drive Motor Right Forward", rightFrontMotor);
+        Cluck.publish("Drive Mode", octocanumShifting);
+        Cluck.publish("Teleop Strafing Only", onlyStrafing);
+        Cluck.publish("Drive Encoder Left Raw", leftEncoderRaw);
+        Cluck.publish("Drive Encoder Right Raw", rightEncoderRaw);
+        Cluck.publish("Drive Encoder Left", leftEncoder);
+        Cluck.publish("Drive Encoder Right", rightEncoder);
+        Cluck.publish("Teleop Field Centric Calibrate", calibrate);
+        Cluck.publish("Teleop Field Centric Toggle", fieldCentric);
+        Cluck.publish("Teleop PID Value", (FloatInput) pid);
+        Cluck.publish("Drive Encoder Reset", (EventOutput) resetEncoders);
     }
 }
