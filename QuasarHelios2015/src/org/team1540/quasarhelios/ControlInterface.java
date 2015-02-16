@@ -30,6 +30,7 @@ public class ControlInterface {
 
         Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
         Igneous.joystick2.getButtonSource(7).send(Clamp.setBottom);
+        Cluck.publish("Auto Stack", QuasarHelios.autoStacker);
     }
 
     private static void setupRollers() {

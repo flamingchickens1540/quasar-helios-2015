@@ -2,9 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
-import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
@@ -40,6 +38,8 @@ public class Clamp {
     public static FloatInputPoll heightReadout;
 
     public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("clamp-height-padding", 0.1f);
+
+    public static BooleanInputPoll atDesiredHeight;
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
@@ -90,6 +90,11 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, FloatMixing.negate((FloatInput) distance), FloatMixing.always(0.0f));
 
+        FloatInputPoll distanceFromTarget = FloatMixing.subtraction.of((FloatInputPoll) height, heightReadout);
+        
+        atDesiredHeight = BooleanMixing.andBooleans(FloatMixing.floatIsAtLeast(distanceFromTarget, FloatMixing.negate(heightPadding)), 
+                FloatMixing.floatIsAtMost(distanceFromTarget, heightPadding));
+        
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
