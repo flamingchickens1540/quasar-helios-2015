@@ -31,28 +31,39 @@ public class AutoStacker extends InstinctModule {
 
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-        Rollers.closed.set(true);
-        Rollers.running.set(true);
-        Rollers.direction.set(true);
+        boolean closed = Rollers.closed.get();
+        boolean running = Rollers.closed.get();
+        boolean direction = Rollers.direction.get();
 
-        Clamp.mode.set(Clamp.MODE_HEIGHT);
-        Clamp.height.set(startHeight.get());
-        waitUntil(Clamp.atDesiredHeight);
+        try {
+            Rollers.closed.set(true);
+            Rollers.running.set(true);
+            Rollers.direction.set(true);
 
-        Rollers.running.set(false);
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(startHeight.get());
+            waitUntil(Clamp.atDesiredHeight);
 
-        Clamp.openControl.set(true);
-        Clamp.height.set(collectHeight.get());
-        waitUntil(Clamp.atDesiredHeight);
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
 
-        Clamp.openControl.set(false);
-        Clamp.height.set(endHeight.get());
-        running.set(false);
+            Clamp.openControl.set(true);
+            Clamp.height.set(collectHeight.get());
+            waitUntil(Clamp.atDesiredHeight);
+
+            Clamp.openControl.set(false);
+            Clamp.height.set(endHeight.get());
+            this.running.set(false);
+        } finally {
+            Rollers.closed.set(closed);
+            Rollers.running.set(running);
+            Rollers.direction.set(direction);
+        }
     }
 
     @Override
     public String getTypeName() {
-        return "Auto Stacker";
+        return "auto stacker";
     }
 
 }

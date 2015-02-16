@@ -55,7 +55,7 @@ public class Rollers {
 
         BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("clamp-rollers-close-height", 0.2f));
         closed.setFalseWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl));
-        
+
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Left Arm", leftArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Right Arm", rightArmRoller);
         Cluck.publish(QuasarHelios.testPrefix + "Roller Speed Front", frontRollers);
