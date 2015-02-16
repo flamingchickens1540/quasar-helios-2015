@@ -87,6 +87,7 @@ public class HeadingSensor {
             public void event() {
                 float currentyaw = yaw.get();
                 if (Math.abs(currentyaw - oldyaw) > 180) {
+                    Logger.fine("YAW JUMP: " + oldyaw + " to " + currentyaw);
                     if (oldyaw > 180) {
                         accumulator.set(accumulator.get() + 360);
                     } else if (oldyaw < -180) {
