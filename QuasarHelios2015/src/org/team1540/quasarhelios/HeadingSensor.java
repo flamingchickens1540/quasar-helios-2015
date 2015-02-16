@@ -98,16 +98,16 @@ public class HeadingSensor {
             }
         });
 
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Zero", zeroGyro);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Reset Accumulator", resetAccumulator);
+        Cluck.publish("Heading Sensor Zero Gyro", zeroGyro);
+        Cluck.publish("Heading Sensor Reset Accumulator", resetAccumulator);
 
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch", pitch);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw", yaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Absolute Yaw", absoluteYaw);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Roll", roll);
+        Cluck.publish("Heading Sensor Pitch", pitch);
+        Cluck.publish("Heading Sensor Yaw", yaw);
+        Cluck.publish("Heading Sensor Yaw Absolute", absoluteYaw);
+        Cluck.publish("Heading Sensor Roll", roll);
 
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Pitch Rate", pitchRate);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Yaw Rate", yawRate);
-        Cluck.publish(QuasarHelios.testPrefix + "Heading Sensor Roll Rate", rollRate);
+        Cluck.publish("Heading Sensor Pitch Rate", pitchRate);
+        Cluck.publish("Heading Sensor Yaw Rate", yawRate);
+        Cluck.publish("Heading Sensor Roll Rate", rollRate);
     }
 }
