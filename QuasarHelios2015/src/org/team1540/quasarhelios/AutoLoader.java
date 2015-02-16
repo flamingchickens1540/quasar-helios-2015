@@ -5,6 +5,7 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -37,7 +38,12 @@ public class AutoLoader extends InstinctModule {
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            Elevator.setTop.event();
+            float currentClampHeight = Clamp.height.get();
+            if (currentClampHeight < 0.5) {
+                setClampHeight(0.5f);
+            }
+
+            Elevator.setTop.event();    
 
             try {
                 waitUntil(Elevator.atTop);
@@ -66,6 +72,12 @@ public class AutoLoader extends InstinctModule {
         } finally {
             running.set(false);
         }
+    }
+    
+    private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
+        Clamp.mode.set(Clamp.MODE_HEIGHT);
+        Clamp.height.set(value);
+        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
     }
 
     @Override
