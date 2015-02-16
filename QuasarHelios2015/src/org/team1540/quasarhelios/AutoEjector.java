@@ -34,7 +34,7 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            float currentClampHeight = Clamp.height.get();
+            float currentClampHeight = Clamp.heightReadout.get();
 
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(clampHeight.get());
