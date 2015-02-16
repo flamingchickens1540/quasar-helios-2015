@@ -123,6 +123,8 @@ public class Clamp {
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Limit Bottom", limitBottom);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp Motor Speed", speedControl);
         Cluck.publish(QuasarHelios.testPrefix + "Clamp PID Output", (FloatInput) pid);
+        
+        Cluck.publish("Enter Teleop", Igneous.startTele);
 
         Cluck.publish("Clamp Distance", distance);
         Cluck.publish("Clamp Min Set", FloatMixing.pumpEvent(encoder, FloatMixing.negate((FloatOutput) distance)));
