@@ -36,9 +36,13 @@ public class AutoEjector extends InstinctModule {
         try {
             float currentClampHeight = Clamp.height.get();
 
-            setClampHeight(1.0f);
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(1.0f);
+
             if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
+                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atBottom));
+            } else {
                 waitUntil(Elevator.atBottom);
             }
 
@@ -57,7 +61,9 @@ public class AutoEjector extends InstinctModule {
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
                 Rollers.closed.set(closed);
-                setClampHeight(currentClampHeight);
+                Clamp.mode.set(Clamp.MODE_HEIGHT);
+                Clamp.height.set(currentClampHeight);
+                waitUntil(Clamp.atDesiredHeight);
             }
         } finally {
             running.set(false);
@@ -67,12 +73,6 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected String getTypeName() {
         return "auto ejector";
-    }
-
-    private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-        Clamp.mode.set(Clamp.MODE_HEIGHT);
-        Clamp.height.set(value);
-        waitUntil(Clamp.atDesiredHeight);
     }
 
 }

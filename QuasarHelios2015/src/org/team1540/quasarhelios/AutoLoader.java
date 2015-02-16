@@ -40,16 +40,18 @@ public class AutoLoader extends InstinctModule {
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            float currentClampHeight = Clamp.height.get();
+            Elevator.setTop.event();
+
+            float currentClampHeight = Clamp.heightReadout.get();
             if (currentClampHeight < clampHeightThreshold.get()) {
-                setClampHeight(clampHeightThreshold.get());
+                Clamp.mode.set(Clamp.MODE_HEIGHT);
+                Clamp.height.set(clampHeightThreshold.get());
+                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
+            } else {
+                waitUntil(Elevator.atTop);
             }
 
-            Elevator.setTop.event();    
-
             try {
-                waitUntil(Elevator.atTop);
-
                 boolean running = Rollers.running.get();
                 boolean direction = Rollers.direction.get();
                 boolean closed = Rollers.closed.get();
@@ -76,11 +78,6 @@ public class AutoLoader extends InstinctModule {
         }
     }
     
-    private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-        Clamp.mode.set(Clamp.MODE_HEIGHT);
-        Clamp.height.set(value);
-        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
-    }
 
     @Override
     protected String getTypeName() {
