@@ -59,11 +59,11 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("auto-three-totes-nudge", 1.0f);
-        this.toteDistance = context.getFloat("auto-three-totes-tote-distance", 7.0f);
-        this.autoZoneDistance = context.getFloat("auto-three-totes-auto-zone-distance", 5.0f);
-        this.strafeTime = context.getFloat("auto-three-totes-strafe-time", 1.0f);
-        this.collectFirstContainer = context.getBoolean("auto-three-totes-collect-first-container", true);
-        this.collectSecondContainer = context.getBoolean("auto-three-totes-collect-second-container", true);
+        this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 1.0f);
+        this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 7.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 5.0f);
+        this.strafeTime = context.getFloat("Auto Mode Three Totes Strafe Time +A", 1.0f);
+        this.collectFirstContainer = context.getBoolean("Auto Mode Three Totes Collect First Container +A", true);
+        this.collectSecondContainer = context.getBoolean("Auto Mode Three Totes Collect Second Container +A", true);
     }
 }
