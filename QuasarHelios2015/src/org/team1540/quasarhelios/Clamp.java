@@ -121,7 +121,11 @@ public class Clamp {
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(mode,
                 useEncoder.asInvertedInput()), pid, speed), out);
 
-        new InstinctModule(BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()), needsAutoCalibration, ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true), BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
+        // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
+        // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
+        new InstinctModule(BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()),
+                needsAutoCalibration, ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true),
+                BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
             private final FloatInputPoll downwardTime = ControlInterface.mainTuning.getFloat("clamp-autocalibration-downward-time", 0.2f);
 
             @Override
