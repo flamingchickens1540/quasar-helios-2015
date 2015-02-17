@@ -29,7 +29,6 @@ public class QuasarHelios implements IgneousApplication {
     public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
     public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
     public static final EventInput readoutUpdate = new Ticker(100);
-    public static final String testPrefix = "(Test) ";
 
     public void setupRobot() {
         Elevator.setup();

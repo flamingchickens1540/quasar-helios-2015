@@ -62,7 +62,7 @@ public class ControlInterface {
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
-        FloatInput cutoffRollers = mainTuning.getFloat("roller-override-threshold", 0.3f);
+        FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
         BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(5);
 
         BooleanMixing.pumpWhen(Igneous.globalPeriodic, overrideRollers, Rollers.overrideRollers);
@@ -79,7 +79,7 @@ public class ControlInterface {
         Igneous.joystick2.getAxisSource(2).send(Rollers.leftRollerOverride);
         Igneous.joystick2.getAxisSource(6).send(Rollers.rightRollerOverride);
 
-        FloatInput cutoffAuto = mainTuning.getFloat("autoloader-button-threshold", 0.5f);
+        FloatInput cutoffAuto = mainTuning.getFloat("Trigger Threshold +M", 0.5f);
 
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
@@ -100,10 +100,10 @@ public class ControlInterface {
         FloatInput rightXAxis = Igneous.joystick1.getAxisSource(5);
         FloatInput rightYAxis = Igneous.joystick1.getAxisSource(6);
 
-        Cluck.publish("Right Joystick X", rightXAxis);
-        Cluck.publish("Right Joystick Y", rightYAxis);
-        Cluck.publish("Left Joystick X", leftXAxis);
-        Cluck.publish("Left Joystick Y", leftYAxis);
+        Cluck.publish("Joystick 1 Right X Axis", rightXAxis);
+        Cluck.publish("Joystick 1 Right Y Axis", rightYAxis);
+        Cluck.publish("Joystick 1 Left X Axis", leftXAxis);
+        Cluck.publish("Joystick 1 Left Y Axis", leftYAxis);
 
         FloatMixing.deadzone(leftXAxis, .2f).send(DriveCode.leftJoystickX);
         FloatMixing.deadzone(leftYAxis, .2f).send(DriveCode.leftJoystickY);

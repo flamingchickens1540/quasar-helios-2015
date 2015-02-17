@@ -26,8 +26,8 @@ public class AutonomousModeOneContainer extends AutonomousModeBase  {
 
     @Override
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("auto-one-container-nudge", 5.0f);
-        this.leftStrafeTime = context.getFloat("auto-one-container-left-strafe-time", 0.0f);
-        this.autoZoneDistance = context.getFloat("auto-one-container-auto-zone-distance", 10.0f);
+        this.nudge = context.getFloat("Auto Mode One Container Nudge +A", 5.0f);
+        this.leftStrafeTime = context.getFloat("Auto Mode One Container Strafe Time +A", 0.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode One Container Auto Zone Distance +A", 10.0f);
     }
 }

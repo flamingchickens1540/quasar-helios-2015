@@ -42,12 +42,12 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.toteDistance = context.getFloat("auto-single-tote-distance", 2.0f);
-        this.autoZoneDistance = context.getFloat("auto-single-auto-zone-distance", 2.0f);
-        this.returnDistance = context.getFloat("auto-single-return-distance", 2.0f);
-        this.collectContainer = context.getBoolean("auto-single-collect-container", false);
-        this.nudge = context.getFloat("auto-single-nudge", 1.0f);
-        this.strafeTime = context.getFloat("auto-single-strafe-time", 1.0f);
+        this.toteDistance = context.getFloat("Auto Mode Single Tote Tote Distance +A", 2.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance +A", 2.0f);
+        this.returnDistance = context.getFloat("Auto Mode Single Tote Return Distance +A", 2.0f);
+        this.collectContainer = context.getBoolean("Auto Mode Single Tote Should Collect Container +A", false);
+        this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 1.0f);
+        this.strafeTime = context.getFloat("Auto Mode Single Tote Strafe Time +A", 1.0f);
     }
 
 }
