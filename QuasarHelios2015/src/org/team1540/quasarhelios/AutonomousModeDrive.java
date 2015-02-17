@@ -21,7 +21,7 @@ public class AutonomousModeDrive extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.driveDistance = context.getFloat("auto-drive-distance", 2.0f);
-        this.turnAngle = context.getFloat("auto-drive-angle", 0.0f);
+        this.driveDistance = context.getFloat("Auto Mode Drive Distance +A", 2.0f);
+        this.turnAngle = context.getFloat("Auto Mode Drive Angle +A", 0.0f);
     }
 }

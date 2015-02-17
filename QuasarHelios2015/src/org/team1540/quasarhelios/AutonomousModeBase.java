@@ -13,8 +13,8 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
-    private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
+    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
+    private static final FloatInputPoll rotateSpeed = context.getFloat("Auto Rotate Speed +A", 1.0f);
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 

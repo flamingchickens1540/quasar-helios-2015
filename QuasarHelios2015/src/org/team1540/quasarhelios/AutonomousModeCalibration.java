@@ -11,7 +11,7 @@ public class AutonomousModeCalibration extends AutonomousModeBase {
 
     public AutonomousModeCalibration() {
         super("Calibration");
-        Cluck.publish("Stop Auto Calibration", stopButton);
+        Cluck.publish("Auto Mode Calibration Stop", stopButton);
     }
 
     private BooleanStatus stopButton = new BooleanStatus();
