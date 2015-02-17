@@ -147,7 +147,7 @@ public class Elevator {
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 
-        Cluck.publish("Elevator Winch Speed Currently", winch);
+        Cluck.publish("Elevator Winch Speed Output", winch);
         Cluck.publish("Elevator Limit Top", limitTop);
         Cluck.publish("Elevator Limit Bottom", limitBottom);
     }
