@@ -12,14 +12,14 @@ public class DriveCode {
     public static final FloatStatus rightJoystickX = new FloatStatus();
     public static final FloatStatus rightJoystickY = new FloatStatus();
 
-    public static EventInput octocanumShiftingButton;
-    public static EventInput recalibrateButton;
-    public static EventInput strafingButton;
-    public static FloatInput forwardTrigger;
-    public static FloatInput backwardTrigger;
+    public static EventStatus octocanumShiftingButton = new EventStatus();
+    public static EventStatus recalibrateButton = new EventStatus();
+    public static EventStatus strafingButton = new EventStatus();
+    public static FloatStatus forwardTrigger = new FloatStatus();
+    public static FloatStatus backwardTrigger = new FloatStatus();
 
-    public static final FloatInput leftJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) leftJoystickY, forwardTrigger), backwardTrigger);
-    public static final FloatInput rightJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) rightJoystickY, forwardTrigger), backwardTrigger);
+    public static final FloatInput leftJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) leftJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+    public static final FloatInput rightJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) rightJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
 
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
