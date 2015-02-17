@@ -35,7 +35,7 @@ public class AutoStacker extends InstinctModule {
 
         try {
             Rollers.running.set(false);
-            
+
             Rollers.overrideRollers.set(true);
             Rollers.leftPneumaticOverride.set(true);
             Rollers.rightPneumaticOverride.set(true);
