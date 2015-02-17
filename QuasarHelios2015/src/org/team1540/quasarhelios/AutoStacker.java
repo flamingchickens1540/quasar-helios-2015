@@ -31,21 +31,22 @@ public class AutoStacker extends InstinctModule {
 
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-        boolean closed = Rollers.closed.get();
-        boolean running = Rollers.closed.get();
-        boolean direction = Rollers.direction.get();
+        boolean running = Rollers.running.get();
 
         try {
-            Rollers.closed.set(true);
-            Rollers.running.set(true);
-            Rollers.direction.set(true);
+            Rollers.running.set(false);
+            
+            Rollers.overrideRollers.set(true);
+            Rollers.leftPneumaticOverride.set(true);
+            Rollers.rightPneumaticOverride.set(true);
+            Rollers.leftRollerOverride.set(-1.0f);
+            Rollers.rightRollerOverride.set(-1.0f);
 
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(startHeight.get());
             waitUntil(Clamp.atDesiredHeight);
 
-            Rollers.running.set(false);
-            Rollers.closed.set(false);
+            Rollers.overrideRollers.set(false);
 
             Clamp.openControl.set(true);
             Clamp.height.set(collectHeight.get());
@@ -55,9 +56,7 @@ public class AutoStacker extends InstinctModule {
             Clamp.height.set(endHeight.get());
             this.running.set(false);
         } finally {
-            Rollers.closed.set(closed);
             Rollers.running.set(running);
-            Rollers.direction.set(direction);
         }
     }
 
