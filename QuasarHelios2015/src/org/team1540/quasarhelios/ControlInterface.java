@@ -79,7 +79,7 @@ public class ControlInterface {
         Igneous.joystick2.getAxisSource(2).send(Rollers.leftRollerOverride);
         Igneous.joystick2.getAxisSource(6).send(Rollers.rightRollerOverride);
 
-        FloatInput cutoffAuto = mainTuning.getFloat("Loader Button Threshold +M", 0.5f);
+        FloatInput cutoffAuto = mainTuning.getFloat("AutoLoader Button Threshold +M", 0.5f);
 
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);

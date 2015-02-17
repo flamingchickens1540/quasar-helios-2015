@@ -10,7 +10,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
-    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("Ejector Timeout +M", 2.0f);
+    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
