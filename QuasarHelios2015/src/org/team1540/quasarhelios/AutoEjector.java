@@ -72,5 +72,4 @@ public class AutoEjector extends InstinctModule {
         Clamp.height.set(value);
         waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
     }
-
 }

@@ -27,6 +27,7 @@ public class QuasarHelios implements IgneousApplication {
     public static BooleanStatus autoLoader;
     public static BooleanStatus autoEjector;
     public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
+    public static final EventInput manualControl = EventMixing.filterEvent(BooleanMixing.orBooleans(Igneous.getIsTest(), Igneous.getIsAutonomous()), false, Igneous.globalPeriodic);
     public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
     public static final EventInput readoutUpdate = new Ticker(100);
 

@@ -14,9 +14,9 @@ import ccre.instinct.InstinctModeModule;
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
     private static final FloatInputPoll driveSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Drive Speed +A", 1.0f));
-    private static final FloatInputPoll rotateSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Rotate Speed +A", 1.0f));
+    private static final FloatInputPoll rotateSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Rotate Speed +A", 0.5f));
     private static final FloatInputPoll rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
-    private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", 0.0f);
+    private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", -30f);
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 
@@ -70,14 +70,19 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
-        float actualDegree = degree * rotateMultiplier.get() + rotateOffset.get();
 
-        if (actualDegree > 0) {
-            DriveCode.rotate.set(-rotateSpeed.get());
-            waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw + actualDegree);
+        if (degree > 0) {
+            float actualDegree = degree * rotateMultiplier.get() + rotateOffset.get();
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(-rotateSpeed.get());
+                waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
         } else {
-            DriveCode.rotate.set(rotateSpeed.get());
-            waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw + actualDegree);
+            float actualDegree = degree * rotateMultiplier.get() - rotateOffset.get();
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(rotateSpeed.get());
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
         }
 
         DriveCode.rotate.set(0.0f);
@@ -87,7 +92,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         QuasarHelios.autoLoader.set(true);
-        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
+        waitUntilNot(QuasarHelios.autoLoader);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
@@ -104,9 +109,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         QuasarHelios.autoEjector.set(true);
-        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
+        waitUntilNot(QuasarHelios.autoEjector);
     }
-    
+
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
         setClampHeight(0.0f);
         setClampOpen(true);
@@ -114,13 +119,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         setClampOpen(false);
         setClampHeight(1.0f);
     }
-    
+
     protected void depositContainer() throws AutonomousModeOverException, InterruptedException {
         setClampHeight(0.0f);
         setClampOpen(true);
         setClampHeight(1.0f);
     }
-    
+
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
