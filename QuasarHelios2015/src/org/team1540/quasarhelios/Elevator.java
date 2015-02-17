@@ -37,7 +37,7 @@ public class Elevator {
         winch = winchS;
         final FloatOutput target = raw;
         BooleanStatus doRamping = new BooleanStatus(true);
-        Cluck.publish("Elevator Ramping Toggle", doRamping);
+        Cluck.publish("Elevator Ramping Enabled", doRamping);
         Igneous.constantPeriodic.send(new EventOutput() {
             private float last = winchS.get();
 

@@ -195,7 +195,7 @@ public class DriveCode {
         Cluck.publish("Drive Encoder Left", leftEncoder);
         Cluck.publish("Drive Encoder Right", rightEncoder);
         Cluck.publish("Teleop Field Centric Calibrate", calibrate);
-        Cluck.publish("Teleop Field Centric Toggle", fieldCentric);
+        Cluck.publish("Teleop Field Centric Enabled", fieldCentric);
         Cluck.publish("Teleop PID Output", (FloatInput) pid);
         Cluck.publish("Drive Encoder Reset", (EventOutput) resetEncoders);
     }
