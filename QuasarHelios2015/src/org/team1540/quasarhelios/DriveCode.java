@@ -12,9 +12,15 @@ public class DriveCode {
     public static final FloatStatus rightJoystickX = new FloatStatus();
     public static final FloatStatus rightJoystickY = new FloatStatus();
 
-    public static EventInput octocanumShiftingButton;
-    public static EventInput recalibrateButton;
-    public static EventInput strafingButton;
+    public static EventStatus octocanumShiftingButton = new EventStatus();
+    public static EventStatus recalibrateButton = new EventStatus();
+    public static EventStatus strafingButton = new EventStatus();
+    public static FloatStatus forwardTrigger = new FloatStatus();
+    public static FloatStatus backwardTrigger = new FloatStatus();
+
+    public static final FloatInput leftJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) leftJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+    public static final FloatInput rightJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) rightJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
@@ -48,7 +54,7 @@ public class DriveCode {
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
-            float distanceY = leftJoystickY.get();
+            float distanceY = leftJoystickYChannel.get();
             float distanceX = leftJoystickX.get();
             float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             if (speed > 1) {
@@ -182,7 +188,7 @@ public class DriveCode {
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
-                DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
+                DriverImpls.createTankDriverEvent(leftJoystickYChannel, rightJoystickYChannel, leftMotors, rightMotors)));
 
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Rear", leftBackMotor);
         Cluck.publish(QuasarHelios.testPrefix + "Drive Motor Left Forward", leftFrontMotor);
