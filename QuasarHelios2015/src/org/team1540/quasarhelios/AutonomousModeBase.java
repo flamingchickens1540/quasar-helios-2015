@@ -88,7 +88,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-        Clamp.openControl.set(value);
+        Clamp.open.set(value);
         waitForTime(30);
     }
 
