@@ -42,7 +42,7 @@ public class Autonomous {
         autoPID = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
         reversePID = FloatMixing.negate(autoPID);
 
-        Cluck.publish("Auto PID Value", autoPID);
+        Cluck.publish("Auto PID Output", autoPID);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
