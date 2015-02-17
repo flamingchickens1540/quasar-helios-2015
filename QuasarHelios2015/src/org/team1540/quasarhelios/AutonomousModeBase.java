@@ -13,7 +13,7 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
+    private static final FloatInputPoll driveSpeed = FloatMixing.negate((FloatInput) context.getFloat("Auto Drive Speed +A", 1.0f));
     private static final FloatInputPoll rotateSpeed = context.getFloat("Auto Rotate Speed +A", 1.0f);
     private static final FloatInputPoll rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
     private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", 0.0f);
@@ -73,10 +73,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         float actualDegree = degree * rotateMultiplier.get() + rotateOffset.get();
 
         if (actualDegree > 0) {
-            DriveCode.rotate.set(rotateSpeed.get());
+            DriveCode.rotate.set(-rotateSpeed.get());
             waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw + actualDegree);
         } else {
-            DriveCode.rotate.set(-rotateSpeed.get());
+            DriveCode.rotate.set(rotateSpeed.get());
             waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw + actualDegree);
         }
 
