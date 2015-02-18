@@ -1,6 +1,7 @@
 package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
+import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
@@ -28,8 +29,10 @@ public class ControlInterface {
         FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), 
                 Igneous.joystick2.getAxisChannel(2), Clamp.speed);
 
-        Clamp.openControl.toggleWhen(Igneous.joystick2.getButtonSource(3));
+        Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
         Igneous.joystick2.getButtonSource(7).send(Clamp.setBottom);
+        Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
+        Cluck.publish("Auto Stack", QuasarHelios.autoStacker);
     }
 
     private static void setupRollers() {
@@ -62,10 +65,11 @@ public class ControlInterface {
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
-        FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
-        BooleanInputPoll overrideRollers = Igneous.joystick2.getButtonChannel(5);
 
-        BooleanMixing.pumpWhen(Igneous.globalPeriodic, overrideRollers, Rollers.overrideRollers);
+        FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
+        BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
+        
+        overrideRollers.send(Rollers.overrideRollers);
 
         FloatInput leftStickX = Igneous.joystick2.getAxisSource(1);
         FloatInput rightStickX = Igneous.joystick2.getAxisSource(5);
@@ -76,8 +80,10 @@ public class ControlInterface {
         BooleanMixing.onPress(FloatMixing.floatIsAtMost(rightStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
         BooleanMixing.onPress(FloatMixing.floatIsAtLeast(rightStickX, cutoffRollers)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
 
-        Igneous.joystick2.getAxisSource(2).send(Rollers.leftRollerOverride);
-        Igneous.joystick2.getAxisSource(6).send(Rollers.rightRollerOverride);
+        FloatInput leftStickY = Igneous.joystick2.getAxisSource(2);
+        FloatInput rightStickY = Igneous.joystick2.getAxisSource(6);
+        FloatMixing.deadzone(leftStickY, 0.2f).send(Rollers.leftRollerOverride);
+        FloatMixing.deadzone(rightStickY, 0.2f).send(Rollers.rightRollerOverride);
 
         FloatInput cutoffAuto = mainTuning.getFloat("Trigger Threshold +M", 0.5f);
 

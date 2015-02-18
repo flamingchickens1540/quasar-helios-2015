@@ -31,13 +31,18 @@ public class Clamp {
     public static FloatStatus speed = new FloatStatus();
     public static BooleanStatus mode = new BooleanStatus(MODE_SPEED);
 
-    public static final BooleanStatus openControl = new BooleanStatus(Igneous.makeSolenoid(3));
+    public static final BooleanStatus open = new BooleanStatus(BooleanMixing.invert(Igneous.makeSolenoid(3)));
+
     public static final EventOutput setBottom = EventMixing.combine(mode.getSetFalseEvent(), height.getSetEvent(0));
 
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("Clamp Use Encoder +M", true);
     public static FloatInputPoll heightReadout;
     public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("Clamp Height Padding +A", 0.01f);
 
+    public static BooleanInputPoll atDesiredHeight;
+    
+    public static BooleanInput atTop;
+    public static BooleanInput atBottom;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
 
     public static void setup() {
@@ -78,16 +83,19 @@ public class Clamp {
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.constantPeriodic);
 
-        BooleanStatus atTop = new BooleanStatus(), atBottom = new BooleanStatus();
-        atTop.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onPress(limitTop)));
-        atTop.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onRelease(limitTop)));
-        atBottom.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onPress(limitBottom)));
-        atBottom.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onRelease(limitBottom)));
+        BooleanStatus atTopStatus = new BooleanStatus(), atBottomStatus = new BooleanStatus();
+        atTop = atTopStatus;
+        atBottom = atBottomStatus;
+        
+        atTopStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onPress(limitTop)));
+        atTopStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onRelease(limitTop)));
+        atBottomStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onPress(limitBottom)));
+        atBottomStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onRelease(limitBottom)));
 
         FloatStatus distance = ControlInterface.mainTuning.getFloat("Clamp Distance +M", 1.0f);
 
-        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atBottom)), encoder, FloatMixing.negate((FloatOutput) distance));
-        EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atTop)).send(zeroEncoder);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atBottomStatus)), encoder, FloatMixing.negate((FloatOutput) distance));
+        EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atTopStatus)).send(zeroEncoder);
 
         FloatStatus p = ControlInterface.mainTuning.getFloat("Clamp PID P", 1.0f);
         FloatStatus i = ControlInterface.mainTuning.getFloat("Clamp PID I", 0.0f);
@@ -95,6 +103,11 @@ public class Clamp {
 
         heightReadout = FloatMixing.normalizeFloat(encoder, FloatMixing.negate((FloatInput) distance), FloatMixing.always(0.0f));
 
+        FloatInputPoll distanceFromTarget = FloatMixing.subtraction.of((FloatInputPoll) height, heightReadout);
+        
+        atDesiredHeight = BooleanMixing.andBooleans(FloatMixing.floatIsAtLeast(distanceFromTarget, FloatMixing.negate(heightPadding)), 
+                FloatMixing.floatIsAtMost(distanceFromTarget, heightPadding));
+        
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
@@ -104,10 +117,10 @@ public class Clamp {
         QuasarHelios.constantControl.send(pid);
 
         FloatOutput out = (value) -> {
-            if (atTop.get()) {
+            if (atTopStatus.get()) {
                 value = Math.max(value, 0);
             }
-            if (atBottom.get()) {
+            if (atBottomStatus.get()) {
                 value = Math.min(value, 0);
             }
             if (value >= -0.1f && value <= 0.1f) {
@@ -161,15 +174,15 @@ public class Clamp {
             }
         }.updateWhen(Igneous.globalPeriodic);
 
-        Cluck.publish("Clamp Open Control", openControl);
+        Cluck.publish("Clamp Open Control", open);
         Cluck.publish("Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));
         Cluck.publish("Clamp Height Scaled", FloatMixing.createDispatch(heightReadout, Igneous.globalPeriodic));
         Cluck.publish("Clamp Height Setting", height);
         Cluck.publish("Clamp Integral Total", pid.integralTotal);
         Cluck.publish("Clamp Limit Top (Direct)", limitTop);
         Cluck.publish("Clamp Limit Bottom (Direct)", limitBottom);
-        Cluck.publish("Clamp Limit Top", atTop);
-        Cluck.publish("Clamp Limit Bottom", atBottom);
+        Cluck.publish("Clamp Limit Top", atTopStatus);
+        Cluck.publish("Clamp Limit Bottom", atBottomStatus);
         Cluck.publish("Clamp Motor Speed", speedControl);
         Cluck.publish("Clamp PID Output", (FloatInput) pid);
 

@@ -26,6 +26,7 @@ import ccre.rconf.RConfable;
 public class QuasarHelios implements IgneousApplication {
     public static BooleanStatus autoLoader;
     public static BooleanStatus autoEjector;
+    public static BooleanStatus autoStacker;
     public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
     public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
     public static final EventInput readoutUpdate = new Ticker(100);
@@ -34,6 +35,7 @@ public class QuasarHelios implements IgneousApplication {
         Elevator.setup();
         autoLoader = AutoLoader.create();
         autoEjector = AutoEjector.create();
+        autoStacker = AutoStacker.create();
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();

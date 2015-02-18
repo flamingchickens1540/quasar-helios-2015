@@ -88,14 +88,14 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-        Clamp.openControl.set(value);
+        Clamp.open.set(value);
         waitForTime(30);
     }
 
     protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
         Clamp.mode.set(Clamp.MODE_HEIGHT);
         Clamp.height.set(value);
-        waitUntil(FloatMixing.floatIsInRange(Clamp.heightReadout, value - Clamp.heightPadding.get(), value + Clamp.heightPadding.get()));
+        waitUntil(Clamp.atDesiredHeight);
     }
 
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
