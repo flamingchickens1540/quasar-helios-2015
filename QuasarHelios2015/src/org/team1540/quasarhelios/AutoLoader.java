@@ -5,6 +5,7 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -13,6 +14,8 @@ public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.5f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
+    
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.5f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
@@ -39,9 +42,16 @@ public class AutoLoader extends InstinctModule {
         try {
             Elevator.setTop.event();
 
-            try {
+            float currentClampHeight = Clamp.heightReadout.get();
+            if (currentClampHeight < clampHeightThreshold.get()) {
+                Clamp.mode.set(Clamp.MODE_HEIGHT);
+                Clamp.height.set(clampHeightThreshold.get());
+                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
+            } else {
                 waitUntil(Elevator.atTop);
+            }
 
+            try {
                 boolean running = Rollers.running.get();
                 boolean direction = Rollers.direction.get();
                 boolean closed = Rollers.closed.get();
@@ -67,6 +77,7 @@ public class AutoLoader extends InstinctModule {
             running.set(false);
         }
     }
+    
 
     @Override
     protected String getTypeName() {

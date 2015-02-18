@@ -54,7 +54,7 @@ public class Rollers {
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideRight), rightPneumatic);
 
         BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("Clamp Rollers Close Height +M", 0.2f));
-        closed.setFalseWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl));
+        BooleanMixing.setWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl), BooleanMixing.combine(closed, leftPneumaticOverride, rightPneumaticOverride), false);
 
         Cluck.publish("Roller Speed Left Arm", leftArmRoller);
         Cluck.publish("Roller Speed Right Arm", rightArmRoller);
