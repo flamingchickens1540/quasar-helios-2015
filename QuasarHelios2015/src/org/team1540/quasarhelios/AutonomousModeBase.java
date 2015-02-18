@@ -103,7 +103,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         QuasarHelios.autoEjector.set(true);
         waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
     }
-    
+
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
         setClampHeight(0.0f);
         setClampOpen(true);
@@ -111,13 +111,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         setClampOpen(false);
         setClampHeight(1.0f);
     }
-    
+
     protected void depositContainer() throws AutonomousModeOverException, InterruptedException {
         setClampHeight(0.0f);
         setClampOpen(true);
         setClampHeight(1.0f);
     }
-    
+
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {

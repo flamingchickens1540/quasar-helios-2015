@@ -167,7 +167,9 @@ public class DriveCode {
 
         pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(-1f, 1f);
-        pid.setIntegralBounds(-.5f, .5f);
+
+        FloatStatus integralBounds = ControlInterface.teleTuning.getFloat("Teleop PID Integral Bounds +T", .5f);
+        pid.setIntegralBounds(FloatMixing.negate((FloatInput) integralBounds), integralBounds);
 
         Igneous.globalPeriodic.send(pid);
 
