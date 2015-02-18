@@ -37,7 +37,7 @@ public class Clamp {
 
     private static final BooleanStatus useEncoder = ControlInterface.mainTuning.getBoolean("Clamp Use Encoder +M", true);
     public static FloatInputPoll heightReadout;
-    public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("Clamp Height Padding +A", 0.01f);
+    public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("Clamp Height Padding +A", 0.1f);
 
     public static BooleanInputPoll atDesiredHeight;
     

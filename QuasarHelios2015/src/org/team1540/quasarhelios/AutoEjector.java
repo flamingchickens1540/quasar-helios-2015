@@ -3,13 +3,13 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
+    private FloatInputPoll clampHeight = ControlInterface.mainTuning.getFloat("AutoEjector Clamp Height +M", 1.0f);
     private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
 
     private AutoEjector(BooleanStatus running) {
@@ -34,12 +34,18 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
-            setClampHeight(1.0f);
-            Elevator.setBottom.event();
+            float currentClampHeight = Clamp.heightReadout.get();
 
-            waitUntil(Elevator.atBottom);
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(clampHeight.get());
 
-            float currentClampHeight = Clamp.height.get();
+            if (!Elevator.atBottom.get()) {
+                Elevator.setBottom.event();
+                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atBottom));
+            } else {
+                waitUntil(Elevator.atBottom);
+            }
+
             boolean running = Rollers.running.get();
             boolean direction = Rollers.direction.get();
             boolean closed = Rollers.closed.get();
@@ -55,7 +61,9 @@ public class AutoEjector extends InstinctModule {
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
                 Rollers.closed.set(closed);
-                setClampHeight(currentClampHeight);
+                Clamp.mode.set(Clamp.MODE_HEIGHT);
+                Clamp.height.set(currentClampHeight);
+                waitUntil(Clamp.atDesiredHeight);
             }
         } finally {
             running.set(false);
@@ -65,12 +73,6 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected String getTypeName() {
         return "auto ejector";
-    }
-
-    private void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
-        Clamp.mode.set(Clamp.MODE_HEIGHT);
-        Clamp.height.set(value);
-        waitUntil(Clamp.atDesiredHeight);
     }
 
 }
