@@ -19,13 +19,13 @@ public class Autonomous {
     public static final FloatStatus desiredAngle = new FloatStatus();
 
     public static void setup() {
-        FloatStatus ultgain = ControlInterface.autoTuning.getFloat("auto-PID-ultimate-gain", .017f);
-        FloatStatus period = ControlInterface.autoTuning.getFloat("auto-PID-oscillation-period", 2f);
-        FloatStatus pconstant = ControlInterface.autoTuning.getFloat("auto-PID-P-constant", .6f);
-        FloatStatus iconstant = ControlInterface.autoTuning.getFloat("auto-PID-I-constant", 2f);
-        FloatStatus dconstant = ControlInterface.autoTuning.getFloat("auto-PID-D-constant", .125f);
-        BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("calibrating-auto-PID", false);
-        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("use-PID-in-auto", true);
+        FloatStatus ultgain = ControlInterface.autoTuning.getFloat("Auto PID Calibrating Ultimate Gain +A", .03f);
+        FloatStatus period = ControlInterface.autoTuning.getFloat("Auto PID Calibrating Oscillation Period +A", 2f);
+        FloatStatus pconstant = ControlInterface.autoTuning.getFloat("Auto PID Calibrating P Constant +A", .6f);
+        FloatStatus iconstant = ControlInterface.autoTuning.getFloat("Auto PID Calibrating I Constant +A", 2f);
+        FloatStatus dconstant = ControlInterface.autoTuning.getFloat("Auto PID Calibrating D Constant +A", .125f);
+        BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("Auto PID Calibrating +A", false);
+        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("Auto PID Enabled +A", true);
 
         FloatInput p = FloatMixing.createDispatch(
                 Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
@@ -42,7 +42,7 @@ public class Autonomous {
         autoPID = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
         reversePID = FloatMixing.negate(autoPID);
 
-        Cluck.publish("Auto PID", autoPID);
+        Cluck.publish("Auto PID Output", autoPID);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());

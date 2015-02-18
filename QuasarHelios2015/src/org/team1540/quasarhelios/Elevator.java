@@ -37,7 +37,7 @@ public class Elevator {
         winch = winchS;
         final FloatOutput target = raw;
         BooleanStatus doRamping = new BooleanStatus(true);
-        Cluck.publish("elevator-do-ramping", doRamping);
+        Cluck.publish("Elevator Ramping Enabled", doRamping);
         Igneous.constantPeriodic.send(new EventOutput() {
             private float last = winchS.get();
 
@@ -69,19 +69,19 @@ public class Elevator {
     public static final BooleanInput atTop = atTopStatus;
     public static final BooleanInput atBottom = atBottomStatus;
 
-    private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("main-elevator-speed", 1.0f);
+    private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Speed +M", 1.0f);
 
     public static void setup() {
 
         Ticker updateCAN = new Ticker(100);
-        Cluck.publish("CAN Elevator Enable", winchCAN.asEnable());
-        Cluck.publish("CAN Elevator Bus Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
-        Cluck.publish("CAN Elevator Output Current", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
-        Cluck.publish("CAN Elevator Output Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
-        Cluck.publish("CAN Elevator Temperature", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
-        Cluck.publish("CAN Elevator Any Fault", QuasarHelios.publishFault("elevator-can", winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
-        Cluck.publish("CAN Elevator Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
-        Cluck.publish("CAN Elevator Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
+        Cluck.publish("Elevator CAN Enable", winchCAN.asEnable());
+        Cluck.publish("Elevator CAN Bus Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
+        Cluck.publish("Elevator CAN Output Current", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
+        Cluck.publish("Elevator CAN Output Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
+        Cluck.publish("Elevator CAN Temperature", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
+        Cluck.publish("Elevator CAN Any Fault", QuasarHelios.publishFault("elevator-can", winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
+        Cluck.publish("Elevator CAN Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
+        Cluck.publish("Elevator CAN Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
@@ -106,12 +106,12 @@ public class Elevator {
         raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.constantPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.constantPeriodic));
 
-        Cluck.publish("Elevator Stop", stop);
-        Cluck.publish("Elevator Top", setTop);
-        Cluck.publish("Elevator Bottom", setBottom);
+        Cluck.publish("Elevator Moving Stop", stop);
+        Cluck.publish("Elevator Position Top", setTop);
+        Cluck.publish("Elevator Position Bottom", setBottom);
 
-        Cluck.publish("Elevator Raising", raising);
-        Cluck.publish("Elevator Lowering", lowering);
+        Cluck.publish("Elevator Moving Raising", raising);
+        Cluck.publish("Elevator Moving Lowering", lowering);
 
         FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
         QuasarHelios.publishFault("elevator-both-directions", BooleanMixing.andBooleans(raising, lowering));
@@ -129,7 +129,7 @@ public class Elevator {
         };
 
         BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
-                ControlInterface.mainTuning.getFloat("elevator-max-current-amps", 45));
+                ControlInterface.mainTuning.getFloat("Elevator Max Current Amps +M", 45));
         EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
 
         QuasarHelios.publishStickyFault("elevator-current-fault", maxCurrentEvent);
@@ -138,7 +138,7 @@ public class Elevator {
 
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
-        FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("elevator-timeout", 3.0f);
+        FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("Elevator Timeout +M", 3.0f);
 
         ExpirationTimer timer = new ExpirationTimer();
         EventInput elevatorTimedOut = timer.schedule(elevatorTimeout);
@@ -147,8 +147,8 @@ public class Elevator {
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
 
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Motor Speed", winch);
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Top", limitTop);
-        Cluck.publish(QuasarHelios.testPrefix + "Elevator Limit Bottom", limitBottom);
+        Cluck.publish("Elevator Winch Speed Output", winch);
+        Cluck.publish("Elevator Limit Top", limitTop);
+        Cluck.publish("Elevator Limit Bottom", limitBottom);
     }
 }

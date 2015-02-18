@@ -13,8 +13,8 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = context.getFloat("auto-drive-speed", 1.0f);
-    private static final FloatInputPoll rotateSpeed = context.getFloat("auto-rotate-speed", 1.0f);
+    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
+    private static final FloatInputPoll rotateSpeed = context.getFloat("Auto Rotate Speed +A", 1.0f);
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 
@@ -66,17 +66,19 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
             DriveCode.rotate.set(rotateSpeed.get());
-            waitUntilAtLeast(HeadingSensor.yaw, startingYaw + degree);
+            waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw + degree);
         } else {
             DriveCode.rotate.set(-rotateSpeed.get());
-            waitUntilAtMost(HeadingSensor.yaw, startingYaw + degree);
+            waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw + degree);
         }
 
         DriveCode.rotate.set(0.0f);
+        DriveCode.octocanumShifting.set(false);
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
@@ -86,7 +88,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
-        Clamp.openControl.set(value);
+        Clamp.open.set(value);
         waitForTime(30);
     }
 
