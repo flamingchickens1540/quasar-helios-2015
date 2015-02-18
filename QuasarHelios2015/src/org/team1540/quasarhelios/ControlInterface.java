@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -11,6 +12,7 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
+import ccre.ctrl.Mixing;
 import ccre.holders.TuningContext;
 
 public class ControlInterface {
@@ -101,11 +103,26 @@ public class ControlInterface {
     }
 
     private static void setupDrive() {
-        FloatInput leftXAxis = Igneous.joystick1.getXAxisSource();
-        FloatInput leftYAxis = Igneous.joystick1.getYAxisSource();
-        FloatInput rightXAxis = Igneous.joystick1.getAxisSource(5);
-        FloatInput rightYAxis = Igneous.joystick1.getAxisSource(6);
+        FloatInput shift = teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f);
+        BooleanStatus shiftEnable = new BooleanStatus();
+        shiftEnable.toggleWhen(Igneous.joystick1.getButtonSource(3));
+        FloatInput multiplier = Mixing.select(shiftEnable, FloatMixing.always(1.0f), shift);
+        
+        FloatInput leftXAxisRaw = Igneous.joystick1.getXAxisSource();
+        FloatInput leftYAxisRaw = Igneous.joystick1.getYAxisSource();
+        FloatInput rightXAxisRaw = Igneous.joystick1.getAxisSource(5);
+        FloatInput rightYAxisRaw = Igneous.joystick1.getAxisSource(6);
+       
+        FloatInput leftXAxis = FloatMixing.multiplication.of(multiplier, leftXAxisRaw);
+        FloatInput leftYAxis = FloatMixing.multiplication.of(multiplier, leftYAxisRaw);
+        FloatInput rightXAxis = FloatMixing.multiplication.of(multiplier, rightXAxisRaw);
+        FloatInput rightYAxis = FloatMixing.multiplication.of(multiplier, rightYAxisRaw);
 
+        Cluck.publish("Joystick 1 Right X Axis Raw", rightXAxisRaw);
+        Cluck.publish("Joystick 1 Right Y Axis Raw", rightYAxisRaw);
+        Cluck.publish("Joystick 1 Left X Axis Raw", leftXAxisRaw);
+        Cluck.publish("Joystick 1 Left Y Axis Raw", leftYAxisRaw);
+        
         Cluck.publish("Joystick 1 Right X Axis", rightXAxis);
         Cluck.publish("Joystick 1 Right Y Axis", rightYAxis);
         Cluck.publish("Joystick 1 Left X Axis", leftXAxis);
