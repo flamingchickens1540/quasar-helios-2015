@@ -24,7 +24,7 @@ public class AutonomousModeDrive extends AutonomousModeBase {
         }
         if (turnAngle.get() != 0) {
             float angle0 = HeadingSensor.absoluteYaw.get();
-            turn(turnAngle.get());
+            turn(turnAngle.get(), true);
             float angle1 = HeadingSensor.absoluteYaw.get();
             waitForTime(1000);
             float angle2 = HeadingSensor.absoluteYaw.get();

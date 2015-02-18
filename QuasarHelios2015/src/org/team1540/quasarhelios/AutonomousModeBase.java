@@ -66,19 +66,20 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         DriveCode.strafe.set(0.0f);
     }
 
-    protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
+    protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
-            float actualDegree = degree * rotateMultiplier.get() + rotateOffset.get();
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
             if (actualDegree > 0) {
                 DriveCode.rotate.set(-rotateSpeed.get());
                 waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
             }
         } else {
-            float actualDegree = degree * rotateMultiplier.get() - rotateOffset.get();
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
             if (actualDegree < 0) {
                 DriveCode.rotate.set(rotateSpeed.get());
                 waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
@@ -120,10 +121,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         setClampHeight(1.0f);
     }
 
-    protected void depositContainer() throws AutonomousModeOverException, InterruptedException {
-        setClampHeight(0.0f);
+    protected void depositContainer(float height) throws AutonomousModeOverException, InterruptedException {
+        setClampHeight(height);
+        waitForTime(100);
         setClampOpen(true);
-        setClampHeight(1.0f);
     }
 
     @Override
