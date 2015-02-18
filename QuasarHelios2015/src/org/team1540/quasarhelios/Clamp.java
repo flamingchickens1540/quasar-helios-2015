@@ -98,7 +98,7 @@ public class Clamp {
         FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atBottomStatus)), encoder, FloatMixing.negate((FloatOutput) distance));
         EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atTopStatus)).send(zeroEncoder);
 
-        FloatStatus p = ControlInterface.mainTuning.getFloat("Clamp PID P", 1.0f);
+        FloatStatus p = ControlInterface.mainTuning.getFloat("Clamp PID P", 20.0f);
         FloatStatus i = ControlInterface.mainTuning.getFloat("Clamp PID I", 0.0f);
         FloatStatus d = ControlInterface.mainTuning.getFloat("Clamp PID D", 0.0f);
 

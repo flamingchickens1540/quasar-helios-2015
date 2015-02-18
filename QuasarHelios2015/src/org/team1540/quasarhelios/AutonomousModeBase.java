@@ -4,6 +4,7 @@ import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatOutput;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
@@ -13,7 +14,7 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Drive Speed +A", 1.0f));
+    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 0.5f);
     private static final FloatInputPoll rotateSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Rotate Speed +A", 0.5f));
     private static final FloatInputPoll rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
     private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", -30f);
@@ -27,6 +28,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
+        drive(distance, driveSpeed.get());
+    }
+    
+    protected void drive(float distance, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
 
@@ -35,11 +40,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.autoPID);
-            leftMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.reversePID);
+            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
+            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.autoPID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.reversePID));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
         }
 
         try {
@@ -57,12 +62,13 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             DriveCode.allMotors.set(0.0f);
             straightening.set(true);
         }
+
     }
 
     protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
         straightening.set(false);
         DriveCode.strafe.set(direction);
-        waitForTime((long) time);
+        waitForTime((long) (time * 1000));
         DriveCode.strafe.set(0.0f);
     }
 
@@ -89,11 +95,24 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         DriveCode.rotate.set(0.0f);
         DriveCode.octocanumShifting.set(false);
     }
+    
+    protected void singleSideTurn(long time, boolean side) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+        
+        FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
+        motors.set(rotateSpeed.get());
+        waitForTime(time);
+        motors.set(0.0f);
+        
+        DriveCode.octocanumShifting.set(false);
+    }
+
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         QuasarHelios.autoLoader.set(true);
-        waitUntilNot(QuasarHelios.autoLoader);
+        waitUntil(AutoLoader.crateInPosition);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
@@ -114,8 +133,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
-        setClampHeight(0.0f);
-        setClampOpen(true);
         drive(nudge);
         setClampOpen(false);
         setClampHeight(1.0f);

@@ -9,8 +9,10 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
     protected FloatInputPoll autoZoneDistance;
     protected FloatInputPoll returnDistance;
     
-    private FloatInputPoll containerAngle;
+    private FloatInputPoll containerTurnTime;
+    private FloatInputPoll containerDepositStrafeTime;
     private FloatInputPoll autoZoneAngle;
+    private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
     private FloatInputPoll containerHeight;
 
@@ -23,15 +25,20 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
             AutonomousModeOverException {
         // Loading
         collectTote();
-        turn(containerAngle.get(), false);
+        setClampOpen(true);
+        setClampHeight(0.0f);
+        singleSideTurn((long) (containerTurnTime.get() * 1000), true);
         pickupContainer(nudge.get());
         // Motion
-        turn(autoZoneAngle.get(), true);
+        turn(-autoZoneAngle.get(), true);
         waitForTime(500);
-        drive(autoZoneDistance.get());
+        DriveCode.octocanumShifting.set(true);
+        drive(autoZoneDistance.get(), autoZoneSpeed.get());
+        DriveCode.octocanumShifting.set(false);
         waitForTime(500);
         // Unload
         ejectTotes();
+        strafe(STRAFE_LEFT, containerDepositStrafeTime.get());
         depositContainer(containerHeight.get());
         drive(-returnDistance.get());
         setClampHeight(1.0f);
@@ -42,9 +49,11 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance +A", 60.0f);
         this.returnDistance = context.getFloat("Auto Mode Single Tote Return Distance +A", 30.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
-        this.containerAngle = context.getFloat("Auto Mode Single Tote Container Angle +A", 16.0f);
+        this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
         this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 90.0f);
         this.containerHeight = context.getFloat("Auto Mode Single Tote Container Height +A", 0.0f);
+        this.containerDepositStrafeTime = context.getFloat("Auto Mode Single Tote Container Deposit Strafe Time +A", 2.0f);
+        this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed", 1.0f);
     }
 
 }
