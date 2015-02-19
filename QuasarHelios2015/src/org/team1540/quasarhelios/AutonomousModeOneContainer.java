@@ -20,7 +20,7 @@ public class AutonomousModeOneContainer extends AutonomousModeBase  {
         strafe(STRAFE_LEFT, leftStrafeTime.get());
         DriveCode.octocanumShifting.set(false);
         drive(autoZoneDistance.get());
-        depositContainer();
+        depositContainer(0.0f);
         drive(-autoZoneDistance.get());
     }
 

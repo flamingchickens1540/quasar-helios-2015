@@ -74,5 +74,4 @@ public class AutoEjector extends InstinctModule {
     protected String getTypeName() {
         return "auto ejector";
     }
-
 }

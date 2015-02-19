@@ -87,8 +87,8 @@ public class ControlInterface {
 
         FloatInput cutoffAuto = mainTuning.getFloat("Trigger Threshold +M", 0.5f);
 
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {

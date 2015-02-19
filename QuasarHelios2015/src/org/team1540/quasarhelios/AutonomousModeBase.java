@@ -4,6 +4,7 @@ import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatOutput;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
@@ -13,8 +14,10 @@ import ccre.instinct.InstinctModeModule;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
-    private static final FloatInputPoll rotateSpeed = context.getFloat("Auto Rotate Speed +A", 1.0f);
+    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 0.5f);
+    private static final FloatInputPoll rotateSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Rotate Speed +A", 0.5f));
+    private static final FloatInputPoll rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
+    private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", -30f);
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 
@@ -25,6 +28,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
+        drive(distance, driveSpeed.get());
+    }
+    
+    protected void drive(float distance, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
 
@@ -33,11 +40,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.autoPID);
-            leftMotorSpeed = FloatMixing.addition.of(driveSpeed, Autonomous.reversePID);
+            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
+            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.autoPID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(driveSpeed, Autonomous.reversePID));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
         }
 
         try {
@@ -55,36 +62,58 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             DriveCode.allMotors.set(0.0f);
             straightening.set(true);
         }
+
     }
 
     protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
         straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
         DriveCode.strafe.set(direction);
-        waitForTime((long) time);
+        waitForTime((long) (time * 1000));
         DriveCode.strafe.set(0.0f);
     }
 
-    protected void turn(float degree) throws AutonomousModeOverException, InterruptedException {
+    protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
-            DriveCode.rotate.set(rotateSpeed.get());
-            waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw + degree);
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(-rotateSpeed.get());
+                waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
         } else {
-            DriveCode.rotate.set(-rotateSpeed.get());
-            waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw + degree);
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(rotateSpeed.get());
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
         }
 
         DriveCode.rotate.set(0.0f);
         DriveCode.octocanumShifting.set(false);
     }
+    
+    protected void singleSideTurn(long time, boolean side) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+        
+        FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
+        motors.set(rotateSpeed.get());
+        waitForTime(time);
+        motors.set(0.0f);
+        
+        DriveCode.octocanumShifting.set(false);
+    }
+
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         QuasarHelios.autoLoader.set(true);
-        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
+        waitUntil(AutoLoader.crateInPosition);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
@@ -101,21 +130,19 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void ejectTotes() throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         QuasarHelios.autoEjector.set(true);
-        waitUntil(BooleanMixing.invert((BooleanInput) QuasarHelios.autoLoader));
+        waitUntilNot(QuasarHelios.autoEjector);
     }
 
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
-        setClampHeight(0.0f);
-        setClampOpen(true);
         drive(nudge);
         setClampOpen(false);
         setClampHeight(1.0f);
     }
 
-    protected void depositContainer() throws AutonomousModeOverException, InterruptedException {
-        setClampHeight(0.0f);
+    protected void depositContainer(float height) throws AutonomousModeOverException, InterruptedException {
+        setClampHeight(height);
+        waitForTime(100);
         setClampOpen(true);
-        setClampHeight(1.0f);
     }
 
     @Override
