@@ -7,7 +7,7 @@ import ccre.instinct.AutonomousModeOverException;
 public class AutonomousModeOneTote extends AutonomousModeBase {
     protected FloatInputPoll toteDistance;
     protected FloatInputPoll autoZoneDistance;
-    protected FloatInputPoll returnDistance;
+    protected FloatInputPoll secondDistance;
     
     private FloatInputPoll containerTurnTime;
     private FloatInputPoll containerDepositStrafeTime;
@@ -15,6 +15,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
     private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
     private FloatInputPoll containerHeight;
+    private FloatInputPoll turnAngle;
 
     public AutonomousModeOneTote() {
         super("One Tote");
@@ -38,16 +39,21 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
         waitForTime(500);
         // Unload
         ejectTotes();
-        strafe(STRAFE_LEFT, containerDepositStrafeTime.get());
+        //strafe(STRAFE_LEFT, containerDepositStrafeTime.get());
+        turn(turnAngle.get(), true);
+        waitForTime(300);
+        drive(secondDistance.get(), autoZoneSpeed.get());
+        waitForTime(300);
         depositContainer(containerHeight.get());
-        drive(-returnDistance.get());
+        //drive(-returnDistance.get());
         setClampHeight(1.0f);
     }
 
     public void loadSettings(TuningContext context) {
+        this.turnAngle = context.getFloat("Auto Mode Single Tote Turn Angle +A", -45.0f);
         this.toteDistance = context.getFloat("Auto Mode Single Tote Tote Distance +A", 28.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance +A", 60.0f);
-        this.returnDistance = context.getFloat("Auto Mode Single Tote Return Distance +A", 30.0f);
+        this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
         this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
         this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 90.0f);
