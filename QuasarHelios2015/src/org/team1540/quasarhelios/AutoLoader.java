@@ -5,7 +5,6 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
