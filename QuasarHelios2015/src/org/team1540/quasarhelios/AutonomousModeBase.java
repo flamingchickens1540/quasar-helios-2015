@@ -116,7 +116,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         }
         
         // Run rollers.
-        Rollers.direction.set(Rollers.REVERSE);
+        Rollers.direction.set(Rollers.INPUT);
         Rollers.running.set(true);
         Rollers.closed.set(true);
 

@@ -56,7 +56,7 @@ public class AutoLoader extends InstinctModule {
                 boolean closed = Rollers.closed.get();
 
                 try {
-                    Rollers.direction.set(Rollers.REVERSE);
+                    Rollers.direction.set(Rollers.INPUT);
                     Rollers.running.set(true);
                     Rollers.closed.set(true);
 

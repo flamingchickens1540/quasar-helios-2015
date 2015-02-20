@@ -49,7 +49,7 @@ public class ControlInterface {
                 Rollers.running.set(!Rollers.running.get());
             }
 
-            Rollers.direction.set(Rollers.REVERSE);
+            Rollers.direction.set(Rollers.INPUT);
         });
 
         povUp.send(() -> {
@@ -59,7 +59,7 @@ public class ControlInterface {
                 Rollers.running.set(!Rollers.running.get());
             }
 
-            Rollers.direction.set(Rollers.FORWARD);
+            Rollers.direction.set(Rollers.OUTPUT);
         });
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
