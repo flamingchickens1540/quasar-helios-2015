@@ -47,10 +47,10 @@ public class Clamp {
     public static BooleanInput atBottom;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
 
-    public static final BooleanStatus enabled = new BooleanStatus(true);
+    public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
-    private static final BooleanInput actualMode = BooleanMixing.orBooleans(enabled.asInvertedInput(), mode);
-    private static final FloatInput actualSpeed = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) enabled, FloatMixing.always(0), speed), Igneous.globalPeriodic);
+    private static final BooleanInput actualMode = BooleanMixing.orBooleans(clampEnabled.asInvertedInput(), mode);
+    private static final FloatInput actualSpeed = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) clampEnabled, FloatMixing.always(0), speed), Igneous.globalPeriodic);
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
@@ -96,7 +96,7 @@ public class Clamp {
         FloatStatus clampResetTime = ControlInterface.mainTuning.getFloat("Clamp Reset Time", 1000);
 
         PauseTimer timer = new PauseTimer((long) clampResetTime.get());
-        timer.triggerAtChanges(enabled.getSetFalseEvent(), enabled.getSetTrueEvent());
+        timer.triggerAtChanges(clampEnabled.getSetFalseEvent(), clampEnabled.getSetTrueEvent());
         maxCurrentEvent.send(timer);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.constantPeriodic);
@@ -212,7 +212,7 @@ public class Clamp {
         Cluck.publish("Clamp Speed", speed);
         Cluck.publish("Clamp Mode Actual", actualMode);
         Cluck.publish("Clamp Speed Actual", actualSpeed);
-        Cluck.publish("Clamp Enabled", enabled);
+        Cluck.publish("Clamp Enabled", clampEnabled);
         Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
     }
 }
