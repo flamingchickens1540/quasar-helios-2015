@@ -14,6 +14,7 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
     private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
     private FloatInputPoll containerHeight;
+    private FloatInputPoll topClampHeight;
 
     public AutonomousModeContainerTote() {
         super("Container, then Tote");
@@ -24,7 +25,7 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
             AutonomousModeOverException {
         // Pickup container.
         pickupContainer(nudge.get());
-        setClampHeight(1.0f);
+        setClampHeight(topClampHeight.get());
         singleSideTurn((long) (containerTurnTime.get() * 1000), false);
 
         collectTote();
@@ -48,6 +49,7 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         this.autoZoneAngle = context.getFloat("Auto Mode Container Tote Auto Zone Angle +A", 90.0f);
         this.containerHeight = context.getFloat("Auto Mode Container Tote Container Height +A", 0.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Container Tote Auto Zone Speed", 1.0f);
+        this.topClampHeight = context.getFloat("Auto Mode Single Tote Top Clamp Height", 0.75f);
     }
 
 }
