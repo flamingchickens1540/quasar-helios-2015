@@ -11,12 +11,10 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
     protected FloatInputPoll secondDistance;
     
     private FloatInputPoll containerTurnTime;
-    private FloatInputPoll containerDepositStrafeTime;
     private FloatInputPoll autoZoneAngle;
     private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
     private FloatInputPoll containerHeight;
-    private FloatInputPoll turnAngle;
 
     public AutonomousModeContainerTote() {
         super("Container, then Tote");
@@ -74,7 +72,6 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
-        this.turnAngle = context.getFloat("Auto Mode Container Tote Turn Angle +A", -45.0f);
         this.toteDistance = context.getFloat("Auto Mode Container Tote Tote Distance +A", 28.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Container Tote Auto Zone Distance +A", 60.0f);
         this.secondDistance = context.getFloat("Auto Mode Container Tote Second Distance +A", 24.0f);
@@ -82,7 +79,6 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         this.containerTurnTime = context.getFloat("Auto Mode Container Tote Container Turn Time +A", 0.5f);
         this.autoZoneAngle = context.getFloat("Auto Mode Container Tote Auto Zone Angle +A", 90.0f);
         this.containerHeight = context.getFloat("Auto Mode Container Tote Container Height +A", 0.0f);
-        this.containerDepositStrafeTime = context.getFloat("Auto Mode Container Tote Container Deposit Strafe Time +A", 2.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Container Tote Auto Zone Speed", 1.0f);
     }
 
