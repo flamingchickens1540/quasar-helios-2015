@@ -7,7 +7,7 @@ import ccre.ctrl.Mixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
-public class AutonomousModeOneTote extends AutonomousModeBase {
+public class AutonomousModeToteContainer extends AutonomousModeBase {
     protected FloatInputPoll toteDistance;
     protected FloatInputPoll autoZoneDistance;
     protected FloatInputPoll secondDistance;
@@ -18,7 +18,7 @@ public class AutonomousModeOneTote extends AutonomousModeBase {
     private FloatInputPoll nudge;
     private FloatInputPoll containerHeight;
 
-    public AutonomousModeOneTote() {
+    public AutonomousModeToteContainer() {
         super("One Tote");
     }
 
