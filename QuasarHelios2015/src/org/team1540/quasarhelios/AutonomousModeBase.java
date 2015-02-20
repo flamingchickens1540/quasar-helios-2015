@@ -4,6 +4,7 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
+import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
@@ -101,9 +102,28 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
-        straightening.set(false);
-        QuasarHelios.autoLoader.set(true);
+        // Move elevator.
+        Elevator.setTop.event();
+
+        // Move clamp.
+        float currentClampHeight = Clamp.heightReadout.get();
+        if (currentClampHeight < AutoLoader.clampHeightThreshold.get()) {
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(AutoLoader.clampHeightThreshold.get());
+            waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
+        } else {
+            waitUntil(Elevator.atTop);
+        }
+        
+        // Run rollers.
+        Rollers.direction.set(Rollers.REVERSE);
+        Rollers.running.set(true);
+        Rollers.closed.set(true);
+
         waitUntil(AutoLoader.crateInPosition);
+        
+        Rollers.running.set(false);
+        Rollers.closed.set(false);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
