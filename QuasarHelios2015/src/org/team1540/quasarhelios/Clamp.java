@@ -13,12 +13,12 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
-import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
+import ccre.ctrl.PauseTimer;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
@@ -49,8 +49,8 @@ public class Clamp {
 
     public static final BooleanStatus enabled = new BooleanStatus(true);
 
-    private static BooleanInput modeOutput = BooleanMixing.orBooleans(enabled.asInvertedInput(), mode);
-    private static FloatInput speedOutput = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) enabled, FloatMixing.always(0), speed), Igneous.globalPeriodic);
+    private static final BooleanInput actualMode = BooleanMixing.orBooleans(enabled.asInvertedInput(), mode);
+    private static final FloatInput actualSpeed = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) enabled, FloatMixing.always(0), speed), Igneous.globalPeriodic);
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
@@ -93,13 +93,11 @@ public class Clamp {
 
         QuasarHelios.publishStickyFault("clamp-current-fault", maxCurrentEvent);
 
-        FloatStatus clampResetTime = ControlInterface.mainTuning.getFloat("Clamp Reset Time", 1.0f);
+        FloatStatus clampResetTime = ControlInterface.mainTuning.getFloat("Clamp Reset Time", 1000);
 
-        ExpirationTimer timer = new ExpirationTimer();
-        timer.schedule(clampResetTime, enabled.getSetTrueEvent());
-
-        enabled.setFalseWhen(maxCurrentEvent);
-        timer.startOrFeedWhen(maxCurrentEvent);
+        PauseTimer timer = new PauseTimer((long) clampResetTime.get());
+        timer.triggerAtChanges(enabled.getSetFalseEvent(), enabled.getSetTrueEvent());
+        maxCurrentEvent.send(timer);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.constantPeriodic);
@@ -131,9 +129,9 @@ public class Clamp {
         
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
-        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(modeOutput));
+        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(actualMode));
         pid.setOutputBounds(ControlInterface.mainTuning.getFloat("clamp-max-height-speed", 1.0f));
-        FloatMixing.pumpWhen(BooleanMixing.onRelease(modeOutput), heightReadout, height);
+        FloatMixing.pumpWhen(BooleanMixing.onRelease(actualMode), heightReadout, height);
 
         QuasarHelios.constantControl.send(pid);
 
@@ -150,11 +148,11 @@ public class Clamp {
             speedControl.set(value);
         };
 
-        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speedOutput, -0.3f, 0.3f), true, QuasarHelios.globalControl));
+        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(actualSpeed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
         mode.setTrueWhen(Igneous.startTele);
 
-        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(modeOutput,
-                useEncoder.asInvertedInput()), pid, speedOutput), out);
+        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(actualMode,
+                useEncoder.asInvertedInput()), pid, actualSpeed), out);
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
@@ -212,8 +210,8 @@ public class Clamp {
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
         Cluck.publish("Clamp Speed", speed);
-        Cluck.publish("Clamp Mode Output", modeOutput);
-        Cluck.publish("Clamp Speed Ouput", speedOutput);
+        Cluck.publish("Clamp Mode Actual", actualMode);
+        Cluck.publish("Clamp Speed Actual", actualSpeed);
         Cluck.publish("Clamp Enabled", enabled);
         Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
     }
