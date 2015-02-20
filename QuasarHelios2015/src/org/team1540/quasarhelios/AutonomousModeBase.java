@@ -63,14 +63,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     }
 
-    protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
-        straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
-        DriveCode.strafe.set(direction);
-        waitForTime((long) (time * 1000));
-        DriveCode.strafe.set(0.0f);
-    }
-
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
