@@ -1,6 +1,5 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -65,14 +64,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     }
 
-    protected void strafe(float direction, float time) throws InterruptedException, AutonomousModeOverException {
-        straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
-        DriveCode.strafe.set(direction);
-        waitForTime((long) (time * 1000));
-        DriveCode.strafe.set(0.0f);
-    }
-
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
@@ -111,9 +102,28 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
-        straightening.set(false);
-        QuasarHelios.autoLoader.set(true);
+        // Move elevator.
+        Elevator.setTop.event();
+
+        // Move clamp.
+        float currentClampHeight = Clamp.heightReadout.get();
+        if (currentClampHeight < AutoLoader.clampHeightThreshold.get()) {
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(AutoLoader.clampHeightThreshold.get());
+            waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
+        } else {
+            waitUntil(Elevator.atTop);
+        }
+        
+        // Run rollers.
+        Rollers.direction.set(Rollers.INPUT);
+        Rollers.running.set(true);
+        Rollers.closed.set(true);
+
         waitUntil(AutoLoader.crateInPosition);
+        
+        Rollers.running.set(false);
+        Rollers.closed.set(false);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {

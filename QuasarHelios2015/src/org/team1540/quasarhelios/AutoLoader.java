@@ -5,7 +5,6 @@ import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -57,7 +56,7 @@ public class AutoLoader extends InstinctModule {
                 boolean closed = Rollers.closed.get();
 
                 try {
-                    Rollers.direction.set(Rollers.REVERSE);
+                    Rollers.direction.set(Rollers.INPUT);
                     Rollers.running.set(true);
                     Rollers.closed.set(true);
 
