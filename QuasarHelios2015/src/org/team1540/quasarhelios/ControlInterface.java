@@ -103,37 +103,16 @@ public class ControlInterface {
     }
 
     private static void setupDrive() {
-        FloatInput shift = teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f);
-        BooleanStatus shiftEnable = new BooleanStatus();
-        shiftEnable.toggleWhen(Igneous.joystick1.getButtonSource(3));
-        FloatInput multiplier = Mixing.select(shiftEnable, FloatMixing.always(1.0f), shift);
-        
-        FloatInput leftXAxisRaw = Igneous.joystick1.getXAxisSource();
-        FloatInput leftYAxisRaw = Igneous.joystick1.getYAxisSource();
-        FloatInput rightXAxisRaw = Igneous.joystick1.getAxisSource(5);
-        FloatInput rightYAxisRaw = Igneous.joystick1.getAxisSource(6);
-       
-        FloatInput leftXAxis = FloatMixing.multiplication.of(multiplier, leftXAxisRaw);
-        FloatInput leftYAxis = FloatMixing.multiplication.of(multiplier, leftYAxisRaw);
-        FloatInput rightXAxis = FloatMixing.multiplication.of(multiplier, rightXAxisRaw);
-        FloatInput rightYAxis = FloatMixing.multiplication.of(multiplier, rightYAxisRaw);
+        DriveCode.shiftEnabled.setTrueWhen(Igneous.joystick1.getButtonSource(5));
+        DriveCode.shiftEnabled.setFalseWhen(Igneous.joystick1.getButtonSource(6));
 
-        Cluck.publish("Joystick 1 Right X Axis Raw", rightXAxisRaw);
-        Cluck.publish("Joystick 1 Right Y Axis Raw", rightYAxisRaw);
-        Cluck.publish("Joystick 1 Left X Axis Raw", leftXAxisRaw);
-        Cluck.publish("Joystick 1 Left Y Axis Raw", leftYAxisRaw);
-        
-        Cluck.publish("Joystick 1 Right X Axis", rightXAxis);
-        Cluck.publish("Joystick 1 Right Y Axis", rightYAxis);
-        Cluck.publish("Joystick 1 Left X Axis", leftXAxis);
-        Cluck.publish("Joystick 1 Left Y Axis", leftYAxis);
-
-        FloatMixing.deadzone(leftXAxis, .2f).send(DriveCode.leftJoystickX);
-        FloatMixing.deadzone(leftYAxis, .2f).send(DriveCode.leftJoystickY);
-        FloatMixing.deadzone(rightXAxis, .25f).send(DriveCode.rightJoystickX);
-        FloatMixing.deadzone(rightYAxis, .2f).send(DriveCode.rightJoystickY);
+        FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickXRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickYRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .25f).send(DriveCode.rightJoystickXRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f).send(DriveCode.rightJoystickYRaw);
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f).send(DriveCode.forwardTrigger);
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f).send(DriveCode.backwardTrigger);
+        
         Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
