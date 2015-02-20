@@ -28,28 +28,17 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         setClampHeight(1.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), false);
 
-        // Load tote.
-        
         // Move elevator.
-        boolean elevatorAtTop = Elevator.atTop.get();
-        if (!elevatorAtTop) {
-            Elevator.setTop.event();
-        }
+        Elevator.setTop.event();
 
         // Move clamp.
         float currentClampHeight = Clamp.heightReadout.get();
         if (currentClampHeight < AutoLoader.clampHeightThreshold.get()) {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(AutoLoader.clampHeightThreshold.get());
-            if (elevatorAtTop) {
-                waitUntil(Clamp.atDesiredHeight);
-            } else {
-                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
-            }
+            waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
         } else {
-            if (!elevatorAtTop) {
-                waitUntil(Elevator.atTop);
-            }
+            waitUntil(Elevator.atTop);
         }
         
         // Run rollers.
@@ -62,12 +51,13 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         Rollers.running.set(false);
         Rollers.closed.set(false);
         
-        // Motion
+        // Motion.
         turn(autoZoneAngle.get(), true);
         waitForTime(500);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
         waitForTime(500);
-        // Unload
+
+        // Unload.
         depositContainer(containerHeight.get());
     }
 

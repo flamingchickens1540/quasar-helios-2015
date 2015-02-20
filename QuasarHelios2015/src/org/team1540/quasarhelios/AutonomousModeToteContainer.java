@@ -26,25 +26,16 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         // Load tote.
         
         // Move elevator.
-        boolean elevatorAtTop = Elevator.atTop.get();
-        if (!elevatorAtTop) {
-            Elevator.setTop.event();
-        }
+        Elevator.setTop.event();
 
         // Move clamp.
         float currentClampHeight = Clamp.heightReadout.get();
         if (currentClampHeight < AutoLoader.clampHeightThreshold.get()) {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(AutoLoader.clampHeightThreshold.get());
-            if (elevatorAtTop) {
-                waitUntil(Clamp.atDesiredHeight);
-            } else {
-                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
-            }
+            waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
         } else {
-            if (!elevatorAtTop) {
-                waitUntil(Elevator.atTop);
-            }
+            waitUntil(Elevator.atTop);
         }
         
         // Run rollers.
