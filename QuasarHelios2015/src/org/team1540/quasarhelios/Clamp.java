@@ -139,9 +139,9 @@ public class Clamp {
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
         new InstinctModule(BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()),
-                needsAutoCalibration, ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true),
+                needsAutoCalibration, ControlInterface.mainTuning.getBoolean("Clamp Autocalibration Allow +M", true),
                 BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
-            private final FloatInputPoll downwardTime = ControlInterface.mainTuning.getFloat("clamp-autocalibration-downward-time", 0.2f);
+            private final FloatInputPoll downwardTime = ControlInterface.mainTuning.getFloat("Clamp Autocalibration Downward Time +M", 0.2f);
 
             @Override
             protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
@@ -154,10 +154,10 @@ public class Clamp {
                     waitForTime(200);
                     Logger.info("Jolting down...");
                     // first, go down momentarily, so if we're already at the top past the limit switch, we won't break anything
-                    height.set(-1.0f); // make sure to go down even though not calibrated.
+                    height.set(-2.0f); // make sure to go down even though not calibrated.
                     mode.set(MODE_HEIGHT);
                     waitForTime(downwardTime);
-                    height.set(2.0f); // make sure to go up even though not calibrated.
+                    height.set(3.0f); // make sure to go up even though not calibrated.
                     mode.set(MODE_HEIGHT);
                     Logger.info("Autocalibration: aligning up...");
                     try {
