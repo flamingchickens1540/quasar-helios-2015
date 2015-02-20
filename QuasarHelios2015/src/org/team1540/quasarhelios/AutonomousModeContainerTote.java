@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.FloatInputPoll;
-import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
