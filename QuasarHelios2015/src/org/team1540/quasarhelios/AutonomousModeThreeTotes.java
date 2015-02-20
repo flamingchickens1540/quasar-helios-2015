@@ -44,15 +44,15 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         drive(toteDistance.get());
         // Collect last tote and drive to auto zone
         collectTote();
-        turn(90);
+        // turn(90);
         drive(autoZoneDistance.get());
         // Drop everything off
         ejectTotes();
         DriveCode.octocanumShifting.set(true);
-        strafe(STRAFE_RIGHT, strafeTime.get());
+        // strafe(STRAFE_RIGHT, strafeTime.get());
 
         if (collectFirstContainer.get() || collectSecondContainer.get()) {
-            depositContainer();
+            depositContainer(0.0f);
         }
         
         DriveCode.octocanumShifting.set(false);

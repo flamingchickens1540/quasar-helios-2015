@@ -17,10 +17,11 @@ public class AutonomousModeOneContainer extends AutonomousModeBase  {
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         pickupContainer(nudge.get());
         DriveCode.octocanumShifting.set(true);
-        strafe(STRAFE_LEFT, leftStrafeTime.get());
+        // Note: fix line below!
+        // strafe(STRAFE_LEFT, leftStrafeTime.get());
         DriveCode.octocanumShifting.set(false);
         drive(autoZoneDistance.get());
-        depositContainer();
+        depositContainer(0.0f);
         drive(-autoZoneDistance.get());
     }
 

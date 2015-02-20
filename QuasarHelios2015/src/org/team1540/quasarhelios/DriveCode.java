@@ -8,7 +8,7 @@ import ccre.log.Logger;
 
 public class DriveCode {
     public static final BooleanStatus shiftEnabled = new BooleanStatus();
-    
+
     public static final FloatStatus leftJoystickXRaw = new FloatStatus();
     public static final FloatStatus leftJoystickYRaw = new FloatStatus();
     public static final FloatStatus rightJoystickXRaw = new FloatStatus();
@@ -39,8 +39,8 @@ public class DriveCode {
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
     public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
     public static final FloatOutput strafe = FloatMixing.combine(
-            FloatMixing.combine(leftFrontMotor, rightBackMotor),
-            FloatMixing.negate(FloatMixing.combine(leftBackMotor, rightFrontMotor)));
+            FloatMixing.negate(FloatMixing.combine(leftFrontMotor, rightBackMotor)),
+            FloatMixing.combine(leftBackMotor, rightFrontMotor));
     public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
     public static final BooleanStatus onlyStrafing = new BooleanStatus();
     private static final EventStatus resetEncoders = new EventStatus();
@@ -192,7 +192,7 @@ public class DriveCode {
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
         onlyStrafing.setFalseWhen(octocanumShiftingButton);
-        FloatMixing.pumpWhen(strafingButton,HeadingSensor.absoluteYaw, desiredAngle);
+        FloatMixing.pumpWhen(strafingButton, HeadingSensor.absoluteYaw, desiredAngle);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
@@ -200,12 +200,12 @@ public class DriveCode {
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
                 DriverImpls.createTankDriverEvent(leftJoystickYChannel, rightJoystickYChannel, leftMotors, rightMotors)));
-        
+
         Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
         Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);
         Cluck.publish("Joystick 1 Left X Axis Raw", (FloatInput) leftJoystickXRaw);
         Cluck.publish("Joystick 1 Left Y Axis Raw", (FloatInput) leftJoystickYRaw);
-        
+
         Cluck.publish("Joystick 1 Right X Axis", rightJoystickX);
         Cluck.publish("Joystick 1 Right Y Axis", rightJoystickY);
         Cluck.publish("Joystick 1 Left X Axis", leftJoystickX);

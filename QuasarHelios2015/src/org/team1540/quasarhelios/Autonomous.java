@@ -46,9 +46,10 @@ public class Autonomous {
 
         mainModule.publishDefaultControls(true, true);
         mainModule.addMode(new AutonomousModeDrive());
-        mainModule.addMode(new AutonomousModeOneTote());
+        mainModule.addMode(new AutonomousModeToteContainer());
+        mainModule.addMode(new AutonomousModeContainerTote());
+//        mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.addMode(new AutonomousModeOneContainer());
-        mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.addMode(new AutonomousModeCalibration());
         mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));
         Igneous.registerAutonomous(mainModule);
