@@ -22,7 +22,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
-        collectTote();        
+        collectTote();
         // Pickup container.
         setClampOpen(true);
         setClampHeight(0.0f);
@@ -39,7 +39,6 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         
         // Unload
         depositContainer(containerHeight.get());
-        setClampHeight(1.0f);
     }
 
     public void loadSettings(TuningContext context) {
