@@ -95,12 +95,11 @@ public class Clamp {
 
         FloatStatus clampResetTime = ControlInterface.mainTuning.getFloat("Clamp Reset Time", 1.0f);
 
-        maxCurrentEvent.send(EventMixing.filterEvent(enabled, true, () -> {
-            enabled.set(false);
-            ExpirationTimer timer = new ExpirationTimer();
-            timer.schedule(clampResetTime, enabled.getSetTrueEvent());
-            timer.start();
-        }));
+        ExpirationTimer timer = new ExpirationTimer();
+        timer.schedule(clampResetTime, enabled.getSetTrueEvent());
+
+        enabled.setFalseWhen(maxCurrentEvent);
+        timer.startOrFeedWhen(maxCurrentEvent);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.constantPeriodic);
