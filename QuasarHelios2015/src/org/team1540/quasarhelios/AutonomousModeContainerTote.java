@@ -48,8 +48,8 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         this.containerTurnTime = context.getFloat("Auto Mode Container Tote Container Turn Time +A", 0.5f);
         this.autoZoneAngle = context.getFloat("Auto Mode Container Tote Auto Zone Angle +A", 90.0f);
         this.containerHeight = context.getFloat("Auto Mode Container Tote Container Height +A", 0.0f);
-        this.autoZoneSpeed = context.getFloat("Auto Mode Container Tote Auto Zone Speed", 1.0f);
-        this.topClampHeight = context.getFloat("Auto Mode Single Tote Top Clamp Height", 0.75f);
+        this.autoZoneSpeed = context.getFloat("Auto Mode Container Tote Auto Zone Speed +A", 1.0f);
+        this.topClampHeight = context.getFloat("Auto Mode Container Tote Top Clamp Height +A", 0.75f);
     }
 
 }
