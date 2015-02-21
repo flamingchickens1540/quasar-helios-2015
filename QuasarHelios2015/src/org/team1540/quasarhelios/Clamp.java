@@ -214,5 +214,6 @@ public class Clamp {
         Cluck.publish("Clamp Speed Actual", actualSpeed);
         Cluck.publish("Clamp Enabled", clampEnabled);
         Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
+        Cluck.publish("Clamp Reached Current Limit", maxCurrentEvent);
     }
 }
