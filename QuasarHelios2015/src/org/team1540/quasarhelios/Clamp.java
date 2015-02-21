@@ -49,9 +49,6 @@ public class Clamp {
 
     public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
-    private static final BooleanInput actualMode = BooleanMixing.orBooleans(clampEnabled.asInvertedInput(), mode);
-    private static final FloatInput actualSpeed = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) clampEnabled, FloatMixing.always(0), speed), Igneous.globalPeriodic);
-
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
@@ -129,9 +126,9 @@ public class Clamp {
         
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
-        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(actualMode));
+        pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
         pid.setOutputBounds(ControlInterface.mainTuning.getFloat("clamp-max-height-speed", 1.0f));
-        FloatMixing.pumpWhen(BooleanMixing.onRelease(actualMode), heightReadout, height);
+        FloatMixing.pumpWhen(BooleanMixing.onRelease(mode), heightReadout, height);
 
         QuasarHelios.constantControl.send(pid);
 
@@ -142,17 +139,17 @@ public class Clamp {
             if (atBottomStatus.get()) {
                 value = Math.min(value, 0);
             }
-            if (value >= -0.1f && value <= 0.1f) {
+            if ((value >= -0.1f && value <= 0.1f) || !clampEnabled.get()) {
                 value = 0;
             }
             speedControl.set(value);
         };
 
-        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(actualSpeed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
+        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
         mode.setTrueWhen(Igneous.startTele);
 
-        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(actualMode,
-                useEncoder.asInvertedInput()), pid, actualSpeed), out);
+        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(mode,
+                useEncoder.asInvertedInput()), pid, speed), out);
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
@@ -210,8 +207,6 @@ public class Clamp {
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
         Cluck.publish("Clamp Speed", speed);
-        Cluck.publish("Clamp Mode Actual", actualMode);
-        Cluck.publish("Clamp Speed Actual", actualSpeed);
         Cluck.publish("Clamp Enabled", clampEnabled);
         Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
         Cluck.publish("Clamp Reached Current Limit", maxCurrentEvent);
