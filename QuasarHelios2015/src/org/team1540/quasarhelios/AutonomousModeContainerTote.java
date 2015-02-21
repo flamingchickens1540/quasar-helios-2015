@@ -36,10 +36,6 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         turn(autoZoneAngle.get(), true);
         waitForTime(500);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
-        waitForTime(500);
-
-        // Unload.
-        depositContainer(containerHeight.get());
     }
 
     public void loadSettings(TuningContext context) {
