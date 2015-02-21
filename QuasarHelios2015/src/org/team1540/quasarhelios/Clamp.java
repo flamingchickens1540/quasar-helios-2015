@@ -46,8 +46,10 @@ public class Clamp {
     
     public static BooleanInput atTop;
     public static BooleanInput atBottom;
+    private static final BooleanInput autoCalibrationEnabled = ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true).get() ? BooleanMixing.alwaysTrue : BooleanMixing.alwaysFalse;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
 
+    public static final BooleanInput waitingForAutoCalibration = BooleanMixing.andBooleans((BooleanInput) needsAutoCalibration, autoCalibrationEnabled);
     public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
     public static void setup() {
@@ -154,9 +156,10 @@ public class Clamp {
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
-        new InstinctModule(BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()),
-                needsAutoCalibration, ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true),
-                BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
+        new InstinctModule(BooleanMixing.andBooleans(
+                                BooleanMixing.invert(Igneous.getIsDisabled()),
+                                waitingForAutoCalibration,
+                                BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()))) {
             private final FloatInputPoll downwardTime = ControlInterface.mainTuning.getFloat("clamp-autocalibration-downward-time", 0.2f);
 
             @Override
