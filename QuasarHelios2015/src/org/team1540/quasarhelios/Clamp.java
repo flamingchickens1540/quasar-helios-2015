@@ -155,8 +155,11 @@ public class Clamp {
         needsAutoCalibration.setFalseWhen(manualOverride); // allow the user to override the autocalibration
         mode.setTrueWhen(Igneous.startTele);
 
-        FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(mode,
-                useEncoder.asInvertedInput()), pid, speed), out);
+        FloatMixing.pumpWhen(QuasarHelios.constantControl,
+                Mixing.select(autocalibrationOverrideEnable,
+                        Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()),
+                                pid, speed),
+                                autocalibrationOverrideSpeed), out);
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
@@ -175,11 +178,11 @@ public class Clamp {
                     } else {
                         Logger.info("Attempting autocalibration: not at top; jolting down...");
                         // first, go down momentarily, so if we're already at the top past the limit switch, we won't break anything
-                        autocalibrationOverrideSpeed.set(-1.0f);
+                        autocalibrationOverrideSpeed.set(1.0f);
                         autocalibrationOverrideEnable.set(true);
                         waitForTime(downwardTime);
                         // now go up to the top
-                        autocalibrationOverrideSpeed.set(1.0f);
+                        autocalibrationOverrideSpeed.set(-1.0f);
                         Logger.info("Autocalibration: aligning up...");
                         try {
                             waitUntil(atTop);
