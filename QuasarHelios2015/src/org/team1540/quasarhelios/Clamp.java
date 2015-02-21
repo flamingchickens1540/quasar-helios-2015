@@ -32,6 +32,8 @@ public class Clamp {
     public static FloatStatus height = new FloatStatus();
     public static FloatStatus speed = new FloatStatus();
     public static BooleanStatus mode = new BooleanStatus(MODE_SPEED);
+    private static FloatStatus autocalibrationOverrideSpeed = new FloatStatus();
+    private static BooleanStatus autocalibrationOverrideEnable = new BooleanStatus(false);
 
     public static final BooleanStatus open = new BooleanStatus(BooleanMixing.invert(Igneous.makeSolenoid(3)));
 
@@ -43,7 +45,7 @@ public class Clamp {
     public static final FloatInputPoll heightPadding = ControlInterface.autoTuning.getFloat("Clamp Height Padding +A", 0.1f);
 
     public static BooleanInputPoll atDesiredHeight;
-    
+
     public static BooleanInput atTop;
     public static BooleanInput atBottom;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
@@ -103,7 +105,7 @@ public class Clamp {
         BooleanStatus atTopStatus = new BooleanStatus(), atBottomStatus = new BooleanStatus();
         atTop = atTopStatus;
         atBottom = atBottomStatus;
-        
+
         atTopStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onPress(limitTop)));
         atTopStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onRelease(limitTop)));
         atBottomStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onPress(limitBottom)));
@@ -121,10 +123,10 @@ public class Clamp {
         heightReadout = FloatMixing.normalizeFloat(encoder, FloatMixing.negate((FloatInput) distance), FloatMixing.always(0.0f));
 
         FloatInputPoll distanceFromTarget = FloatMixing.subtraction.of((FloatInputPoll) height, heightReadout);
-        
-        atDesiredHeight = BooleanMixing.andBooleans(FloatMixing.floatIsAtLeast(distanceFromTarget, FloatMixing.negate(heightPadding)), 
+
+        atDesiredHeight = BooleanMixing.andBooleans(FloatMixing.floatIsAtLeast(distanceFromTarget, FloatMixing.negate(heightPadding)),
                 FloatMixing.floatIsAtMost(distanceFromTarget, heightPadding));
-        
+
         PIDControl pid = new PIDControl(heightReadout, height, p, i, d);
 
         pid.integralTotal.setWhen(0.0f, BooleanMixing.onRelease(mode));
@@ -146,7 +148,9 @@ public class Clamp {
             speedControl.set(value);
         };
 
-        mode.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl));
+        EventInput manualOverride = EventMixing.filterEvent(FloatMixing.floatIsOutsideRange(speed, -0.3f, 0.3f), true, QuasarHelios.globalControl);
+        mode.setTrueWhen(manualOverride);
+        needsAutoCalibration.setFalseWhen(manualOverride); // allow the user to override the autocalibration
         mode.setTrueWhen(Igneous.startTele);
 
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select(BooleanMixing.orBooleans(mode,
@@ -161,28 +165,27 @@ public class Clamp {
 
             @Override
             protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-                if (limitTop.get() || atTop.get()) {
-                    zeroEncoder.event();
-                    Logger.info("Autocalibrated: already at top.");
-                } else {
-                    Logger.info("Attempting autocalibration: not at top.");
-                    mode.set(MODE_HEIGHT); // to make sure that the automatic set-to-current-value has time to complete, we do this here
-                    waitForTime(200);
-                    Logger.info("Jolting down...");
-                    // first, go down momentarily, so if we're already at the top past the limit switch, we won't break anything
-                    height.set(-2.0f); // make sure to go down even though not calibrated.
-                    mode.set(MODE_HEIGHT);
-                    waitForTime(downwardTime);
-                    height.set(3.0f); // make sure to go up even though not calibrated.
-                    mode.set(MODE_HEIGHT);
-                    Logger.info("Autocalibration: aligning up...");
-                    try {
-                        waitUntil(atTop);
-                    } finally {
-                        height.set(0.0f);
-                        speed.set(0); // will probably be overridden; but just in case.
-                        mode.set(MODE_SPEED);
+                try {
+                    if (limitTop.get() || atTop.get()) {
+                        zeroEncoder.event();
+                        Logger.info("Autocalibrated: already at top.");
+                    } else {
+                        Logger.info("Attempting autocalibration: not at top; jolting down...");
+                        // first, go down momentarily, so if we're already at the top past the limit switch, we won't break anything
+                        autocalibrationOverrideSpeed.set(-1.0f);
+                        autocalibrationOverrideEnable.set(true);
+                        waitForTime(downwardTime);
+                        // now go up to the top
+                        autocalibrationOverrideSpeed.set(1.0f);
+                        Logger.info("Autocalibration: aligning up...");
+                        try {
+                            waitUntil(atTop);
+                        } finally {
+                            autocalibrationOverrideSpeed.set(0.0f);
+                        }
                     }
+                } finally {
+                    autocalibrationOverrideEnable.set(false);
                 }
             }
 
