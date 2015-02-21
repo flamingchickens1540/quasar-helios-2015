@@ -22,6 +22,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
+        waitUntilNot(Clamp.waitingForAutoCalibration);
         collectTote();
         // Pickup container.
         setClampOpen(true);
@@ -35,10 +36,6 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         DriveCode.octocanumShifting.set(true);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
         DriveCode.octocanumShifting.set(false);
-        waitForTime(500);
-        
-        // Unload
-        depositContainer(containerHeight.get());
     }
 
     public void loadSettings(TuningContext context) {
