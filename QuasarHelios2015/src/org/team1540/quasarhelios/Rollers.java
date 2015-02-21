@@ -68,7 +68,7 @@ public class Rollers {
         BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("Clamp Rollers Close Height +M", 0.2f));
         BooleanMixing.setWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl), BooleanMixing.combine(closed, leftPneumaticOverride, rightPneumaticOverride), false);
 
-        FloatInputPoll minimumTime = ControlInterface.mainTuning.getFloat("Rollers Has Tote Minimum Time +M", 0.2f);
+        FloatInputPoll minimumTime = ControlInterface.mainTuning.getFloat("Rollers Has Tote Minimum Time +M", 0.3f);
 
         leftArmRollerHasTote.setFalseWhen(BooleanMixing.onRelease(leftArmRollerHasToteRaw));
         ExpirationTimer leftRollers = new ExpirationTimer();
@@ -95,7 +95,7 @@ public class Rollers {
         Cluck.publish("Roller Has Tote Left (Raw)", leftArmRollerHasToteRaw);
         Cluck.publish("Roller Has Tote Right (Raw)", rightArmRollerHasToteRaw);
 
-        Cluck.publish("Roller Has Tote Left", leftArmRollerHasTote);
-        Cluck.publish("Roller Has Tote Right", rightArmRollerHasTote);
+        Cluck.publish("Roller Has Tote Left", leftArmRollerHasTote.asInput());
+        Cluck.publish("Roller Has Tote Right", rightArmRollerHasTote.asInput());
     }
 }
