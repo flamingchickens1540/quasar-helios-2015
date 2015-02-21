@@ -22,6 +22,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
+        waitUntilNot(Clamp.waitingForAutoCalibration);
         collectTote();
         // Pickup container.
         setClampOpen(true);

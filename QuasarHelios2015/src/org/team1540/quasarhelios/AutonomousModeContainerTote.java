@@ -23,6 +23,8 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
+        waitUntilNot(Clamp.waitingForAutoCalibration);
+
         // Pickup container.
         pickupContainer(nudge.get());
         setClampHeight(topClampHeight.get());

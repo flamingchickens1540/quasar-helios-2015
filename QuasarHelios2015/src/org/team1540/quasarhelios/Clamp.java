@@ -44,8 +44,11 @@ public class Clamp {
     
     public static BooleanInput atTop;
     public static BooleanInput atBottom;
+    private static final BooleanInput autoCalibrationEnabled = ControlInterface.mainTuning.getBoolean("clamp-allow-autocalibration", true).get() ? BooleanMixing.alwaysTrue : BooleanMixing.alwaysFalse;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
 
+    public static final BooleanInput waitingForAutoCalibration = BooleanMixing.andBooleans((BooleanInput) needsAutoCalibration, autoCalibrationEnabled);
+   
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
