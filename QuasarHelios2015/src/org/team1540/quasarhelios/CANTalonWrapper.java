@@ -65,7 +65,7 @@ public class CANTalonWrapper {
         return output;
     }
 
-    public FloatOutput getAdvanced(float f, String controlName) {
+    public FloatOutput getAdvanced(float ramping, String controlName) {
         final FloatStatus wantedS = new FloatStatus();
         BooleanStatus doRamping = new BooleanStatus(true);
         Cluck.publish(name + " Ramping Enabled", doRamping);
@@ -76,7 +76,7 @@ public class CANTalonWrapper {
                 if (Math.abs(wanted) < Math.abs(last) || !doRamping.get()) {
                     last = wanted;
                 } else {
-                    last = Utils.updateRamping(last, wanted, 0.05f);
+                    last = Utils.updateRamping(last, wanted, ramping);
                 }
                 output.set(last);
             }
