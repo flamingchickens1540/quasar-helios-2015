@@ -56,7 +56,9 @@ public class CANTalonWrapper {
     public EventInput setupCurrentBreaker() {
         FloatInputPoll current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
         BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(current, ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", 45));
-        return EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
+        EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
+        Cluck.publish(name + " Max Current Amps Reached", maxCurrentEvent);
+        return maxCurrentEvent;
     }
 
     public FloatOutput getMotor() {

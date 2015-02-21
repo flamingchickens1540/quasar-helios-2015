@@ -52,7 +52,7 @@ public class AutoEjector extends InstinctModule {
 
             try {
                 Rollers.closed.set(true);
-                Rollers.direction.set(Rollers.FORWARD);
+                Rollers.direction.set(Rollers.OUTPUT);
                 Rollers.running.set(true);
 
                 waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));

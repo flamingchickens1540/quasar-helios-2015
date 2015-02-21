@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -50,7 +49,7 @@ public class ControlInterface {
                 Rollers.running.set(!Rollers.running.get());
             }
 
-            Rollers.direction.set(Rollers.REVERSE);
+            Rollers.direction.set(Rollers.INPUT);
         });
 
         povUp.send(() -> {
@@ -60,7 +59,7 @@ public class ControlInterface {
                 Rollers.running.set(!Rollers.running.get());
             }
 
-            Rollers.direction.set(Rollers.FORWARD);
+            Rollers.direction.set(Rollers.OUTPUT);
         });
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
