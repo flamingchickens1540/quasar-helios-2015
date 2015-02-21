@@ -150,5 +150,6 @@ public class Elevator {
         Cluck.publish("Elevator Winch Speed Output", winch);
         Cluck.publish("Elevator Limit Top", limitTop);
         Cluck.publish("Elevator Limit Bottom", limitBottom);
+        Cluck.publish("Elevator Max Current Amps Reached", maxCurrentEvent);
     }
 }

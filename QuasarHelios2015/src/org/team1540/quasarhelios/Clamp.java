@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
 import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
@@ -17,6 +18,7 @@ import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PIDControl;
+import ccre.ctrl.PauseTimer;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
@@ -45,6 +47,8 @@ public class Clamp {
     public static BooleanInput atTop;
     public static BooleanInput atBottom;
     private static final BooleanStatus needsAutoCalibration = new BooleanStatus(useEncoder.get()); // yes, this only sets the default value at startup.
+
+    public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
     public static void setup() {
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
@@ -80,6 +84,18 @@ public class Clamp {
         Cluck.publish("Clamp CAN Any Fault", QuasarHelios.publishFault("clamp-can", clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
         Cluck.publish("Clamp CAN Bus Voltage Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
         Cluck.publish("Clamp CAN Temperature Fault", BooleanMixing.createDispatch(clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
+
+        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
+                ControlInterface.mainTuning.getFloat("Clamp Max Current Amps +M", 45));
+        EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
+
+        QuasarHelios.publishStickyFault("clamp-current-fault", maxCurrentEvent);
+
+        FloatStatus clampResetTime = ControlInterface.mainTuning.getFloat("Clamp Reset Time", 1000);
+
+        PauseTimer timer = new PauseTimer((long) clampResetTime.get());
+        timer.triggerAtChanges(clampEnabled.getSetFalseEvent(), clampEnabled.getSetTrueEvent());
+        maxCurrentEvent.send(timer);
 
         BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(2)), Igneous.constantPeriodic);
         BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(3)), Igneous.constantPeriodic);
@@ -124,7 +140,7 @@ public class Clamp {
             if (atBottomStatus.get()) {
                 value = Math.min(value, 0);
             }
-            if (value >= -0.1f && value <= 0.1f) {
+            if ((value >= -0.1f && value <= 0.1f) || !clampEnabled.get()) {
                 value = 0;
             }
             speedControl.set(value);
@@ -192,6 +208,8 @@ public class Clamp {
         Cluck.publish("Clamp Max Set", zeroEncoder);
         Cluck.publish("Clamp Mode", mode);
         Cluck.publish("Clamp Speed", speed);
+        Cluck.publish("Clamp Enabled", clampEnabled);
         Cluck.publish("Clamp Needs Autocalibration", needsAutoCalibration);
+        Cluck.publish("Clamp Max Current Amps Reached", maxCurrentEvent);
     }
 }
