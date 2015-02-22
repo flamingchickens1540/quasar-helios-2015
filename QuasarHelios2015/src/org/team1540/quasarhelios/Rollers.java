@@ -17,8 +17,8 @@ import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 
 public class Rollers {
-    public static final boolean INPUT = true;
-    public static final boolean OUTPUT = false;
+    public static final boolean INPUT = false;
+    public static final boolean OUTPUT = true;
 
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);

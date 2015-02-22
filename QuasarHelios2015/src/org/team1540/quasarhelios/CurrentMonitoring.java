@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.FloatInput;
-import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;

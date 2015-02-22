@@ -8,7 +8,6 @@ import ccre.ctrl.BooleanMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
-import ccre.log.Logger;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
