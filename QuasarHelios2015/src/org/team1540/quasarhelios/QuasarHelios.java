@@ -158,4 +158,17 @@ public class QuasarHelios implements IgneousApplication {
         });
         return output;
     }
+
+    public static FloatInputPoll limitSwitches(FloatInputPoll value, BooleanInputPoll forcePositive, BooleanInputPoll forceNegative) {
+        return () -> {
+            float f = value.get();
+            if (forceNegative.get()) {
+                f = Math.min(0, f);
+            }
+            if (forcePositive.get()) {
+                f = Math.max(0, f);
+            }
+            return f;
+        };
+    }
 }

@@ -13,45 +13,15 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExpirationTimer;
-import ccre.ctrl.ExtendedMotor;
-import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
-import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
+import ccre.instinct.AutonomousModeOverException;
+import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
-import ccre.util.Utils;
 
 public class Elevator {
-    private static final ExtendedMotor winchCAN = Igneous.makeCANTalon(0);
-    private static final FloatOutput winch;
-
-    static {
-        FloatOutput raw = FloatMixing.ignoredFloatOutput;
-        try {
-            raw = winchCAN.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
-        } catch (ExtendedMotorFailureException e) {
-            Logger.severe("Could not initialize elevator CAN", e);
-        }
-        FloatStatus winchS = new FloatStatus();
-        winch = winchS;
-        final FloatOutput target = raw;
-        BooleanStatus doRamping = new BooleanStatus(true);
-        Cluck.publish("Elevator Ramping Enabled", doRamping);
-        Igneous.constantPeriodic.send(new EventOutput() {
-            private float last = winchS.get();
-
-            public void event() {
-                float wanted = winchS.get();
-                if (Math.abs(wanted) < Math.abs(last) || !doRamping.get()) {
-                    last = wanted;
-                } else {
-                    last = Utils.updateRamping(last, wanted, 0.05f);
-                }
-                target.set(last);
-            }
-        });
-    }
+    private static final CANTalonWrapper elevatorTalon = new CANTalonWrapper("Elevator CAN", 0);
 
     private static final BooleanStatus raising = new BooleanStatus();
     private static final BooleanStatus lowering = new BooleanStatus();
@@ -72,27 +42,32 @@ public class Elevator {
     private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Speed +M", 1.0f);
 
     public static void setup() {
-
-        Ticker updateCAN = new Ticker(100);
-        Cluck.publish("Elevator CAN Enable", winchCAN.asEnable());
-        Cluck.publish("Elevator CAN Bus Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), updateCAN));
-        Cluck.publish("Elevator CAN Output Current", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), updateCAN));
-        Cluck.publish("Elevator CAN Output Voltage", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), updateCAN));
-        Cluck.publish("Elevator CAN Temperature", FloatMixing.createDispatch(winchCAN.asStatus(ExtendedMotor.StatusType.TEMPERATURE), updateCAN));
-        Cluck.publish("Elevator CAN Any Fault", QuasarHelios.publishFault("elevator-can", winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
-        Cluck.publish("Elevator CAN Bus Voltage Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), updateCAN));
-        Cluck.publish("Elevator CAN Temperature Fault", BooleanMixing.createDispatch(winchCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), updateCAN));
-
-        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
-
-        BooleanInputPoll reallyRaising = BooleanMixing.orBooleans(
+        BooleanInputPoll actuallyRaising = BooleanMixing.orBooleans(
                 BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), raising),
                 BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtLeast(overrideValue, 0)));
 
-        BooleanInputPoll reallyLowering = BooleanMixing.orBooleans(
+        BooleanInputPoll actuallyLowering = BooleanMixing.orBooleans(
                 BooleanMixing.andBooleans(BooleanMixing.invert((BooleanInput) overrideEnabled), lowering),
                 BooleanMixing.andBooleans(overrideEnabled, FloatMixing.floatIsAtMost(overrideValue, 0)));
+
+        setupLimitSwitchesAndPublishing(actuallyRaising, actuallyLowering);
+
+        raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.constantPeriodic));
+        lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.constantPeriodic));
+
+        EventInput currentFault = setupMotorControl();
+
+        setupTimeout();
+
+        setupAutoalign(currentFault);
+    }
+
+    private static void setupLimitSwitchesAndPublishing(BooleanInputPoll reallyRaising, BooleanInputPoll reallyLowering) {
+        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
+        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
+
+        atTopStatus.set(limitTop.get());
+        atBottomStatus.set(limitBottom.get());
 
         atTopStatus.setTrueWhen(EventMixing.filterEvent(reallyRaising, true, BooleanMixing.onPress(limitTop)));
         atBottomStatus.setTrueWhen(EventMixing.filterEvent(reallyLowering, true, BooleanMixing.onPress(limitBottom)));
@@ -103,9 +78,12 @@ public class Elevator {
         atTopStatus.setFalseWhen(BooleanMixing.onPress(limitBottom));
         atBottomStatus.setFalseWhen(BooleanMixing.onPress(limitTop));
 
-        raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.constantPeriodic));
-        lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.constantPeriodic));
+        // atTopStatus is also modified by setupAutoalign.
 
+        publishControls(limitTop, limitBottom);
+    }
+
+    private static void publishControls(BooleanInput limitTop, BooleanInput limitBottom) {
         Cluck.publish("Elevator Moving Stop", stop);
         Cluck.publish("Elevator Position Top", setTop);
         Cluck.publish("Elevator Position Bottom", setBottom);
@@ -113,31 +91,28 @@ public class Elevator {
         Cluck.publish("Elevator Moving Raising", raising);
         Cluck.publish("Elevator Moving Lowering", lowering);
 
+        Cluck.publish("Elevator Limit Top (Direct)", limitTop);
+        Cluck.publish("Elevator Limit Bottom (Direct)", limitBottom);
+
+        Cluck.publish("Elevator Limit Top", atTopStatus);
+        Cluck.publish("Elevator Limit Bottom", atBottomStatus);
+    }
+
+    private static EventInput setupMotorControl() {
         FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
         QuasarHelios.publishFault("elevator-both-directions", BooleanMixing.andBooleans(raising, lowering));
-        FloatInputPoll override = () -> {
-            float f = overrideValue.get();
-            if (atTop.get()) {
-                f = Math.min(0, f);
-            }
+        FloatInputPoll override = QuasarHelios.limitSwitches(overrideValue, atBottom, atTop);
 
-            if (atBottom.get()) {
-                f = Math.max(0, f);
-            }
+        EventInput currentFault = elevatorTalon.setupCurrentBreakerWithFaultPublish("elevator-current-fault");
+        currentFault.send(EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetFalseEvent()));
 
-            return f;
-        };
-
-        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(winchCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT),
-                ControlInterface.mainTuning.getFloat("Elevator Max Current Amps +M", 45));
-        EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
-
-        QuasarHelios.publishStickyFault("elevator-current-fault", maxCurrentEvent);
-
-        BooleanMixing.setWhen(maxCurrentEvent, BooleanMixing.combine(raising, lowering), false);
-
+        FloatOutput winch = elevatorTalon.getAdvanced(0.05f, "Elevator Winch Speed Output");
         FloatMixing.pumpWhen(QuasarHelios.constantControl, Mixing.select((BooleanInputPoll) overrideEnabled, main, override), winch);
 
+        return currentFault;
+    }
+
+    private static void setupTimeout() {
         FloatInput elevatorTimeout = ControlInterface.mainTuning.getFloat("Elevator Timeout +M", 3.0f);
 
         ExpirationTimer timer = new ExpirationTimer();
@@ -146,10 +121,39 @@ public class Elevator {
         BooleanMixing.setWhen(elevatorTimedOut, BooleanMixing.combine(raising, lowering), false);
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
+    }
 
-        Cluck.publish("Elevator Winch Speed Output", winch);
-        Cluck.publish("Elevator Limit Top", limitTop);
-        Cluck.publish("Elevator Limit Bottom", limitBottom);
-        Cluck.publish("Elevator Max Current Amps Reached", maxCurrentEvent);
+    private static void setupAutoalign(EventInput currentFault) {
+        BooleanStatus needsAutoAlign = new BooleanStatus(!atTop.get() && !atBottom.get());
+
+        Cluck.publish("Elevator Needs Autoalign", needsAutoAlign);
+
+        needsAutoAlign.setFalseWhen(BooleanMixing.onPress(atTop));
+        needsAutoAlign.setFalseWhen(BooleanMixing.onPress(atBottom));
+
+        BooleanInputPoll shouldBeAutoaligning = BooleanMixing.andBooleans(BooleanMixing.invert(Igneous.getIsDisabled()),
+                needsAutoAlign, ControlInterface.mainTuning.getBoolean("Elevator Enable Autoalign", true),
+                BooleanMixing.orBooleans(Igneous.getIsTeleop(), Igneous.getIsAutonomous()));
+
+        // If we run into the top of the elevator here - then we know that we're at the top.
+        atTopStatus.setTrueWhen(EventMixing.filterEvent(shouldBeAutoaligning, true, currentFault));
+
+        new InstinctModule(shouldBeAutoaligning) {
+            @Override
+            protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+                if (atTop.get() || atBottom.get()) {
+                    needsAutoAlign.set(false);
+                    return; // just in case
+                }
+                Logger.info("Autoaligning...");
+                setTop.event();
+                waitUntil(atTop);
+                Logger.info("Autoaligned!");
+            }
+
+            protected String getTypeName() {
+                return "elevator autoaligner";
+            }
+        }.updateWhen(Igneous.globalPeriodic);
     }
 }
