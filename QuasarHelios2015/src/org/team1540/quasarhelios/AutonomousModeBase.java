@@ -10,7 +10,6 @@ import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
-import ccre.log.Logger;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
