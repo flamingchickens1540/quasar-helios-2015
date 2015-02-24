@@ -46,7 +46,7 @@ public class DriveCode {
     private static FloatStatus centricAngleOffset;
     private static BooleanStatus headingControl;
     private static final FloatStatus calibratedAngle = new FloatStatus();
-    private static final BooleanStatus fieldCentric = new BooleanStatus();
+    private static final BooleanStatus fieldCentric = ControlInterface.teleTuning.getBoolean("Teleop Field Centric Enabled +T", false);
 
     private static final FloatStatus desiredAngle = new FloatStatus();
     private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
@@ -143,7 +143,6 @@ public class DriveCode {
     public static void setup() {
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
-        BooleanStatus startFieldCentric = ControlInterface.teleTuning.getBoolean("Teleop Field Centric Default +T", false);
         recalibrateButton.send(calibrate);
 
         FloatStatus ultgain = ControlInterface.teleTuning.getFloat("Teleop PID Calibration Ultimate Gain +T", .03f);
@@ -178,8 +177,6 @@ public class DriveCode {
         timer.schedule(1000, calibrate);
         timer.start();
 
-        fieldCentric.setFalseWhen(Igneous.startAuto);
-        fieldCentric.setTrueWhen(EventMixing.filterEvent(startFieldCentric, true, Igneous.startTele));
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
         onlyStrafing.setFalseWhen(octocanumShiftingButton);
@@ -203,7 +200,6 @@ public class DriveCode {
         Cluck.publish("Drive Encoder Left", leftEncoder);
         Cluck.publish("Drive Encoder Right", rightEncoder);
         Cluck.publish("Teleop Field Centric Calibrate", calibrate);
-        Cluck.publish("Teleop Field Centric Enabled", fieldCentric);
         Cluck.publish("Teleop PID Output", (FloatInput) pid);
         Cluck.publish("Drive Encoder Reset", (EventOutput) resetEncoders);
     }
