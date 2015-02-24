@@ -14,21 +14,20 @@ public class DriveCode {
     public static final FloatStatus rightJoystickXRaw = new FloatStatus();
     public static final FloatStatus rightJoystickYRaw = new FloatStatus();
 
-    private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
-
-    public static final FloatInput leftJoystickX = leftJoystickXRaw;//FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickXRaw);
-    public static final FloatInput leftJoystickY = FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw);
-    public static final FloatInput rightJoystickX = rightJoystickXRaw;//FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickXRaw);
-    public static final FloatInput rightJoystickY = FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw);
-
     public static EventStatus octocanumShiftingButton = new EventStatus();
     public static EventStatus recalibrateButton = new EventStatus();
     public static EventStatus strafingButton = new EventStatus();
     public static FloatStatus forwardTrigger = new FloatStatus();
     public static FloatStatus backwardTrigger = new FloatStatus();
 
-    public static final FloatInput leftJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) leftJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
-    public static final FloatInput rightJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) rightJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+    private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
+
+    public static final FloatInput leftJoystickX = leftJoystickXRaw;
+    public static final FloatInput leftJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+    public static final FloatInput rightJoystickX = rightJoystickXRaw;
+    public static final FloatInput rightJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
 
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
@@ -63,7 +62,7 @@ public class DriveCode {
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
-            float distanceY = leftJoystickYChannel.get();
+            float distanceY = leftJoystickY.get();
             float distanceX = leftJoystickX.get();
             float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             if (speed > 1) {
@@ -199,7 +198,7 @@ public class DriveCode {
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
-                DriverImpls.createTankDriverEvent(leftJoystickYChannel, rightJoystickYChannel, leftMotors, rightMotors)));
+                DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
 
         Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
         Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);
