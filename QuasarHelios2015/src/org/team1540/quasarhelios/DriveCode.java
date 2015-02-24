@@ -24,10 +24,10 @@ public class DriveCode {
 
     public static final FloatInput leftJoystickX = leftJoystickXRaw;
     public static final FloatInput leftJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
     public static final FloatInput rightJoystickX = rightJoystickXRaw;
     public static final FloatInput rightJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
 
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
