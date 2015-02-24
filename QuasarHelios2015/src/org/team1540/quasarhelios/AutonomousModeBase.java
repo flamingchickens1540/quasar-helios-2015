@@ -10,6 +10,7 @@ import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
+import ccre.log.Logger;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
@@ -26,10 +27,37 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         super(modeName);
     }
 
+    protected void driveForTime(long time, float speed) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
+
+        FloatInput rightMotorSpeed, leftMotorSpeed;
+
+        if (time > 0) {
+            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
+            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+        } else {
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+        }
+
+        try {
+            rightMotorSpeed.send(DriveCode.rightMotors);
+            leftMotorSpeed.send(DriveCode.leftMotors);
+
+            waitForTime(Math.abs(time));
+        } finally {
+            rightMotorSpeed.unsend(DriveCode.rightMotors);
+            leftMotorSpeed.unsend(DriveCode.leftMotors);
+            DriveCode.allMotors.set(0.0f);
+            straightening.set(true);
+        }
+    }
+
     protected void drive(float distance) throws AutonomousModeOverException, InterruptedException {
         drive(distance, driveSpeed.get());
     }
-    
+
     protected void drive(float distance, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         Autonomous.desiredAngle.set(HeadingSensor.absoluteYaw.get());
@@ -61,7 +89,28 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             DriveCode.allMotors.set(0.0f);
             straightening.set(true);
         }
+    }
 
+    protected void turnAbsolute(float start, float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+
+        if (degree > 0) {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(-rotateSpeed.get());
+                waitUntilAtMost(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        } else {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(rotateSpeed.get());
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        }
+
+        DriveCode.rotate.set(0.0f);
     }
 
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
@@ -85,21 +134,18 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         }
 
         DriveCode.rotate.set(0.0f);
-        DriveCode.octocanumShifting.set(false);
     }
-    
+
     protected void singleSideTurn(long time, boolean side) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
         DriveCode.octocanumShifting.set(true);
-        
+
         FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
+        // TODO: Maybe this should use encoders?
         motors.set(rotateSpeed.get());
         waitForTime(time);
         motors.set(0.0f);
-        
-        DriveCode.octocanumShifting.set(false);
     }
-
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
         // Move elevator.
@@ -114,14 +160,14 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         } else {
             waitUntil(Elevator.atTop);
         }
-        
+
         // Run rollers.
         Rollers.direction.set(Rollers.INPUT);
         Rollers.running.set(true);
         Rollers.closed.set(true);
 
         waitUntil(AutoLoader.crateInPosition);
-        
+
         Rollers.running.set(false);
         Rollers.closed.set(false);
     }
@@ -129,6 +175,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
         Clamp.open.set(value);
         waitForTime(30);
+    }
+
+    protected void startSetClampHeight(float value) {
+        Clamp.mode.set(Clamp.MODE_HEIGHT);
+        Clamp.height.set(value);
     }
 
     protected void setClampHeight(float value) throws AutonomousModeOverException, InterruptedException {
@@ -146,7 +197,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
         drive(nudge);
         setClampOpen(false);
-        setClampHeight(1.0f);
+        setClampHeight(0.5f);
     }
 
     protected void depositContainer(float height) throws AutonomousModeOverException, InterruptedException {
