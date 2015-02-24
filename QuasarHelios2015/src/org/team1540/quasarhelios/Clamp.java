@@ -60,7 +60,6 @@ public class Clamp {
         EventStatus zeroEncoder = new EventStatus();
         needsAutoCalibration.setFalseWhen(zeroEncoder);
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
-        Igneous.startAuto.send(zeroEncoder);
 
         QuasarHelios.publishFault("clamp-encoder-zero", FloatMixing.floatIsInRange(encoder, -0.1f, 0.1f));
 
