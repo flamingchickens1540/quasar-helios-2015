@@ -45,6 +45,7 @@ public class Autonomous {
         Cluck.publish("Auto PID Output", autoPID);
 
         mainModule.publishDefaultControls(true, true);
+        mainModule.publishRConfControls();
         mainModule.addMode(new AutonomousModeDrive());
         mainModule.addMode(new AutonomousModeToteContainer());
         mainModule.addMode(new AutonomousModeContainerTote());
