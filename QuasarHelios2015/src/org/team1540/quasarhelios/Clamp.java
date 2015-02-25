@@ -108,6 +108,8 @@ public class Clamp {
         atTopStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onRelease(limitTop)));
         atBottomStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onPress(limitBottom)));
         atBottomStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onRelease(limitBottom)));
+        atTopStatus.setFalseWhen(BooleanMixing.onPress(atBottomStatus));
+        atBottomStatus.setFalseWhen(BooleanMixing.onPress(atTopStatus));
 
         FloatStatus distance = ControlInterface.mainTuning.getFloat("Clamp Distance +M", 1.0f);
 

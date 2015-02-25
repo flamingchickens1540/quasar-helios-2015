@@ -16,9 +16,9 @@ public class DriveCode {
 
     private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
 
-    public static final FloatInput leftJoystickX = leftJoystickXRaw;//FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickXRaw);
+    public static final FloatInput leftJoystickX = leftJoystickXRaw;
     public static final FloatInput leftJoystickY = FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw);
-    public static final FloatInput rightJoystickX = rightJoystickXRaw;//FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickXRaw);
+    public static final FloatInput rightJoystickX = rightJoystickXRaw;
     public static final FloatInput rightJoystickY = FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw);
 
     public static EventStatus octocanumShiftingButton = new EventStatus();
