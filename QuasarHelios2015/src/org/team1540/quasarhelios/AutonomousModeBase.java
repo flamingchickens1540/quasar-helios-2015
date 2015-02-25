@@ -147,6 +147,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
+        collectTote(false);
+    }
+
+    protected void collectTote(boolean shake) throws AutonomousModeOverException, InterruptedException {
         // Move elevator.
         Elevator.setTop.event();
 
@@ -165,7 +169,22 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         Rollers.running.set(true);
         Rollers.closed.set(true);
 
-        waitUntil(AutoLoader.crateInPosition);
+        if (shake) {
+            while (true) {
+                DriveCode.rotate.set(0.5f);
+                waitForTime(100);
+                if (AutoLoader.crateInPosition.get()) {
+                    break;
+                }
+                DriveCode.rotate.set(-0.5f);
+                waitForTime(100);
+                if (AutoLoader.crateInPosition.get()) {
+                    break;
+                }
+            }
+        } else {
+            waitUntil(AutoLoader.crateInPosition);
+        }
 
         Rollers.running.set(false);
         Rollers.closed.set(false);
