@@ -5,7 +5,7 @@ import ccre.channel.BooleanInput;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatOutput; 
+import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
@@ -25,7 +25,7 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl), 
+        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl),
                 Igneous.joystick2.getAxisChannel(2), Clamp.speed);
 
         Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
@@ -64,18 +64,17 @@ public class ControlInterface {
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
-
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
         BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
-        
+
         overrideRollers.send(Rollers.overrideRollers);
 
         FloatInput leftStickX = Igneous.joystick2.getAxisSource(1);
         FloatInput rightStickX = Igneous.joystick2.getAxisSource(5);
-        
+
         BooleanMixing.onPress(FloatMixing.floatIsAtLeast(leftStickX, cutoffRollers)).send(Rollers.leftPneumaticOverride.getSetTrueEvent());
         BooleanMixing.onPress(FloatMixing.floatIsAtMost(leftStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.leftPneumaticOverride.getSetFalseEvent());
-        
+
         BooleanMixing.onPress(FloatMixing.floatIsAtMost(rightStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
         BooleanMixing.onPress(FloatMixing.floatIsAtLeast(rightStickX, cutoffRollers)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
 
@@ -100,22 +99,16 @@ public class ControlInterface {
     }
 
     private static void setupDrive() {
-        FloatInput leftXAxis = Igneous.joystick1.getXAxisSource();
-        FloatInput leftYAxis = Igneous.joystick1.getYAxisSource();
-        FloatInput rightXAxis = Igneous.joystick1.getAxisSource(5);
-        FloatInput rightYAxis = Igneous.joystick1.getAxisSource(6);
+        DriveCode.shiftEnabled.setTrueWhen(Igneous.joystick1.getButtonSource(5));
+        DriveCode.shiftEnabled.setFalseWhen(Igneous.joystick1.getButtonSource(6));
 
-        Cluck.publish("Joystick 1 Right X Axis", rightXAxis);
-        Cluck.publish("Joystick 1 Right Y Axis", rightYAxis);
-        Cluck.publish("Joystick 1 Left X Axis", leftXAxis);
-        Cluck.publish("Joystick 1 Left Y Axis", leftYAxis);
+        FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickXRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickYRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(5), .25f).send(DriveCode.rightJoystickXRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(6), .2f).send(DriveCode.rightJoystickYRaw);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f).send(DriveCode.backwardTrigger);
+        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f).send(DriveCode.forwardTrigger);
 
-        FloatMixing.deadzone(leftXAxis, .2f).send(DriveCode.leftJoystickX);
-        FloatMixing.deadzone(leftYAxis, .2f).send(DriveCode.leftJoystickY);
-        FloatMixing.deadzone(rightXAxis, .25f).send(DriveCode.rightJoystickX);
-        FloatMixing.deadzone(rightYAxis, .2f).send(DriveCode.rightJoystickY);
-        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f).send(DriveCode.forwardTrigger);
-        FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f).send(DriveCode.backwardTrigger);
         Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
