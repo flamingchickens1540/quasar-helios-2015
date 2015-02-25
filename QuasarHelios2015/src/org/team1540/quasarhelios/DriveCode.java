@@ -7,10 +7,12 @@ import ccre.igneous.*;
 import ccre.log.Logger;
 
 public class DriveCode {
-    public static final FloatStatus leftJoystickX = new FloatStatus();
-    public static final FloatStatus leftJoystickY = new FloatStatus();
-    public static final FloatStatus rightJoystickX = new FloatStatus();
-    public static final FloatStatus rightJoystickY = new FloatStatus();
+    public static final BooleanStatus shiftEnabled = new BooleanStatus();
+
+    public static final FloatStatus leftJoystickXRaw = new FloatStatus();
+    public static final FloatStatus leftJoystickYRaw = new FloatStatus();
+    public static final FloatStatus rightJoystickXRaw = new FloatStatus();
+    public static final FloatStatus rightJoystickYRaw = new FloatStatus();
 
     public static EventStatus octocanumShiftingButton = new EventStatus();
     public static EventStatus recalibrateButton = new EventStatus();
@@ -18,8 +20,14 @@ public class DriveCode {
     public static FloatStatus forwardTrigger = new FloatStatus();
     public static FloatStatus backwardTrigger = new FloatStatus();
 
-    public static final FloatInput leftJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) leftJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
-    public static final FloatInput rightJoystickYChannel = FloatMixing.subtraction.of(FloatMixing.addition.of((FloatInput) rightJoystickY, (FloatInput) forwardTrigger), (FloatInput) backwardTrigger);
+    private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
+
+    public static final FloatInput leftJoystickX = leftJoystickXRaw;
+    public static final FloatInput leftJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
+    public static final FloatInput rightJoystickX = rightJoystickXRaw;
+    public static final FloatInput rightJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
 
     private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
     private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
@@ -54,7 +62,7 @@ public class DriveCode {
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
-            float distanceY = leftJoystickYChannel.get();
+            float distanceY = leftJoystickY.get();
             float distanceX = leftJoystickX.get();
             float speed = (float) Math.sqrt(distanceX * distanceX + distanceY * distanceY);
             if (speed > 1) {
@@ -180,14 +188,24 @@ public class DriveCode {
         octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
         onlyStrafing.setFalseWhen(octocanumShiftingButton);
-        FloatMixing.pumpWhen(strafingButton,HeadingSensor.absoluteYaw, desiredAngle);
+        FloatMixing.pumpWhen(strafingButton, HeadingSensor.absoluteYaw, desiredAngle);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
         FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
         Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
         Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
-                DriverImpls.createTankDriverEvent(leftJoystickYChannel, rightJoystickYChannel, leftMotors, rightMotors)));
+                DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
+
+        Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
+        Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);
+        Cluck.publish("Joystick 1 Left X Axis Raw", (FloatInput) leftJoystickXRaw);
+        Cluck.publish("Joystick 1 Left Y Axis Raw", (FloatInput) leftJoystickYRaw);
+
+        Cluck.publish("Joystick 1 Right X Axis", rightJoystickX);
+        Cluck.publish("Joystick 1 Right Y Axis", rightJoystickY);
+        Cluck.publish("Joystick 1 Left X Axis", leftJoystickX);
+        Cluck.publish("Joystick 1 Left Y Axis", leftJoystickY);
 
         Cluck.publish("Drive Motor Left Rear", leftBackMotor);
         Cluck.publish("Drive Motor Left Forward", leftFrontMotor);
