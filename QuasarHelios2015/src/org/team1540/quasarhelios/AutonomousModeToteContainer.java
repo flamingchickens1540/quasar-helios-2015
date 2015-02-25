@@ -3,10 +3,12 @@ package org.team1540.quasarhelios;
 import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
+import ccre.log.Logger;
+import ccre.util.Utils;
 
 public class AutonomousModeToteContainer extends AutonomousModeBase {
     protected FloatInputPoll toteDistance;
-    protected FloatInputPoll autoZoneDistance;
+    protected FloatInputPoll autoZoneDistance, autoZoneTime;
     protected FloatInputPoll secondDistance;
     
     private FloatInputPoll containerTurnTime;
@@ -22,34 +24,41 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
+        float startAngle = HeadingSensor.absoluteYaw.get();
+        setClampOpen(true);
+        waitUntilNot(Clamp.waitingForAutoCalibration);
+        startSetClampHeight(0.4f);
         collectTote();
         // Pickup container.
-        setClampOpen(true);
         setClampHeight(0.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);
         pickupContainer(nudge.get());
 
         // Motion
-        turn(-autoZoneAngle.get(), true);
+        float nextAngle = HeadingSensor.absoluteYaw.get();
+        turnAbsolute(startAngle, -autoZoneAngle.get(), true);
         waitForTime(500);
+        float curAngle = HeadingSensor.absoluteYaw.get();
+        Logger.info("Actual angle: " + (curAngle - startAngle) + " based on " + startAngle + "/" + nextAngle + "/" + curAngle);
+        float now = Utils.getCurrentTimeSeconds();
+        Logger.info("Setting to mechanum: " + DriveCode.leftEncoder.get() + " and " + autoZoneDistance.get());
         DriveCode.octocanumShifting.set(true);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
+        driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
+        Logger.info("Setting to traction: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
         DriveCode.octocanumShifting.set(false);
-        waitForTime(500);
-        
-        // Unload
-        depositContainer(containerHeight.get());
     }
 
     public void loadSettings(TuningContext context) {
         this.toteDistance = context.getFloat("Auto Mode Single Tote Tote Distance +A", 28.0f);
-        this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance +A", 60.0f);
         this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
         this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
-        this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 90.0f);
         this.containerHeight = context.getFloat("Auto Mode Single Tote Container Height +A", 0.0f);
-        this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed", 1.0f);
+        this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 100.0f);
+        this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);
+        this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.0f);
     }
 
 }

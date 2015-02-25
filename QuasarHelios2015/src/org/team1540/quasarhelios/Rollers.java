@@ -11,13 +11,14 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
+import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 
 public class Rollers {
-    public static final boolean INPUT = true;
-    public static final boolean OUTPUT = false;
+    public static final boolean INPUT = false;
+    public static final boolean OUTPUT = true;
 
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);
@@ -41,6 +42,17 @@ public class Rollers {
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("Roller Speed +M", 1.0f);
     private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualSpeed), actualSpeed);
 
+    private static final FloatInput amperageLeftArmRoller = CurrentMonitoring.channels[15];
+    private static final FloatInput amperageRightArmRoller = CurrentMonitoring.channels[0];
+
+    // The thresholds are VERY HIGH by default so that these won't come into effect unless we want to turn them on.
+    private static final BooleanInput leftArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageLeftArmRoller,
+            ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Left +M", 1000f));
+    private static final BooleanInput rightArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageRightArmRoller,
+            ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Right +M", 1000f));
+    private static BooleanStatus leftArmRollerHasTote = new BooleanStatus(),
+            rightArmRollerHasTote = new BooleanStatus();
+
     public static void setup() {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
@@ -56,6 +68,18 @@ public class Rollers {
         BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("Clamp Rollers Close Height +M", 0.2f));
         BooleanMixing.setWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl), BooleanMixing.combine(closed, leftPneumaticOverride, rightPneumaticOverride), false);
 
+        FloatInputPoll minimumTime = ControlInterface.mainTuning.getFloat("Rollers Has Tote Minimum Time +M", 0.3f);
+
+        leftArmRollerHasTote.setFalseWhen(BooleanMixing.onRelease(leftArmRollerHasToteRaw));
+        ExpirationTimer leftRollers = new ExpirationTimer();
+        leftRollers.schedule(minimumTime, leftArmRollerHasTote.getSetTrueEvent());
+        leftArmRollerHasToteRaw.send(leftRollers.getRunningControl());
+
+        rightArmRollerHasTote.setFalseWhen(BooleanMixing.onRelease(rightArmRollerHasToteRaw));
+        ExpirationTimer rightRollers = new ExpirationTimer();
+        rightRollers.schedule(minimumTime, rightArmRollerHasTote.getSetTrueEvent());
+        rightArmRollerHasToteRaw.send(rightRollers.getRunningControl());
+
         Cluck.publish("Roller Speed Left Arm", leftArmRoller);
         Cluck.publish("Roller Speed Right Arm", rightArmRoller);
         Cluck.publish("Roller Speed Front", frontRollers);
@@ -64,5 +88,14 @@ public class Rollers {
         Cluck.publish("Roller Closed Left", leftPneumatic);
         Cluck.publish("Roller Closed Right", rightPneumatic);
         Cluck.publish("Roller Force Open", BooleanMixing.createDispatch(clampLow, QuasarHelios.readoutUpdate));
+
+        Cluck.publish("Roller Amperage Left", amperageLeftArmRoller);
+        Cluck.publish("Roller Amperage Right", amperageRightArmRoller);
+
+        Cluck.publish("Roller Has Tote Left (Raw)", leftArmRollerHasToteRaw);
+        Cluck.publish("Roller Has Tote Right (Raw)", rightArmRollerHasToteRaw);
+
+        Cluck.publish("Roller Has Tote Left", leftArmRollerHasTote.asInput());
+        Cluck.publish("Roller Has Tote Right", rightArmRollerHasTote.asInput());
     }
 }

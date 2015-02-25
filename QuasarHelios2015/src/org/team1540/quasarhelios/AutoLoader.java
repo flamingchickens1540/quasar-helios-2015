@@ -13,7 +13,7 @@ public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.5f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
-    
+
     public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.5f);
 
     private AutoLoader(BooleanStatus running) {
@@ -67,16 +67,19 @@ public class AutoLoader extends InstinctModule {
                     Rollers.direction.set(direction);
                     Rollers.closed.set(closed);
                 }
-            } finally {
                 Elevator.setBottom.event();
+                waitUntil(Elevator.atBottom);
+
+                waitForTime(100);
+            } finally {
+                Elevator.setTop.event();
             }
-            waitUntil(Elevator.atBottom);
+            waitUntil(Elevator.atTop);
             waitForTime(1000);
         } finally {
             running.set(false);
         }
     }
-    
 
     @Override
     protected String getTypeName() {
