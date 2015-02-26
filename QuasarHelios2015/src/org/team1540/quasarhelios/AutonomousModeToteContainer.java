@@ -15,7 +15,6 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     private FloatInputPoll autoZoneAngle;
     private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
-    private FloatInputPoll containerHeight;
 
     public AutonomousModeToteContainer() {
         super("One Tote");
@@ -54,7 +53,6 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
         this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
-        this.containerHeight = context.getFloat("Auto Mode Single Tote Container Height +A", 0.0f);
         this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 100.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);

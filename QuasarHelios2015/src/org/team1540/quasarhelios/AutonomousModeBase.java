@@ -66,11 +66,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
-            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
         }
 
         try {
@@ -147,10 +147,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
-        collectTote(false);
+        collectTote(false, true);
     }
 
-    protected void collectTote(boolean shake) throws AutonomousModeOverException, InterruptedException {
+    protected void collectTote(boolean shake, boolean shouldWait) throws AutonomousModeOverException, InterruptedException {
         // Move elevator.
         Elevator.setTop.event();
 
@@ -182,12 +182,16 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
                     break;
                 }
             }
-        } else {
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else if (shouldWait) {
             waitUntil(AutoLoader.crateInPosition);
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else {
+            waitForTime(250);
         }
 
-        Rollers.running.set(false);
-        Rollers.closed.set(false);
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
