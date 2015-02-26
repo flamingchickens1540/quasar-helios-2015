@@ -111,6 +111,7 @@ public class ControlInterface {
 
         Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
+        Igneous.joystick1.getButtonSource(3).send(DriveCode.fieldCentricButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
     }
 }
