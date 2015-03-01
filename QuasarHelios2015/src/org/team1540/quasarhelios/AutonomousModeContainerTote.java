@@ -41,7 +41,7 @@ public class AutonomousModeContainerTote extends AutonomousModeBase {
         waitForTime(500);
         drive(containerDriveTime.get());
 
-        collectTote(shake.get(), false);
+        collectTote(shake.get(), -1);
 
         // Motion.
         turnAbsolute(startAngle, autoZoneAngle.get(), true);

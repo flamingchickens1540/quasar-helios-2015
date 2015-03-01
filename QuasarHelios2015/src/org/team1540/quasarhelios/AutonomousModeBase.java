@@ -10,6 +10,7 @@ import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
+import ccre.util.Utils;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
@@ -147,10 +148,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
-        collectTote(false, true);
+        collectTote(false, 0);
     }
 
-    protected void collectTote(boolean shake, boolean shouldWait) throws AutonomousModeOverException, InterruptedException {
+    protected void collectTote(boolean shake, int timeout) throws AutonomousModeOverException, InterruptedException {
         // Move elevator.
         Elevator.setTop.event();
 
@@ -184,14 +185,18 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             }
             Rollers.running.set(false);
             Rollers.closed.set(false);
-        } else if (shouldWait) {
+        } else if (timeout > 0) {
+            float end = Utils.getCurrentTimeSeconds() + timeout / 1000f;
+            waitUntil(BooleanMixing.orBooleans(AutoLoader.crateInPosition, FloatMixing.floatIsAtLeast(Utils.currentTimeSeconds, end)));
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else if (timeout == 0) {
             waitUntil(AutoLoader.crateInPosition);
             Rollers.running.set(false);
             Rollers.closed.set(false);
         } else {
             waitForTime(250);
         }
-
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {

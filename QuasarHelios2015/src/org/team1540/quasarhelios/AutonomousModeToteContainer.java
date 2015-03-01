@@ -27,7 +27,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);
         startSetClampHeight(0.4f);
-        collectTote();
+        collectTote(false, 5000);
         // Pickup container.
         setClampHeight(0.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);

@@ -27,6 +27,7 @@ public class QuasarHelios implements IgneousApplication {
     public static BooleanStatus autoLoader;
     public static BooleanStatus autoEjector;
     public static BooleanStatus autoStacker;
+    public static BooleanStatus autoHumanLoader;
     public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
     public static final EventInput manualControl = EventMixing.filterEvent(BooleanMixing.orBooleans(Igneous.getIsTest(), Igneous.getIsAutonomous()), false, Igneous.globalPeriodic);
     public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
@@ -37,6 +38,8 @@ public class QuasarHelios implements IgneousApplication {
         autoLoader = AutoLoader.create();
         autoEjector = AutoEjector.create();
         autoStacker = AutoStacker.create();
+        autoHumanLoader = AutoHumanLoader.create();
+        autoHumanLoader.setFalseWhen(Igneous.startDisabled);
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();
@@ -50,13 +53,13 @@ public class QuasarHelios implements IgneousApplication {
         // This is to provide diagnostics in case of another crash due to OOM.
         new Ticker(60000).send(() -> {
             Logger.info("Current memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            System.gc();
+            /*System.gc();
             Logger.info("Post-GC-1 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
             System.gc();
             Logger.info("Post-GC-2 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
             System.gc();
             Logger.info("Post-GC-3 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            MemoryDumper.dumpHeap();
+            MemoryDumper.dumpHeap();*/
         });
     }
 
@@ -91,10 +94,10 @@ public class QuasarHelios implements IgneousApplication {
 
             public Entry[] queryRConf() throws InterruptedException {
                 synchronized (QuasarHelios.class) {
-                    Entry[] entries = new Entry[3 + faultNames.size()];
+                    Entry[] entries = new Entry[4 + faultNames.size()];
                     entries[0] = RConf.title("ALL FAULTS");
                     entries[1] = RConf.string("(click to clear sticky faults)");
-                    for (int i = 2; i < entries.length - 1; i++) {
+                    for (int i = 2; i < entries.length - 2; i++) {
                         String str = faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal");
                         if (faultClears.get(i - 2) == null) {
                             entries[i] = RConf.string(str); // not interactable
@@ -102,7 +105,8 @@ public class QuasarHelios implements IgneousApplication {
                             entries[i] = RConf.button(str); // interactable
                         }
                     }
-                    entries[entries.length - 1] = RConf.button("(clear all)");
+                    entries[entries.length - 2] = RConf.button("(clear all)");
+                    entries[entries.length - 1] = RConf.autoRefresh(1000);
                     return entries;
                 }
             }
