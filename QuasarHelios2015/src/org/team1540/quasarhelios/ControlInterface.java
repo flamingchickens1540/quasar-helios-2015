@@ -104,8 +104,7 @@ public class ControlInterface {
     }
 
     private static void setupDrive() {
-        DriveCode.shiftEnabled.setTrueWhen(Igneous.joystick1.getButtonSource(5));
-        DriveCode.shiftEnabled.setFalseWhen(Igneous.joystick1.getButtonSource(6));
+        DriveCode.shiftEnabled.toggleWhen(Igneous.joystick1.getButtonSource(6));
 
         FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickXRaw);
         FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickYRaw);
