@@ -1,66 +1,84 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanOutput;
 import ccre.channel.FloatInputPoll;
+import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
     private FloatInputPoll nudge;
+    private FloatInputPoll nudgeToTote;
     private FloatInputPoll toteDistance;
     private FloatInputPoll autoZoneDistance;
-    private BooleanInputPoll collectFirstContainer;
-    private BooleanInputPoll collectSecondContainer;
+    private FloatInputPoll autoZoneAngle;
+    private FloatInputPoll autoZoneTime;
+    private FloatInputPoll autoZoneSpeed;
     
     public AutonomousModeThreeTotes() {
-        super("Three Tote Auto");
+        super("Three Totes");
     }
 
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
-        boolean bothEnabled = collectFirstContainer.get() && collectSecondContainer.get();
-        
-        if (bothEnabled) {
-            Logger.warning("Can't collect two containers! Go sit in the corner and think about what you've done.");
-        }
-        
-        // Collect first tote + container
-        setClampHeight(1.0f);
-        collectTote();
-        if (collectFirstContainer.get() || bothEnabled) {
-            pickupContainer(nudge.get());
-        }
-        // TODO: Hold container with top claw
-        drive(toteDistance.get());
-        // Collect next tote + container
-        collectTote();
-        if (collectSecondContainer.get() ^ bothEnabled) {
-            pickupContainer(nudge.get());
-        }
-        drive(toteDistance.get());
-        // Collect last tote and drive to auto zone
-        collectTote();
-        // turn(90);
-        drive(autoZoneDistance.get());
-        // Drop everything off
-        ejectTotes();
-        DriveCode.octocanumShifting.set(true);
-        // strafe(STRAFE_RIGHT, strafeTime.get());
+        try { 
+            float startAngle = HeadingSensor.absoluteYaw.get();
+            BooleanOutput closed = BooleanMixing.combine(Rollers.leftPneumaticOverride, Rollers.rightPneumaticOverride);
 
-        if (collectFirstContainer.get() || collectSecondContainer.get()) {
-            depositContainer(0.0f);
+            // Collect first tote
+            collectToteWithElevator();
+            Rollers.overrideRollers.set(true);
+
+            // Move first container
+            closed.set(true);
+            Rollers.rightRollerOverride.set(1.0f);
+            Rollers.leftRollerOverride.set(-1.0f);
+            drive(nudge.get() + toteDistance.get(), 0.25f);
+            Rollers.rightArmRoller.set(0.0f);
+            Rollers.leftArmRoller.set(0.0f);
+            closed.set(false);
+            
+            // Second tote
+            drive(nudgeToTote.get());
+            Rollers.overrideRollers.set(false);
+            collectToteWithElevator();
+            Rollers.overrideRollers.set(true);
+            
+            // Move second container
+            closed.set(true);
+            Rollers.rightRollerOverride.set(1.0f);
+            Rollers.leftRollerOverride.set(-1.0f);
+            drive(nudge.get() + toteDistance.get(), 0.25f);
+            Rollers.rightArmRoller.set(0.0f);
+            Rollers.leftArmRoller.set(0.0f);
+            closed.set(false);
+            
+            // Collect last tote
+            drive(nudgeToTote.get());
+            Rollers.overrideRollers.set(false);
+            collectToteWithElevator();
+            
+            // Go to Auto Zone
+            turnAbsolute(startAngle, -autoZoneAngle.get(), true);
+            drive(autoZoneDistance.get());
+            driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
+            
+            // Drop totes off
+            ejectTotes();
+        } finally {
+            Rollers.overrideRollers.set(false);
         }
-        
-        DriveCode.octocanumShifting.set(false);
     }
 
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 1.0f);
-        this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 7.0f);
-        this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 5.0f);
-        this.collectFirstContainer = context.getBoolean("Auto Mode Three Totes Collect First Container +A", true);
-        this.collectSecondContainer = context.getBoolean("Auto Mode Three Totes Collect Second Container +A", true);
+        this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 12.0f);
+        this.nudgeToTote = context.getFloat("Auto Mode Three Totes Nudge to Tote", 6.0f);
+        this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 72.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 60.0f);
+        this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle +A", 90.0f);
+        this.autoZoneTime = context.getFloat("Auto Mode Three Totes Auto Zone Time +A", 1.0f);
+        this.autoZoneSpeed = context.getFloat("Auto Mode Three Totes Auto Zone Speed +A", 1.0f);
     }
 }

@@ -198,6 +198,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             waitForTime(250);
         }
     }
+    
+    protected void collectToteWithElevator() throws AutonomousModeOverException, InterruptedException {
+        QuasarHelios.autoLoader.set(true);
+        waitUntilNot(QuasarHelios.autoLoader);
+    }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
         Clamp.open.set(value);

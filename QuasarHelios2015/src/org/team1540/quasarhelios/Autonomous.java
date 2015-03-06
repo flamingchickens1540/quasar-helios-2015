@@ -49,7 +49,7 @@ public class Autonomous {
         mainModule.addMode(new AutonomousModeDrive());
         mainModule.addMode(new AutonomousModeToteContainer());
         mainModule.addMode(new AutonomousModeContainerTote());
-//        mainModule.addMode(new AutonomousModeThreeTotes());
+        mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.addMode(new AutonomousModeOneContainer());
         mainModule.addMode(new AutonomousModeCalibration());
         mainModule.addMode(new AutonomousModeBump());
