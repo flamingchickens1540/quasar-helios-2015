@@ -83,7 +83,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         this.nudgeToTote = context.getFloat("Auto Mode Three Totes Nudge to Tote", 5.0f);
         this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 62.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 36.0f);
-        this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle +A", 60.0f);
+        this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle +A", 80.0f);
         this.autoZoneTime = context.getFloat("Auto Mode Three Totes Auto Zone Time +A", 1.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Three Totes Auto Zone Speed +A", 1.0f);
         this.toteSpeed = context.getFloat("Auto Mode Three Totes Tote Speed +A", 0.25f);
