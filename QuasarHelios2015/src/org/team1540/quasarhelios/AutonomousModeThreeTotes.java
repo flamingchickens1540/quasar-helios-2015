@@ -5,12 +5,14 @@ import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
-import ccre.log.Logger;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
     private FloatInputPoll nudge;
     private FloatInputPoll nudgeToTote;
-    private FloatInputPoll toteDistance;
+    private FloatInputPoll nudgeToToteLast;
+
+    private FloatInputPoll toteDistance1;
+    private FloatInputPoll toteDistance2;
     private FloatInputPoll autoZoneDistance;
     private FloatInputPoll autoZoneAngle;
     private FloatInputPoll autoZoneTime;
@@ -37,7 +39,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             closed.set(true);
             Rollers.rightRollerOverride.set(1.0f);
             Rollers.leftRollerOverride.set(-1.0f);
-            drive(nudge.get() + toteDistance.get(), toteSpeed.get());
+            drive(nudge.get() + toteDistance1.get(), toteSpeed.get());
             closed.set(false);
             waitForTime(1000);
             
@@ -53,14 +55,14 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             closed.set(true);
             Rollers.rightRollerOverride.set(1.0f);
             Rollers.leftRollerOverride.set(-1.0f);
-            drive(nudge.get() + toteDistance.get(), toteSpeed.get());
+            drive(nudge.get() + toteDistance2.get(), toteSpeed.get());
             Rollers.rightArmRoller.set(0.0f);
             Rollers.leftArmRoller.set(0.0f);
             closed.set(false);
             waitForTime(1000);
             
             // Collect last tote
-            drive(nudgeToTote.get(), toteSpeed.get());
+            drive(nudgeToToteLast.get(), toteSpeed.get());
             Rollers.overrideRollers.set(false);
             collectToteWithElevator();
             
@@ -81,7 +83,10 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     public void loadSettings(TuningContext context) {
         this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 11.0f);
         this.nudgeToTote = context.getFloat("Auto Mode Three Totes Nudge to Tote", 5.0f);
-        this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 62.0f);
+        this.nudgeToToteLast = context.getFloat("Auto Mode Three Totes Nudge to Tote Last", 6.0f);
+
+        this.toteDistance1 = context.getFloat("Auto Mode Three Totes Tote Distance 1 +A", 62.0f);
+        this.toteDistance2 = context.getFloat("Auto Mode Three Totes Tote Distance 2 +A", 64.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 36.0f);
         this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle +A", 80.0f);
         this.autoZoneTime = context.getFloat("Auto Mode Three Totes Auto Zone Time +A", 1.0f);
