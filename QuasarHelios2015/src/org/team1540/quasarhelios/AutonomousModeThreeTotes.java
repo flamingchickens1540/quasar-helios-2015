@@ -7,90 +7,90 @@ import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
-    private FloatInputPoll nudge;
-    private FloatInputPoll nudgeToTote;
-    private FloatInputPoll nudgeToToteLast;
-
-    private FloatInputPoll toteDistance1;
-    private FloatInputPoll toteDistance2;
-    private FloatInputPoll autoZoneDistance;
-    private FloatInputPoll autoZoneAngle;
-    private FloatInputPoll autoZoneTime;
-    private FloatInputPoll autoZoneSpeed;
-    private FloatInputPoll toteSpeed;
     public AutonomousModeThreeTotes() {
         super("Three Totes");
     }
-
+    
+    private FloatInputPoll angle;
+    private FloatInputPoll toteDistance;
+    private FloatInputPoll startDistance;
+    private FloatInputPoll startAngle;
+    private FloatInputPoll autoZoneAngle;
+    private FloatInputPoll autoZoneDistance;
+    private FloatInputPoll nudge;
+    private FloatInputPoll longDistance;
+    private FloatInputPoll driftingAngle;
+    private FloatInputPoll containerDistance;
+    
     @Override
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
-        try { 
-            DriveCode.octocanumShifting.set(false);
-
-            float startAngle = HeadingSensor.absoluteYaw.get();
+        try {
+            Rollers.overrideRollers.set(false);
             BooleanOutput closed = BooleanMixing.combine(Rollers.leftPneumaticOverride, Rollers.rightPneumaticOverride);
-
-            // Collect first tote
+            // Collect first tote.
             collectToteWithElevator();
-            Rollers.overrideRollers.set(true);
-
-            // Move first container
-            closed.set(true);
-            Rollers.rightRollerOverride.set(1.0f);
-            Rollers.leftRollerOverride.set(-1.0f);
-            drive(nudge.get() + toteDistance1.get(), toteSpeed.get());
-            closed.set(false);
+            startSetClampHeight(0.0f);
+            setClampOpen(true);
+            waitForTime(2000);
+            turn(-startAngle.get(), false, 0.25f);
+            drive(startDistance.get());
+            // Pickup first container.
+            pickupContainer(nudge.get());
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(1.0f);
+            
+    
+            // Drive to next tote.
             waitForTime(1000);
-            
-            // Second tote
-            drive(nudgeToTote.get(), toteSpeed.get());
-            Rollers.rightArmRoller.set(0.0f);
-            Rollers.leftArmRoller.set(0.0f);
-            Rollers.overrideRollers.set(false);
-            collectToteWithElevator();
-            Rollers.overrideRollers.set(true);
-            
-            // Move second container
-            closed.set(true);
-            Rollers.rightRollerOverride.set(1.0f);
-            Rollers.leftRollerOverride.set(-1.0f);
-            drive(nudge.get() + toteDistance2.get(), toteSpeed.get());
-            Rollers.rightArmRoller.set(0.0f);
-            Rollers.leftArmRoller.set(0.0f);
-            closed.set(false);
+            drive(longDistance.get());
             waitForTime(1000);
-            
-            // Collect last tote
-            drive(nudgeToToteLast.get(), toteSpeed.get());
-            Rollers.overrideRollers.set(false);
+    
+            // Collect tote.
             collectToteWithElevator();
+            // Go around second container.
+            straightening.set(false);
+            Rollers.overrideRollers.set(true);
+            closed.set(true);
+            turn(-driftingAngle.get(), false);
+            drive(containerDistance.get());
+         
+            // Turn to face tote.
+            turn(angle.get(), false);
+            // Open rollers.
+            closed.set(false);
+            Rollers.overrideRollers.set(false);
+            waitForTime(1000);
+            // Drive to tote and collect.
+            drive(toteDistance.get());
+            waitForTime(1000);
+            collectToteWithElevator();
+                        
+            // Go to auto zone.
+            turn(-autoZoneAngle.get(), false);
+            straightening.set(false);
+            drive(autoZoneDistance.get(), 0.75f);
             
-            // Go to Auto Zone
-            DriveCode.octocanumShifting.set(true);
-            turnAbsolute(startAngle, -autoZoneAngle.get(), true);
-            drive(autoZoneDistance.get());
-            driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
-            
-            // Drop totes off
+            // Eject totes.
             ejectTotes();
+            
         } finally {
             Rollers.overrideRollers.set(false);
-            DriveCode.octocanumShifting.set(true);
         }
     }
 
     public void loadSettings(TuningContext context) {
-        this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 11.0f);
-        this.nudgeToTote = context.getFloat("Auto Mode Three Totes Nudge to Tote", 5.0f);
-        this.nudgeToToteLast = context.getFloat("Auto Mode Three Totes Nudge to Tote Last", 6.0f);
-
-        this.toteDistance1 = context.getFloat("Auto Mode Three Totes Tote Distance 1 +A", 62.0f);
-        this.toteDistance2 = context.getFloat("Auto Mode Three Totes Tote Distance 2 +A", 64.0f);
-        this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance +A", 36.0f);
-        this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle +A", 80.0f);
-        this.autoZoneTime = context.getFloat("Auto Mode Three Totes Auto Zone Time +A", 1.0f);
-        this.autoZoneSpeed = context.getFloat("Auto Mode Three Totes Auto Zone Speed +A", 1.0f);
-        this.toteSpeed = context.getFloat("Auto Mode Three Totes Tote Speed +A", 0.25f);
+        this.nudge = context.getFloat("Auto Mode Three Totes Nudge +A", 14.5f);
+        this.toteDistance = context.getFloat("Auto Mode Three Totes Tote Distance +A", 36.0f);
+        this.angle = context.getFloat("Auto Mode Avoid Three Totes Angle +A", 20.0f);
+        this.autoZoneAngle = context.getFloat("Auto Mode Three Totes Auto Zone Angle", 100.0f);
+        this.autoZoneDistance = context.getFloat("Auto Mode Three Totes Auto Zone Distance", 62.0f);
+        this.longDistance = context.getFloat("Auto Mode Three Totes Long Distance", 53.5f);
+        this.driftingAngle = context.getFloat("Auto Mode Three Totes Drifting Angle", 20.0f);
+        this.containerDistance = context.getFloat("Auto Mode Three Totes Container Distance", 40.0f);
+        
+        // These are probably wrong.
+        this.startAngle = context.getFloat("Auto Mode Three Totes Start Angle", 29.2f);
+        this.startDistance = context.getFloat("Auto Mode Three Totes Start Distance", 14.1f);
     }
 }
