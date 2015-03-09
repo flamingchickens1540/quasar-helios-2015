@@ -59,7 +59,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);
         this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.0f);
-        this.shake = context.getBoolean("auto Mode Single Tote Shake +A", false);
+        this.shake = context.getBoolean("Auto Mode Single Tote Shake +A", false);
     }
 
 }
