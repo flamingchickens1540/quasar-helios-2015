@@ -85,10 +85,8 @@ public class ControlInterface {
         BooleanInput leftTriggerPress = FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers);
         BooleanInput rightTriggerPress = FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers);
 
-        EventMixing.filterEvent(rollersMode, true, BooleanMixing.onPress(leftTriggerPress)).send(Rollers.leftPneumaticOverride.getSetTrueEvent());
-        EventMixing.filterEvent(rollersMode, true, BooleanMixing.onRelease(leftTriggerPress)).send(Rollers.leftPneumaticOverride.getSetFalseEvent());
-        EventMixing.filterEvent(rollersMode, true, BooleanMixing.onPress(rightTriggerPress)).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
-        EventMixing.filterEvent(rollersMode, true, BooleanMixing.onRelease(rightTriggerPress)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
+        BooleanMixing.pumpWhen(EventMixing.filterEvent(rollersMode, true, QuasarHelios.manualControl), leftTriggerPress, Rollers.leftPneumaticOverride);
+        BooleanMixing.pumpWhen(EventMixing.filterEvent(rollersMode, true, QuasarHelios.manualControl), rightTriggerPress, Rollers.rightPneumaticOverride);
 
         BooleanMixing.pumpWhen(EventMixing.filterEvent(rollersMode, false, QuasarHelios.manualControl),
                 FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto), QuasarHelios.autoEjector);
