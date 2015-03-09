@@ -65,7 +65,7 @@ public class ControlInterface {
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5)));
 
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
-        BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
+        BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(3), Igneous.globalPeriodic);
 
         overrideRollers.send(Rollers.overrideRollers);
 
@@ -104,7 +104,8 @@ public class ControlInterface {
     }
 
     private static void setupDrive() {
-        DriveCode.shiftEnabled.toggleWhen(Igneous.joystick1.getButtonSource(6));
+        DriveCode.shiftEnabled.setTrueWhen(Igneous.joystick1.getButtonSource(5));
+        DriveCode.shiftEnabled.setFalseWhen(Igneous.joystick1.getButtonSource(6));
 
         FloatMixing.deadzone(Igneous.joystick1.getXAxisSource(), .2f).send(DriveCode.leftJoystickXRaw);
         FloatMixing.deadzone(Igneous.joystick1.getYAxisSource(), .2f).send(DriveCode.leftJoystickYRaw);
@@ -115,7 +116,6 @@ public class ControlInterface {
 
         Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
-        Igneous.joystick1.getButtonSource(3).send(DriveCode.fieldCentricButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
     }
 }
