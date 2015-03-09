@@ -3,6 +3,7 @@ package org.team1540.quasarhelios;
 import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -17,6 +18,8 @@ public class ControlInterface {
     public static TuningContext mainTuning = new TuningContext("Main").publishSavingEvent();
     public static TuningContext autoTuning = new TuningContext("Autonomous").publishSavingEvent();
     public static TuningContext teleTuning = new TuningContext("Teleoperated").publishSavingEvent();
+
+    private static final BooleanStatus rollersMode = new BooleanStatus();
 
     public static void setup() {
         setupDrive();
@@ -36,6 +39,8 @@ public class ControlInterface {
     }
 
     private static void setupRollers() {
+        rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
+
         EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
         FloatInputPoll povAngle = Igneous.joystick2.getPOVAngle(1);
         EventInput povUp = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, -0.1f, 0.1f), true, povPressed);
@@ -79,8 +84,6 @@ public class ControlInterface {
 
         FloatInput leftTrigger = Igneous.joystick2.getAxisSource(3);
         FloatInput rightTrigger = Igneous.joystick2.getAxisSource(4);
-
-        BooleanInputPoll rollersMode = Igneous.joystick2.getButtonChannel(5);
 
         BooleanInput leftTriggerPress = FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers);
         BooleanInput rightTriggerPress = FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers);
