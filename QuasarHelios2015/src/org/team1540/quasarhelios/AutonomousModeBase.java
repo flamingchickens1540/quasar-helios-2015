@@ -112,6 +112,29 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
         DriveCode.rotate.set(0.0f);
     }
+    
+    protected void turnAbsolute(float start, float degree, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+
+        if (degree > 0) {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(speed);
+                waitUntilAtMost(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        } else {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(-speed);
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        }
+
+        DriveCode.rotate.set(0.0f);
+    }
+
 
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
@@ -135,6 +158,29 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
         DriveCode.rotate.set(0.0f);
     }
+    protected void turn(float degree, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+        float startingYaw = HeadingSensor.absoluteYaw.get();
+
+        if (degree > 0) {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(speed);
+                waitUntilAtMost(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
+        } else {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(-speed);
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, startingYaw - actualDegree);
+            }
+        }
+
+        DriveCode.rotate.set(0.0f);
+    }
+
 
     protected void singleSideTurn(long time, boolean side) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
@@ -198,6 +244,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             waitForTime(250);
         }
     }
+    
+    protected void collectToteWithElevator() throws AutonomousModeOverException, InterruptedException {
+        QuasarHelios.autoLoader.set(true);
+        waitUntilNot(QuasarHelios.autoLoader);
+    }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {
         Clamp.open.set(value);
@@ -222,6 +273,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void pickupContainer(float nudge) throws AutonomousModeOverException, InterruptedException {
+        setClampOpen(true);
         drive(nudge);
         setClampOpen(false);
         setClampHeight(0.5f);
