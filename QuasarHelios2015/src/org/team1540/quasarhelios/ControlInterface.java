@@ -2,6 +2,8 @@ package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
+import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -35,6 +37,9 @@ public class ControlInterface {
     }
 
     private static void setupRollers() {
+        BooleanStatus rollersMode = new BooleanStatus();
+        rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
+
         EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
         FloatInputPoll povAngle = Igneous.joystick2.getPOVAngle(1);
         EventInput povUp = EventMixing.filterEvent(FloatMixing.floatIsInRange(povAngle, -0.1f, 0.1f), true, povPressed);
@@ -64,19 +69,10 @@ public class ControlInterface {
 
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
 
-        FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.3f);
+        FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.8f);
         BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
 
         overrideRollers.send(Rollers.overrideRollers);
-
-        FloatInput leftStickX = Igneous.joystick2.getAxisSource(1);
-        FloatInput rightStickX = Igneous.joystick2.getAxisSource(5);
-
-        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(leftStickX, cutoffRollers)).send(Rollers.leftPneumaticOverride.getSetTrueEvent());
-        BooleanMixing.onPress(FloatMixing.floatIsAtMost(leftStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.leftPneumaticOverride.getSetFalseEvent());
-
-        BooleanMixing.onPress(FloatMixing.floatIsAtMost(rightStickX, FloatMixing.negate(cutoffRollers))).send(Rollers.rightPneumaticOverride.getSetTrueEvent());
-        BooleanMixing.onPress(FloatMixing.floatIsAtLeast(rightStickX, cutoffRollers)).send(Rollers.rightPneumaticOverride.getSetFalseEvent());
 
         FloatInput leftStickY = Igneous.joystick2.getAxisSource(2);
         FloatInput rightStickY = Igneous.joystick2.getAxisSource(6);
@@ -85,8 +81,19 @@ public class ControlInterface {
 
         FloatInput cutoffAuto = mainTuning.getFloat("Trigger Threshold +M", 0.5f);
 
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
+        FloatInput leftTrigger = Igneous.joystick2.getAxisSource(3);
+        FloatInput rightTrigger = Igneous.joystick2.getAxisSource(4);
+
+        BooleanInput leftTriggerPress = FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers);
+        BooleanInput rightTriggerPress = FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers);
+
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, leftTriggerPress), Rollers.leftPneumaticOverride);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, rightTriggerPress), Rollers.rightPneumaticOverride);
+
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
+                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto)), QuasarHelios.autoEjector);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
+                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto)), QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {
