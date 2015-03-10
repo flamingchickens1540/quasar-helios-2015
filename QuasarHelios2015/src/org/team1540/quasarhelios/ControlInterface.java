@@ -90,10 +90,10 @@ public class ControlInterface {
         BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, leftTriggerPress), Rollers.leftPneumaticOverride);
         BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, rightTriggerPress), Rollers.rightPneumaticOverride);
 
-        BooleanMixing.pumpWhen(EventMixing.filterEvent(rollersMode, false, QuasarHelios.manualControl),
-                FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(EventMixing.filterEvent(rollersMode, false, QuasarHelios.manualControl),
-                FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto), QuasarHelios.autoLoader);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
+                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto)), QuasarHelios.autoEjector);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
+                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto)), QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {
