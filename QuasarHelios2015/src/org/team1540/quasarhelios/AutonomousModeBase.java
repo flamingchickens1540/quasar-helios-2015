@@ -112,6 +112,29 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
         DriveCode.rotate.set(0.0f);
     }
+    
+    protected void turnAbsolute(float start, float degree, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
+        straightening.set(false);
+        DriveCode.octocanumShifting.set(true);
+
+        if (degree > 0) {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
+            if (actualDegree > 0) {
+                DriveCode.rotate.set(speed);
+                waitUntilAtMost(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        } else {
+            float actualDegree = adjustAngle ? degree * rotateMultiplier.get() - rotateOffset.get() : degree;
+
+            if (actualDegree < 0) {
+                DriveCode.rotate.set(-speed);
+                waitUntilAtLeast(HeadingSensor.absoluteYaw, start - actualDegree);
+            }
+        }
+
+        DriveCode.rotate.set(0.0f);
+    }
+
 
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
