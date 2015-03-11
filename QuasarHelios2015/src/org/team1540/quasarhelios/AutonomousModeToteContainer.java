@@ -1,5 +1,6 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
@@ -15,7 +16,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     private FloatInputPoll autoZoneAngle;
     private FloatInputPoll autoZoneSpeed;
     private FloatInputPoll nudge;
-    private FloatInputPoll containerHeight;
+    private BooleanInputPoll shake;
 
     public AutonomousModeToteContainer() {
         super("One Tote");
@@ -28,7 +29,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);
         startSetClampHeight(0.4f);
-        collectTote();
+        collectTote(shake.get(), 5000);
         // Pickup container.
         setClampHeight(0.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);
@@ -54,11 +55,11 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
         this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
-        this.containerHeight = context.getFloat("Auto Mode Single Tote Container Height +A", 0.0f);
         this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 100.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);
         this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.0f);
+        this.shake = context.getBoolean("Auto Mode Single Tote Shake +A", false);
     }
 
 }

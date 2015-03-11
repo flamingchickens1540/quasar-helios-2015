@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
@@ -107,6 +108,17 @@ public class Clamp {
         atTop = atTopStatus;
         atBottom = atBottomStatus;
 
+        atTop.send(new BooleanOutput() {
+            public void set(boolean value) {
+                Logger.finer(value ? "Clamp at top" : "Clamp left top");
+            }
+        });
+        atBottom.send(new BooleanOutput() {
+            public void set(boolean value) {
+                Logger.finer(value ? "Clamp at bottom" : "Clamp left bottom");
+            }
+        });
+
         atTopStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtMost(speedControl, -0.01f), true, BooleanMixing.onPress(limitTop)));
         atTopStatus.setFalseWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onRelease(limitTop)));
         atBottomStatus.setTrueWhen(EventMixing.filterEvent(FloatMixing.floatIsAtLeast(speedControl, 0.01f), true, BooleanMixing.onPress(limitBottom)));
@@ -156,11 +168,17 @@ public class Clamp {
         needsAutoCalibration.setFalseWhen(manualOverride); // allow the user to override the autocalibration
         mode.setTrueWhen(Igneous.startTele);
 
+        FloatInputPoll speedFactor = Mixing.select(FloatMixing.floatIsAtMost(heightReadout, ControlInterface.mainTuning.getFloat("Clamp Slowdown Threshold +M", 0.2f)), 1.0f, 0.5f);
+
+        Cluck.publish("Clamp Speed Factor", FloatMixing.createDispatch(speedFactor, Igneous.globalPeriodic));
+        
         FloatMixing.pumpWhen(QuasarHelios.constantControl,
                 Mixing.select(autocalibrationOverrideEnable,
-                        Mixing.select(BooleanMixing.orBooleans(mode, useEncoder.asInvertedInput()),
-                                pid, speed),
-                                autocalibrationOverrideSpeed), out);
+                        FloatMixing.multiplication.of(
+                                Mixing.select(BooleanMixing.orBooleans((BooleanInputPoll) mode, useEncoder.asInvertedInput()),
+                                        pid, speed),
+                                speedFactor),
+                        autocalibrationOverrideSpeed), out);
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)

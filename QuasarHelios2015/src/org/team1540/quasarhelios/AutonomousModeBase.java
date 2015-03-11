@@ -10,6 +10,7 @@ import ccre.ctrl.FloatMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
+import ccre.util.Utils;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
@@ -66,11 +67,11 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
-            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
         }
 
         try {
@@ -147,6 +148,10 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
     }
 
     protected void collectTote() throws AutonomousModeOverException, InterruptedException {
+        collectTote(false, 0);
+    }
+
+    protected void collectTote(boolean shake, int timeout) throws AutonomousModeOverException, InterruptedException {
         // Move elevator.
         Elevator.setTop.event();
 
@@ -165,10 +170,33 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         Rollers.running.set(true);
         Rollers.closed.set(true);
 
-        waitUntil(AutoLoader.crateInPosition);
-
-        Rollers.running.set(false);
-        Rollers.closed.set(false);
+        if (shake) {
+            while (true) {
+                DriveCode.rotate.set(0.5f);
+                waitForTime(100);
+                if (AutoLoader.crateInPosition.get()) {
+                    break;
+                }
+                DriveCode.rotate.set(-0.5f);
+                waitForTime(100);
+                if (AutoLoader.crateInPosition.get()) {
+                    break;
+                }
+            }
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else if (timeout > 0) {
+            float end = Utils.getCurrentTimeSeconds() + timeout / 1000f;
+            waitUntil(BooleanMixing.orBooleans(AutoLoader.crateInPosition, FloatMixing.floatIsAtLeast(Utils.currentTimeSeconds, end)));
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else if (timeout == 0) {
+            waitUntil(AutoLoader.crateInPosition);
+            Rollers.running.set(false);
+            Rollers.closed.set(false);
+        } else {
+            waitForTime(250);
+        }
     }
 
     protected void setClampOpen(boolean value) throws InterruptedException, AutonomousModeOverException {

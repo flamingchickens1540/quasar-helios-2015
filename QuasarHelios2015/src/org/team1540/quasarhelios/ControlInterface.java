@@ -67,7 +67,7 @@ public class ControlInterface {
             Rollers.direction.set(Rollers.OUTPUT);
         });
 
-        Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight));
+        Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5)));
 
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.8f);
         BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
@@ -99,8 +99,9 @@ public class ControlInterface {
     private static void setupElevator() {
         Igneous.joystick2.getButtonSource(4).send(Elevator.setTop);
         Igneous.joystick2.getButtonSource(1).send(Elevator.setBottom);
-        Igneous.joystick2.getButtonSource(2).send(Elevator.stop);
+        QuasarHelios.autoHumanLoader.toggleWhen(Igneous.joystick2.getButtonSource(2));
 
+        Igneous.joystick2.getButtonSource(6).send(Elevator.stop);
         BooleanMixing.pumpWhen(QuasarHelios.globalControl, Igneous.joystick2.getButtonChannel(6), Elevator.overrideEnabled);
         Igneous.joystick2.getAxisSource(6).send(FloatMixing.negate((FloatOutput) Elevator.overrideValue));
     }

@@ -17,6 +17,7 @@ public class DriveCode {
 
     public static EventStatus octocanumShiftingButton = new EventStatus();
     public static EventStatus recalibrateButton = new EventStatus();
+    public static EventStatus fieldCentricButton = new EventStatus();
     public static EventStatus strafingButton = new EventStatus();
     public static FloatStatus forwardTrigger = new FloatStatus();
     public static FloatStatus backwardTrigger = new FloatStatus();
@@ -152,6 +153,7 @@ public class DriveCode {
     public static void setup() {
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
+        headingControl.toggleWhen(fieldCentricButton);
         recalibrateButton.send(calibrate);
 
         FloatStatus ultgain = ControlInterface.teleTuning.getFloat("Teleop PID Calibration Ultimate Gain +T", .03f);

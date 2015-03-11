@@ -2,8 +2,10 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
+import ccre.channel.EventLogger;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
@@ -18,6 +20,7 @@ import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
+import ccre.log.LogLevel;
 import ccre.log.Logger;
 
 public class Elevator {
@@ -29,8 +32,8 @@ public class Elevator {
     public static final BooleanStatus overrideEnabled = new BooleanStatus();
     public static final FloatStatus overrideValue = new FloatStatus(0.0f);
 
-    public static final EventOutput setTop = EventMixing.combine(lowering.getSetFalseEvent(), raising.getSetTrueEvent());
-    public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent());
+    public static final EventOutput setTop = EventMixing.combine(lowering.getSetFalseEvent(), raising.getSetTrueEvent(), new EventLogger(LogLevel.FINE, "Send Elevator to top"));
+    public static final EventOutput setBottom = EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetTrueEvent(), new EventLogger(LogLevel.FINE, "Send Elevator to bottom"));
     public static final EventOutput stop = BooleanMixing.getSetEvent(BooleanMixing.combine(raising, lowering), false);
 
     private static final BooleanStatus atTopStatus = new BooleanStatus();
@@ -54,6 +57,17 @@ public class Elevator {
 
         raising.setFalseWhen(EventMixing.filterEvent(atTop, true, Igneous.constantPeriodic));
         lowering.setFalseWhen(EventMixing.filterEvent(atBottom, true, Igneous.constantPeriodic));
+
+        atTop.send(new BooleanOutput() {
+            public void set(boolean value) {
+                Logger.finer(value ? "Elevator at top" : "Elevator left top");
+            }
+        });
+        atBottom.send(new BooleanOutput() {
+            public void set(boolean value) {
+                Logger.finer(value ? "Elevator at bottom" : "Elevator left bottom");
+            }
+        });
 
         EventInput currentFault = setupMotorControl();
 
@@ -104,6 +118,7 @@ public class Elevator {
         FloatInputPoll override = QuasarHelios.limitSwitches(overrideValue, atBottom, atTop);
 
         EventInput currentFault = elevatorTalon.setupCurrentBreakerWithFaultPublish("elevator-current-fault");
+        EventLogger.log(currentFault, LogLevel.FINE, "Elevator current fault!");
         currentFault.send(EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetFalseEvent()));
 
         FloatOutput winch = elevatorTalon.getAdvanced(0.05f, "Elevator Winch Speed Output");
@@ -119,6 +134,7 @@ public class Elevator {
         EventInput elevatorTimedOut = timer.schedule(elevatorTimeout);
         QuasarHelios.publishStickyFault("elevator-timeout-fault", elevatorTimedOut);
         BooleanMixing.setWhen(elevatorTimedOut, BooleanMixing.combine(raising, lowering), false);
+        EventLogger.log(elevatorTimedOut, LogLevel.FINE, "Elevator timed out!");
 
         BooleanMixing.xorBooleans(raising, lowering).send(timer.getRunningControl());
     }

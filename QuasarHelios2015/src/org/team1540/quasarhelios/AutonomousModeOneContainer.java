@@ -6,7 +6,6 @@ import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeOneContainer extends AutonomousModeBase  {
     private FloatInputPoll nudge;
-    private FloatInputPoll leftStrafeTime;
     private FloatInputPoll autoZoneDistance;
 
     public AutonomousModeOneContainer() {
@@ -28,7 +27,6 @@ public class AutonomousModeOneContainer extends AutonomousModeBase  {
     @Override
     public void loadSettings(TuningContext context) {
         this.nudge = context.getFloat("Auto Mode One Container Nudge +A", 5.0f);
-        this.leftStrafeTime = context.getFloat("Auto Mode One Container Strafe Time +A", 0.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode One Container Auto Zone Distance +A", 10.0f);
     }
 }

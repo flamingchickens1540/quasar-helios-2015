@@ -4,6 +4,7 @@ import ccre.channel.BooleanInput;
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
+import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
@@ -15,6 +16,7 @@ import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
+import ccre.log.Logger;
 
 public class Rollers {
     public static final boolean INPUT = false;
@@ -27,7 +29,7 @@ public class Rollers {
     // These will need individual tuning for speed.
     private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
     private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
-    private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_FORWARD, 0.1f);
+    private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_REVERSE, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
 
     private static final BooleanOutput leftPneumatic = Igneous.makeSolenoid(1);
@@ -54,7 +56,38 @@ public class Rollers {
             rightArmRollerHasTote = new BooleanStatus();
 
     public static void setup() {
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, FloatMixing.combine(frontRollers, internalRollers));
+        running.setFalseWhen(Igneous.startDisabled);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, frontRollers);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
+                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.always(0), FloatMixing.negate(actualSpeed)),
+                internalRollers);
+        Igneous.globalPeriodic.send(new EventOutput() {
+            private boolean wasRunning = false;
+            private boolean lastDirection = INPUT;
+
+            public void event() {
+                boolean run = running.get(), dir = direction.get();
+                if (run) {
+                    if (wasRunning) {
+                        if (lastDirection != dir) {
+                            Logger.finer(direction.get() == INPUT ? "Now running rollers inward." : "Now running rollers outward.");
+                        }
+                    } else {
+                        Logger.finer(direction.get() == INPUT ? "Started running rollers inward." : "Started running rollers outward.");
+                    }
+                } else if (wasRunning) {
+                    Logger.finer("Stopped running rollers.");
+                }
+                wasRunning = run;
+                lastDirection = dir;
+            }
+        });
+        overrideRollers.send(new BooleanOutput() {
+            public void set(boolean value) {
+                Logger.finer(value ? "Enabled roller override." : "Disabled roller override.");
+            }
+        });
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
         FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
 
