@@ -24,7 +24,7 @@ public class Rollers {
 
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus closed = new BooleanStatus(true);
+    public static final BooleanStatus closed = new BooleanStatus(false);
 
     // These will need individual tuning for speed.
     public static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);

@@ -56,6 +56,8 @@ public class Clamp {
     public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
     public static void setup() {
+        open.set(true);
+        
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
         EventStatus zeroEncoder = new EventStatus();
