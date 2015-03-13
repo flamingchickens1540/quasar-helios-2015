@@ -27,7 +27,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);
         startSetClampHeight(0.4f);
-        collectTote(false, 5000);
+        collectTote(false, 4000);
         // Pickup container.
         setClampHeight(0.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);
@@ -43,6 +43,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         Logger.info("Setting to mechanum: " + DriveCode.leftEncoder.get() + " and " + autoZoneDistance.get());
         DriveCode.octocanumShifting.set(true);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
+        Rollers.closed.set(false);
         driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
         Logger.info("Setting to traction: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
         DriveCode.octocanumShifting.set(false);
@@ -56,7 +57,6 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 100.0f);
         this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
         this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);
-        this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.0f);
+        this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.2f);
     }
-
 }

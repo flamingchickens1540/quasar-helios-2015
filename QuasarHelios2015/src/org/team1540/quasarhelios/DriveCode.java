@@ -14,7 +14,6 @@ public class DriveCode {
     public static final FloatStatus rightJoystickXRaw = new FloatStatus();
     public static final FloatStatus rightJoystickYRaw = new FloatStatus();
 
-
     public static EventStatus octocanumShiftingButton = new EventStatus();
     public static EventStatus recalibrateButton = new EventStatus();
     public static EventStatus fieldCentricButton = new EventStatus();
@@ -31,10 +30,12 @@ public class DriveCode {
     public static final FloatInput rightJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
             FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
 
-    private static final FloatOutput leftFrontMotor = Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f);
-    private static final FloatOutput leftBackMotor = Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f);
-    private static final FloatOutput rightFrontMotor = Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f);
-    private static final FloatOutput rightBackMotor = Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f);
+    public static final BooleanStatus disableMotorsForCurrentFault = new BooleanStatus(false);
+
+    private static final FloatOutput leftFrontMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f));
+    private static final FloatOutput leftBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f));
+    private static final FloatOutput rightFrontMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f));
+    private static final FloatOutput rightBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f));
     public static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
     public static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
     public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
@@ -149,6 +150,18 @@ public class DriveCode {
         calibratedAngle.set((float) (yaw / 180 * π));
         Logger.info("Calibrated Angle: " + yaw);
     };
+
+    private static FloatOutput wrapWithDriveDisable(FloatOutput out) {
+        if (out == null) {
+            throw new NullPointerException();
+        }
+        FloatMixing.setWhile(Igneous.globalPeriodic, disableMotorsForCurrentFault, out, 0);
+        return value -> {
+            if (!disableMotorsForCurrentFault.get()) {
+                out.set(value);
+            }
+        };
+    }
 
     public static void setup() {
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
