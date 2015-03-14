@@ -39,6 +39,7 @@ public class Rollers {
     public static final BooleanStatus leftPneumaticOverride = new BooleanStatus();
     public static final FloatStatus rightRollerOverride = new FloatStatus();
     public static final FloatStatus leftRollerOverride = new FloatStatus();
+    public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("Roller Speed +M", 1.0f);
@@ -88,8 +89,8 @@ public class Rollers {
                 Logger.finer(value ? "Enabled roller override." : "Disabled roller override.");
             }
         });
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
 
         BooleanInput normalPneumatics = BooleanMixing.andBooleans(overrideRollers.asInvertedInput(), closed);
         BooleanInput overrideLeft = BooleanMixing.andBooleans(overrideRollers.asInput(), leftPneumaticOverride);

@@ -52,7 +52,7 @@ public class AutoLoader extends InstinctModule {
             boolean closed = Rollers.closed.get();
 
             try {
-                Rollers.overrideRollers.set(true);
+                Rollers.overrideRollerSpeedOnly.set(true);
                 Rollers.leftRollerOverride.set(1.0f);
                 Rollers.rightPneumaticOverride.set(true);
                 Rollers.rightRollerOverride.set(1.0f);
@@ -67,7 +67,7 @@ public class AutoLoader extends InstinctModule {
                     waitUntilNot(crateInPosition);
                 }
             } finally {
-                Rollers.overrideRollers.set(false);
+                Rollers.overrideRollerSpeedOnly.set(false);
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
                 //Rollers.closed.set(closed); - don't do this because it requires an extra actuation
