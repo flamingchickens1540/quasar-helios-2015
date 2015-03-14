@@ -130,5 +130,8 @@ public class Rollers {
 
         Cluck.publish("Roller Has Tote Left", leftArmRollerHasTote.asInput());
         Cluck.publish("Roller Has Tote Right", rightArmRollerHasTote.asInput());
+
+        Cluck.publish("(DEBUG) Roller Direction", direction);
+        Cluck.publish("(DEBUG) Roller Running", running);
     }
 }

@@ -11,7 +11,7 @@ import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
-    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.5f);
+    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
     public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.5f);
@@ -27,8 +27,6 @@ public class AutoLoader extends InstinctModule {
         a.setShouldBeRunning(b);
         a.updateWhen(Igneous.globalPeriodic);
 
-        BooleanMixing.onRelease(b).send(Elevator.setBottom);
-
         b.setFalseWhen(Igneous.startDisabled);
 
         Cluck.publish("AutoLoader Crate Loaded", crateInPosition);
@@ -38,45 +36,44 @@ public class AutoLoader extends InstinctModule {
 
     @Override
     public void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+        boolean orighl = QuasarHelios.autoHumanLoader.get();
         try {
-            Elevator.setTop.event();
+            QuasarHelios.autoHumanLoader.set(true);
 
             float currentClampHeight = Clamp.heightReadout.get();
             if (currentClampHeight < clampHeightThreshold.get()) {
                 Clamp.mode.set(Clamp.MODE_HEIGHT);
                 Clamp.height.set(clampHeightThreshold.get());
-                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
-            } else {
-                waitUntil(Elevator.atTop);
+                waitUntil(Clamp.atDesiredHeight);
             }
+
+            boolean running = Rollers.running.get();
+            boolean direction = Rollers.direction.get();
+            boolean closed = Rollers.closed.get();
 
             try {
-                boolean running = Rollers.running.get();
-                boolean direction = Rollers.direction.get();
-                boolean closed = Rollers.closed.get();
+                Rollers.overrideRollers.set(true);
+                Rollers.leftRollerOverride.set(1.0f);
+                Rollers.rightPneumaticOverride.set(true);
+                Rollers.rightRollerOverride.set(1.0f);
+                Rollers.leftPneumaticOverride.set(true);
+                Rollers.direction.set(Rollers.INPUT);
+                Rollers.closed.set(true);
 
-                try {
-                    Rollers.direction.set(Rollers.INPUT);
+                while (true) {
                     Rollers.running.set(true);
-                    Rollers.closed.set(true);
-
                     waitUntil(crateInPosition);
-                    waitForTime(timeout);
-                } finally {
-                    Rollers.running.set(running);
-                    Rollers.direction.set(direction);
-                    Rollers.closed.set(closed);
+                    Rollers.running.set(false);
+                    waitUntilNot(crateInPosition);
                 }
-                Elevator.setBottom.event();
-                waitUntil(Elevator.atBottom);
-
-                waitForTime(100);
             } finally {
-                Elevator.setTop.event();
+                Rollers.overrideRollers.set(false);
+                Rollers.running.set(running);
+                Rollers.direction.set(direction);
+                //Rollers.closed.set(closed); - don't do this because it requires an extra actuation
             }
-            waitUntil(Elevator.atTop);
-            waitForTime(1000);
         } finally {
+            QuasarHelios.autoHumanLoader.set(orighl);
             running.set(false);
         }
     }

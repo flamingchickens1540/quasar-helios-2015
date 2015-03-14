@@ -329,6 +329,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         setClampOpen(true);
         drive(nudge);
         setClampOpen(false);
+        waitForTime(500);
         setClampHeight(0.5f);
     }
 

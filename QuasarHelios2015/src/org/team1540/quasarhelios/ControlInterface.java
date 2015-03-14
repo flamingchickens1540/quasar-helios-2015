@@ -88,9 +88,7 @@ public class ControlInterface {
         BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(
                 FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(3), cutoffAuto),
                 QuasarHelios.autoHumanLoader.asInvertedInput()), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(
-                FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto),
-                QuasarHelios.autoHumanLoader.asInvertedInput()), QuasarHelios.autoLoader);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, FloatMixing.floatIsAtLeast(Igneous.joystick2.getAxisSource(4), cutoffAuto), QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {

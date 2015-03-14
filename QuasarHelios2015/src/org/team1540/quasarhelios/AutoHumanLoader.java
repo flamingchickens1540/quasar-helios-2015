@@ -36,10 +36,15 @@ public class AutoHumanLoader extends InstinctModule {
                 Elevator.setTop.event();
                 waitUntil(Elevator.atTop);
 
+                if (crateInPosition.get()) {
+                    waitForTime(100);
+                }
                 waitUntil(crateInPosition);
 
                 Elevator.setBottom.event();
                 waitUntil(Elevator.atBottom);
+
+                waitForTime(100);
             }
         } finally {
             running.set(false);
