@@ -17,7 +17,6 @@ public class AutonomousModeBump extends AutonomousModeBase {
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
         // Motion
-        DriveCode.octocanumShifting.set(true);
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
         driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
     }

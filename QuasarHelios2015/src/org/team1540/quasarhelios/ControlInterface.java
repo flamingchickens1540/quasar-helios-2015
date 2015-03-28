@@ -91,7 +91,8 @@ public class ControlInterface {
         BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, rightTriggerPress), Rollers.rightPneumaticOverride);
 
         BooleanMixing.pumpWhen(QuasarHelios.manualControl,
-                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto)), QuasarHelios.autoEjector);
+                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto),
+                        QuasarHelios.autoHumanLoader.asInvertedInput()), QuasarHelios.autoEjector);
         BooleanMixing.pumpWhen(QuasarHelios.manualControl,
                 BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto)), QuasarHelios.autoLoader);
     }
@@ -117,7 +118,7 @@ public class ControlInterface {
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f).send(DriveCode.backwardTrigger);
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f).send(DriveCode.forwardTrigger);
 
-        Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
+        Igneous.joystick1.getButtonSource(1).send(ContainerGrabber.containerGrabButton); // only here because this is where we work with the drive joystick
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
     }

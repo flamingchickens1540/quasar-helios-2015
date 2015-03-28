@@ -25,7 +25,7 @@ public class Autonomous {
         FloatStatus iconstant = ControlInterface.autoTuning.getFloat("Auto PID Calibrating I Constant +A", 2f);
         FloatStatus dconstant = ControlInterface.autoTuning.getFloat("Auto PID Calibrating D Constant +A", .125f);
         BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("Auto PID Calibrating +A", false);
-        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("Auto PID Enabled +A", true);
+        BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("Auto PID Enabled +A", false);
 
         FloatInput p = FloatMixing.createDispatch(
                 Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
@@ -47,12 +47,14 @@ public class Autonomous {
         mainModule.publishDefaultControls(true, true);
         mainModule.publishRConfControls();
         mainModule.addMode(new AutonomousModeDrive());
+        mainModule.addMode(new AutonomousModeBump());
+        mainModule.addMode(new AutonomousModeGrabContainer());
         mainModule.addMode(new AutonomousModeToteContainer());
+        mainModule.addMode(new AutonomousModeNoodlePrep());
         mainModule.addMode(new AutonomousModeContainerTote());
-//        mainModule.addMode(new AutonomousModeThreeTotes());
+        mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.addMode(new AutonomousModeOneContainer());
         mainModule.addMode(new AutonomousModeCalibration());
-        mainModule.addMode(new AutonomousModeBump());
         mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));
         Igneous.registerAutonomous(mainModule);
     }
