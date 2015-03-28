@@ -4,21 +4,20 @@ import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
-public class AutonomousModeOneContainer extends AutonomousModeBase  {
+public class AutonomousModeOneContainer extends AutonomousModeBase {
     private FloatInputPoll nudge;
     private FloatInputPoll autoZoneDistance;
 
     public AutonomousModeOneContainer() {
         super("One Container");
     }
-    
+
     @Override
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         pickupContainer(nudge.get());
-        DriveCode.octocanumShifting.set(true);
         // Note: fix line below!
         // strafe(STRAFE_LEFT, leftStrafeTime.get());
-        DriveCode.octocanumShifting.set(false);
+        // DriveCode.octocanumShifting.set(false);
         drive(autoZoneDistance.get());
         depositContainer(0.0f);
         drive(-autoZoneDistance.get());

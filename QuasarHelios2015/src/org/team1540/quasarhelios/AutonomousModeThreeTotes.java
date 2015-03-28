@@ -27,7 +27,6 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     protected void runAutonomous() throws InterruptedException,
             AutonomousModeOverException {
         try {
-            DriveCode.octocanumShifting.set(true);
             // Setup rollers for later.
             closed.set(false);
             Rollers.leftRollerOverride.set(-1.0f);
@@ -37,7 +36,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             collectToteFastStart();
 
             waitForTime(1500);
-            
+
             Rollers.overrideRollers.set(true);
             Rollers.leftPneumaticOverride.set(true);
             Rollers.rightPneumaticOverride.set(true);

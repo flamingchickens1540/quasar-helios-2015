@@ -48,6 +48,7 @@ public class Autonomous {
         mainModule.publishRConfControls();
         mainModule.addMode(new AutonomousModeDrive());
         mainModule.addMode(new AutonomousModeBump());
+        mainModule.addMode(new AutonomousModeGrabContainer());
         mainModule.addMode(new AutonomousModeToteContainer());
         mainModule.addMode(new AutonomousModeNoodlePrep());
         mainModule.addMode(new AutonomousModeContainerTote());

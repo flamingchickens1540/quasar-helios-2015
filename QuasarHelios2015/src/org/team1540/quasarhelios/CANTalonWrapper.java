@@ -32,10 +32,10 @@ public class CANTalonWrapper {
             Logger.severe("Could not initialize elevator CAN", e);
         }
         this.output = (out == null) ? FloatMixing.ignoredFloatOutput : out;
-        
+
         publishToCluck();
     }
-    
+
     private void publishToCluck() {
         Cluck.publish(name + " Enable", talon.asEnable());
         Cluck.publish(name + " Bus Voltage", FloatMixing.createDispatch(talon.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), QuasarHelios.readoutUpdate));
@@ -52,7 +52,7 @@ public class CANTalonWrapper {
         QuasarHelios.publishStickyFault(faultName, evt);
         return evt;
     }
-    
+
     public EventInput setupCurrentBreaker() {
         FloatInputPoll current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
         BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(current, ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", 45));
@@ -71,6 +71,7 @@ public class CANTalonWrapper {
         Cluck.publish(name + " Ramping Enabled", doRamping);
         Igneous.constantPeriodic.send(new EventOutput() {
             private float last = wantedS.get();
+
             public void event() {
                 float wanted = wantedS.get();
                 if (Math.abs(wanted) < Math.abs(last) || !doRamping.get()) {

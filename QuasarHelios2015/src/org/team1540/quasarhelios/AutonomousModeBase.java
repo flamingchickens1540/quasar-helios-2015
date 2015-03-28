@@ -93,7 +93,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turnAbsolute(float start, float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
 
         if (degree > 0) {
             float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
@@ -115,7 +114,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turnAbsolute(float start, float degree, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
 
         if (degree > 0) {
             float actualDegree = adjustAngle ? degree * rotateMultiplier.get() + rotateOffset.get() : degree;
@@ -137,7 +135,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turn(float degree, boolean adjustAngle) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
@@ -160,7 +157,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void turn(float degree, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
         float startingYaw = HeadingSensor.absoluteYaw.get();
 
         if (degree > 0) {
@@ -183,7 +179,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void singleSideTurnDistance(long distance, boolean side) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
 
         FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
         motors.set(rotateSpeed.get());
@@ -198,7 +193,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void singleSideTurnAbsolute(float start, float degree, boolean side, boolean adjustAngle, float speed) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
 
         FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
         if (degree > 0) {
@@ -220,7 +214,6 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
 
     protected void singleSideTurn(long time, boolean side) throws AutonomousModeOverException, InterruptedException {
         straightening.set(false);
-        DriveCode.octocanumShifting.set(true);
 
         FloatOutput motors = side ? DriveCode.leftMotors : DriveCode.rightMotors;
         motors.set(rotateSpeed.get());
