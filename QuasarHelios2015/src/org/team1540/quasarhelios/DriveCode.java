@@ -14,7 +14,6 @@ public class DriveCode {
     public static final FloatStatus rightJoystickXRaw = new FloatStatus();
     public static final FloatStatus rightJoystickYRaw = new FloatStatus();
 
-    public static EventStatus octocanumShiftingButton = new EventStatus();
     public static EventStatus recalibrateButton = new EventStatus();
     public static EventStatus fieldCentricButton = new EventStatus();
     public static EventStatus strafingButton = new EventStatus();
@@ -43,7 +42,6 @@ public class DriveCode {
     public static final FloatOutput strafe = FloatMixing.combine(
             FloatMixing.negate(FloatMixing.combine(leftFrontMotor, rightBackMotor)),
             FloatMixing.combine(leftBackMotor, rightFrontMotor));
-    public static final BooleanStatus octocanumShifting = new BooleanStatus(Igneous.makeSolenoid(0));
     public static final BooleanStatus onlyStrafing = new BooleanStatus();
     private static final EventStatus resetEncoders = new EventStatus();
     public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE, resetEncoders), Igneous.globalPeriodic);
@@ -201,17 +199,12 @@ public class DriveCode {
         timer.schedule(1000, calibrate);
         timer.start();
 
-        octocanumShifting.toggleWhen(octocanumShiftingButton);
         onlyStrafing.toggleWhen(strafingButton);
-        onlyStrafing.setFalseWhen(octocanumShiftingButton);
         FloatMixing.pumpWhen(strafingButton, HeadingSensor.absoluteYaw, desiredAngle);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
-        FloatMixing.pumpWhen(octocanumShiftingButton, HeadingSensor.absoluteYaw, desiredAngle);
 
-        Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing.asInvertedInput()), true, mecanum));
-        Igneous.duringTele.send(EventMixing.filterEvent(BooleanMixing.andBooleans(octocanumShifting, onlyStrafing), true, justStrafing));
-        Igneous.duringTele.send(EventMixing.filterEvent(octocanumShifting, false,
-                DriverImpls.createTankDriverEvent(leftJoystickY, rightJoystickY, leftMotors, rightMotors)));
+        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, false, mecanum));
+        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, true, justStrafing));
 
         Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
         Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);
@@ -227,7 +220,6 @@ public class DriveCode {
         Cluck.publish("Drive Motor Left Forward", leftFrontMotor);
         Cluck.publish("Drive Motor Right Rear", rightBackMotor);
         Cluck.publish("Drive Motor Right Forward", rightFrontMotor);
-        Cluck.publish("Drive Mode", octocanumShifting);
         Cluck.publish("Teleop Strafing Only", onlyStrafing);
         Cluck.publish("Drive Encoder Left Raw", leftEncoderRaw);
         Cluck.publish("Drive Encoder Right Raw", rightEncoderRaw);
