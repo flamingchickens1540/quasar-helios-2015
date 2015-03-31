@@ -83,17 +83,16 @@ public class ControlInterface {
         FloatInput leftTrigger = Igneous.joystick2.getAxisSource(3);
         FloatInput rightTrigger = Igneous.joystick2.getAxisSource(4);
 
-        BooleanInput leftTriggerPress = FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers);
-        BooleanInput rightTriggerPress = FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers);
+        BooleanInput leftTriggerPressForRollers = BooleanMixing.andBooleans(rollersMode, FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers));
+        BooleanInput rightTriggerPressForRollers = BooleanMixing.andBooleans(rollersMode, FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers));
+        BooleanInput leftTriggerPressForLoader = BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto));
+        BooleanInput rightTriggerPressForLoader = BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto));
 
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, leftTriggerPress), Rollers.leftPneumaticOverride);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, rightTriggerPress), Rollers.rightPneumaticOverride);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, leftTriggerPressForRollers, Rollers.leftPneumaticOverride);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, rightTriggerPressForRollers, Rollers.rightPneumaticOverride);
 
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
-                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto),
-                        QuasarHelios.autoHumanLoader.asInvertedInput()), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
-                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto)), QuasarHelios.autoLoader);
+        leftTriggerPressForLoader.send(QuasarHelios.autoEjector);
+        rightTriggerPressForLoader.send(QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {
