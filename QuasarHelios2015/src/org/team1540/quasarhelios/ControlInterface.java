@@ -38,6 +38,7 @@ public class ControlInterface {
     private static void setupRollers() {
         BooleanStatus rollersMode = new BooleanStatus();
         rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
+        QuasarHelios.publishFault("rollers-overridden", rollersMode.asInput(), rollersMode.getToggleEvent());
 
         EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
         FloatInputPoll povAngle = Igneous.joystick2.getPOVAngle(1);
@@ -69,9 +70,8 @@ public class ControlInterface {
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5)));
 
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.8f);
-        BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
 
-        overrideRollers.send(Rollers.overrideRollers);
+        rollersMode.send(Rollers.overrideRollers);
 
         FloatInput leftStickY = Igneous.joystick2.getAxisSource(2);
         FloatInput rightStickY = Igneous.joystick2.getAxisSource(6);
