@@ -11,7 +11,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     protected FloatInputPoll toteDistance;
     protected FloatInputPoll autoZoneDistance, autoZoneTime;
     protected FloatInputPoll secondDistance;
-    
+
     private FloatInputPoll containerTurnTime;
     private FloatInputPoll autoZoneAngle;
     private FloatInputPoll autoZoneSpeed;

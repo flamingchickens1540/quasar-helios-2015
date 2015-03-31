@@ -5,7 +5,6 @@ import ccre.channel.FloatInputPoll;
 import ccre.ctrl.BooleanMixing;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
-import ccre.log.Logger;
 
 public class AutonomousModeThreeTotes extends AutonomousModeBase {
     public AutonomousModeThreeTotes() {
@@ -37,7 +36,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             collectToteFastStart();
 
             waitForTime(1500);
-            
+
             Rollers.overrideRollers.set(true);
             Rollers.leftPneumaticOverride.set(true);
             Rollers.rightPneumaticOverride.set(true);
