@@ -38,13 +38,11 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         float curAngle = HeadingSensor.absoluteYaw.get();
         Logger.info("Actual angle: " + (curAngle - startAngle) + " based on " + startAngle + "/" + nextAngle + "/" + curAngle);
         float now = Utils.getCurrentTimeSeconds();
-        Logger.info("Setting to mechanum: " + DriveCode.leftEncoder.get() + " and " + autoZoneDistance.get());
-        DriveCode.octocanumShifting.set(true);
+        Logger.info("About to drive: " + DriveCode.leftEncoder.get() + " and " + autoZoneDistance.get());
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
         Rollers.closed.set(false);
         driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
-        Logger.info("Setting to traction: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
-        DriveCode.octocanumShifting.set(false);
+        Logger.info("Finished: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
     }
 
     public void loadSettings(TuningContext context) {
