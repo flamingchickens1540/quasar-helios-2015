@@ -17,16 +17,17 @@ public class ControlInterface {
     public static TuningContext mainTuning = new TuningContext("Main").publishSavingEvent();
     public static TuningContext autoTuning = new TuningContext("Autonomous").publishSavingEvent();
     public static TuningContext teleTuning = new TuningContext("Teleoperated").publishSavingEvent();
+    private static BooleanInput rollersModeForClampControlDisable;
 
     public static void setup() {
         setupDrive();
-        setupClamp();
         setupElevator();
         setupRollers();
+        setupClamp(); // needs to be after setupRollers()
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl),
+        FloatMixing.pumpWhen(EventMixing.filterEvent(rollersModeForClampControlDisable, false, QuasarHelios.globalControl),
                 Igneous.joystick2.getAxisChannel(2), Clamp.speed);
 
         Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
@@ -37,6 +38,7 @@ public class ControlInterface {
 
     private static void setupRollers() {
         BooleanStatus rollersMode = new BooleanStatus();
+        rollersModeForClampControlDisable = rollersMode;
         rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
         QuasarHelios.publishFault("rollers-overridden", rollersMode.asInput(), rollersMode.getToggleEvent());
 

@@ -134,5 +134,7 @@ public class Rollers {
 
         Cluck.publish("(DEBUG) Roller Direction", direction);
         Cluck.publish("(DEBUG) Roller Running", running);
+        Cluck.publish("(DEBUG) Roller Override", overrideRollers);
+        Cluck.publish("(DEBUG) Roller Override Speed", overrideRollerSpeedOnly);
     }
 }
