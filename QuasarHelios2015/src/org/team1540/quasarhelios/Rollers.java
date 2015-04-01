@@ -48,6 +48,9 @@ public class Rollers {
     private static final FloatInput amperageLeftArmRoller = CurrentMonitoring.channels[15];
     private static final FloatInput amperageRightArmRoller = CurrentMonitoring.channels[0];
 
+    public static final EventOutput startHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 1.0f));
+    public static final EventOutput stopHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
+
     // The thresholds are VERY HIGH by default so that these won't come into effect unless we want to turn them on.
     private static final BooleanInput leftArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageLeftArmRoller,
             ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Left +M", 1000f));

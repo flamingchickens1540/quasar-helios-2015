@@ -2,6 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
+import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
@@ -31,7 +32,9 @@ public class ControlInterface {
                 Igneous.joystick2.getAxisChannel(2), Clamp.speed);
 
         Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
-        Igneous.joystick2.getButtonSource(7).send(Clamp.setBottom);
+        BooleanInput holding = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(7), QuasarHelios.manualControl);
+        BooleanMixing.onPress(holding).send(Rollers.startHoldIn);
+        BooleanMixing.onRelease(holding).send(Rollers.stopHoldIn);
         Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
         Cluck.publish("Auto Stack", QuasarHelios.autoStacker);
     }
