@@ -7,12 +7,15 @@ import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 import ccre.util.Utils;
 
-public class AutonomousModeToteContainer extends AutonomousModeBase {
-    protected FloatInputPoll toteDistance, autoZoneDistance, secondDistance, nudge;
+public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
+    protected FloatInputPoll toteDistance, autoZoneDistance, secondDistance,
+            nudge;
 
     private FloatInputPoll containerTurnTime, autoZoneTime, toteCollectTime;
     private FloatInputPoll autoZoneAngle, autoZoneSpeed;
     private BooleanInputPoll shake;
+
+    private FloatInputPoll turn1, turn2, var1, var2;
 
     public AutonomousModeToteContainer() {
         super("One Tote");
@@ -28,13 +31,17 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
         collectTote(shake.get(), (int) (toteCollectTime.get() * 1000));
         // Pickup container.
         setClampHeight(0.0f);
+        startEnsureBlock();
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);
         pickupContainer(nudge.get());
+        endEnsureBlockAngleOnly(turn1.get(), var1.get());
 
         // Motion
         float nextAngle = HeadingSensor.absoluteYaw.get();
+        startEnsureBlock();
         turnAbsolute(startAngle, -autoZoneAngle.get(), true);
         waitForTime(500);
+        endEnsureBlockAngleOnly(turn2.get(), var2.get());
         float curAngle = HeadingSensor.absoluteYaw.get();
         Logger.info("Actual angle: " + (curAngle - startAngle) + " based on " + startAngle + "/" + nextAngle + "/" + curAngle);
         float now = Utils.getCurrentTimeSeconds();
@@ -46,6 +53,10 @@ public class AutonomousModeToteContainer extends AutonomousModeBase {
     }
 
     public void loadSettings(TuningContext context) {
+        this.turn1 = context.getFloat("Auto Mode Single Tote Turn 1", 20);
+        this.var1 = context.getFloat("Auto Mode Single Tote Turn 1 Variance", 25);
+        this.turn2 = context.getFloat("Auto Mode Single Tote Turn 2", 115);
+        this.var2 = context.getFloat("Auto Mode Single Tote Turn 2 Variance", 30);
         this.toteDistance = context.getFloat("Auto Mode Single Tote Tote Distance +A", 28.0f);
         this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
         this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);

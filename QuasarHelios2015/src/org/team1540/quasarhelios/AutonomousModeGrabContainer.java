@@ -3,7 +3,6 @@ package org.team1540.quasarhelios;
 import ccre.channel.FloatInputPoll;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
-import ccre.log.Logger;
 
 public class AutonomousModeGrabContainer extends AutonomousModeBase {
     protected FloatInputPoll attachWaitingTime, strafeTime, strafeSpeed;
