@@ -22,12 +22,20 @@ public class DriveCode {
 
     private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
 
-    public static final FloatInput leftJoystickX = leftJoystickXRaw;
-    public static final FloatInput leftJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
-    public static final FloatInput rightJoystickX = rightJoystickXRaw;
-    public static final FloatInput rightJoystickY = FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger);
+    private static final BooleanStatus pitMode = new BooleanStatus();
+    
+    public static final EventOutput disablePitMode = pitMode.getSetFalseEvent();
+    
+    private static FloatInput wrapForPitMode(FloatInput input) {
+        return Mixing.select(pitMode, input, FloatMixing.always(0));
+    }
+
+    public static final FloatInput leftJoystickX = wrapForPitMode(leftJoystickXRaw);
+    public static final FloatInput leftJoystickY = wrapForPitMode(FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger));
+    public static final FloatInput rightJoystickX = wrapForPitMode(rightJoystickXRaw);
+    public static final FloatInput rightJoystickY = wrapForPitMode(FloatMixing.subtraction.of(FloatMixing.addition.of(
+            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger));
 
     public static final BooleanStatus disableMotorsForCurrentFault = new BooleanStatus(false);
 
@@ -162,6 +170,10 @@ public class DriveCode {
     }
 
     public static void setup() {
+        Cluck.publish("(PIT) Pit Mode", pitMode);
+        QuasarHelios.publishFault("in-pit-mode", pitMode, disablePitMode);
+        EventMixing.filterEvent(Igneous.getIsFMS(), true, Igneous.startTele).send(disablePitMode);
+        
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
         headingControl.toggleWhen(fieldCentricButton);

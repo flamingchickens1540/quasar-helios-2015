@@ -16,6 +16,8 @@ import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
+import ccre.instinct.AutonomousModeOverException;
+import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
 
 public class Rollers {
@@ -50,6 +52,9 @@ public class Rollers {
 
     public static final EventOutput startHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 1.0f));
     public static final EventOutput stopHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
+
+    public static final EventOutput startSpin = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(leftRollerOverride, 1.0f), FloatMixing.getSetEvent(rightRollerOverride, -1.0f));
+    public static final EventOutput stopSpin = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
 
     // The thresholds are VERY HIGH by default so that these won't come into effect unless we want to turn them on.
     private static final BooleanInput leftArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageLeftArmRoller,
@@ -139,5 +144,26 @@ public class Rollers {
         Cluck.publish("(DEBUG) Roller Running", running);
         Cluck.publish("(DEBUG) Roller Override", overrideRollers);
         Cluck.publish("(DEBUG) Roller Override Speed", overrideRollerSpeedOnly);
+        
+        BooleanStatus runningTest = new BooleanStatus();
+        Cluck.publish("(DEBUG) Roller Overtest", runningTest);
+        FloatInput onDelay = ControlInterface.teleTuning.getFloat("(DEBUG) Roller Test Delay On +T", 0.3f);
+        FloatInput offDelay = ControlInterface.teleTuning.getFloat("(DEBUG) Roller Test Delay Off +T", 0.3f);
+        new InstinctModule(runningTest) {
+            @Override
+            protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
+                overrideRollerSpeedOnly.set(true);
+                try {
+                    while (true) {
+                        leftRollerOverride.set(1.0f);
+                        waitForTime(onDelay);
+                        leftRollerOverride.set(0.0f);
+                        waitForTime(offDelay);
+                    }
+                } finally {
+                    overrideRollerSpeedOnly.set(false);
+                }
+            }
+        };
     }
 }

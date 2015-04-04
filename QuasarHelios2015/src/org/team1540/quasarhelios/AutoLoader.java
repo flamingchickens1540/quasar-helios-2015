@@ -14,7 +14,7 @@ public class AutoLoader extends InstinctModule {
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
-    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.5f);
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.49f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
@@ -40,12 +40,8 @@ public class AutoLoader extends InstinctModule {
         try {
             QuasarHelios.autoHumanLoader.set(true);
 
-            float currentClampHeight = Clamp.heightReadout.get();
-            if (currentClampHeight < clampHeightThreshold.get()) {
-                Clamp.mode.set(Clamp.MODE_HEIGHT);
-                Clamp.height.set(clampHeightThreshold.get());
-                waitUntil(Clamp.atDesiredHeight);
-            }
+            Clamp.mode.set(Clamp.MODE_HEIGHT);
+            Clamp.height.set(clampHeightThreshold.get());
 
             boolean running = Rollers.running.get();
             boolean direction = Rollers.direction.get();
@@ -68,8 +64,8 @@ public class AutoLoader extends InstinctModule {
                 }
             } finally {
                 Rollers.overrideRollerSpeedOnly.set(false);
-                Rollers.running.set(running);
-                Rollers.direction.set(direction);
+                Rollers.running.set(false);
+                //Rollers.direction.set(direction);
                 //Rollers.closed.set(closed); - don't do this because it requires an extra actuation
             }
         } finally {

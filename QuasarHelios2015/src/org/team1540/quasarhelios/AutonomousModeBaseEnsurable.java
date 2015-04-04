@@ -77,14 +77,14 @@ public abstract class AutonomousModeBaseEnsurable extends AutonomousModeBase {
     protected void endEnsureBlock(float deltaLeftEnc, float varianceLeftEnc, float deltaRightEnc, float varianceRightEnc, float deltaAngle, float varianceAngle) {
         float newLeftEnc = DriveCode.leftEncoder.get(), newRightEnc = DriveCode.rightEncoder.get(), newAngle = HeadingSensor.absoluteYaw.get();
         Logger.finer("Checking motion ensures (" + leftEnc + ", " + rightEnc + ", " + angle + ") -> (" + newLeftEnc + ", " + newRightEnc + ", " + newAngle + ")");
-        ensureInRange(newLeftEnc - leftEnc, deltaLeftEnc, varianceLeftEnc);
-        ensureInRange(newRightEnc - rightEnc, deltaRightEnc, varianceRightEnc);
-        ensureInRange(newAngle - angle, deltaAngle, varianceAngle);
+        ensureNear(newLeftEnc - leftEnc, deltaLeftEnc, varianceLeftEnc);
+        ensureNear(newRightEnc - rightEnc, deltaRightEnc, varianceRightEnc);
+        ensureNear(newAngle - angle, deltaAngle, varianceAngle);
     }
 
     protected void endEnsureBlockAngleOnly(float deltaAngle, float varianceAngle) {
         float newLeftEnc = DriveCode.leftEncoder.get(), newRightEnc = DriveCode.rightEncoder.get(), newAngle = HeadingSensor.absoluteYaw.get();
         Logger.finer("Checking angle-only motion ensures (" + leftEnc + ", " + rightEnc + ", " + angle + ") -> (" + newLeftEnc + ", " + newRightEnc + ", " + newAngle + ")");
-        ensureInRange(newAngle - angle, deltaAngle, varianceAngle);
+        ensureNear(newAngle - angle, deltaAngle, varianceAngle);
     }
 }

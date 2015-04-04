@@ -34,6 +34,19 @@ public class QuasarHelios implements IgneousApplication {
     public static final EventInput readoutUpdate = new Ticker(100);
 
     public void setupRobot() {
+        Cluck.publish("(DEBUG) Report Threads", new EventOutput() {
+            public void event() {
+                int count = Thread.activeCount();
+                Thread[] thrs = new Thread[count];
+                if (Thread.enumerate(thrs) != count) {
+                    Logger.warning("Thread list modified!");
+                } else {
+                    for (Thread thr : thrs) {
+                        Logger.info("Thread: " + thr);
+                    }
+                }
+            }
+        });
         Elevator.setup();
         autoLoader = AutoLoader.create();
         autoEjector = AutoEjector.create();

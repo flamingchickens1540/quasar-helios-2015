@@ -1,11 +1,15 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.FloatInputPoll;
-import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeGrabContainer extends AutonomousModeBase {
-    protected FloatInputPoll attachWaitingTime, strafeTime, strafeSpeed;
+    @Tunable(1.0f)
+    private FloatInputPoll attachWaitingTime;
+    @Tunable(1.0f)
+    private FloatInputPoll strafeTime;
+    @Tunable(-0.5f)
+    private FloatInputPoll strafeSpeed;
 
     public AutonomousModeGrabContainer() {
         super("Grab Container");
@@ -20,11 +24,5 @@ public class AutonomousModeGrabContainer extends AutonomousModeBase {
         waitForTime(strafeTime);
         DriveCode.strafe.set(0.0f);
         ContainerGrabber.containerGrabberSolenoid.set(false);
-    }
-
-    public void loadSettings(TuningContext context) {
-        attachWaitingTime = context.getFloat("Auto Mode Grab Container Wait Time +A", 1.0f);
-        strafeTime = context.getFloat("Auto Mode Grab Container Strafe Time +A", 1.0f);
-        strafeSpeed = context.getFloat("Auto Mode Grab Container Strafe Speed +A", -0.5f);
     }
 }

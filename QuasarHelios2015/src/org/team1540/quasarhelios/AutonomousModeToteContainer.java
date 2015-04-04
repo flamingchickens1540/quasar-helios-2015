@@ -8,14 +8,32 @@ import ccre.log.Logger;
 import ccre.util.Utils;
 
 public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
-    protected FloatInputPoll toteDistance, autoZoneDistance, secondDistance,
-            nudge;
+    @Tunable(60.0f)
+    private FloatInputPoll autoZoneDistance;
+    @Tunable(7.0f)
+    private FloatInputPoll nudge;
 
-    private FloatInputPoll containerTurnTime, autoZoneTime, toteCollectTime;
-    private FloatInputPoll autoZoneAngle, autoZoneSpeed;
+    @Tunable(0.5f)
+    private FloatInputPoll containerTurnTime;
+    @Tunable(1.15f)
+    private FloatInputPoll autoZoneTime;
+    @Tunable(3.5f)
+    private FloatInputPoll toteCollectTime;
+    @Tunable(100.0f)
+    private FloatInputPoll autoZoneAngle;
+    @Tunable(1.0f)
+    private FloatInputPoll autoZoneSpeed;
+    @Tunable(valueBoolean = false)
     private BooleanInputPoll shake;
 
-    private FloatInputPoll turn1, turn2, var1, var2;
+    @Tunable(20)
+    private FloatInputPoll turn1;
+    @Tunable(115)
+    private FloatInputPoll turn2;
+    @Tunable(25)
+    private FloatInputPoll var1;
+    @Tunable(30)
+    private FloatInputPoll var2;
 
     public AutonomousModeToteContainer() {
         super("One Tote");
@@ -50,22 +68,5 @@ public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
         Rollers.closed.set(false);
         driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
         Logger.info("Finished: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
-    }
-
-    public void loadSettings(TuningContext context) {
-        this.turn1 = context.getFloat("Auto Mode Single Tote Turn 1", 20);
-        this.var1 = context.getFloat("Auto Mode Single Tote Turn 1 Variance", 25);
-        this.turn2 = context.getFloat("Auto Mode Single Tote Turn 2", 115);
-        this.var2 = context.getFloat("Auto Mode Single Tote Turn 2 Variance", 30);
-        this.toteDistance = context.getFloat("Auto Mode Single Tote Tote Distance +A", 28.0f);
-        this.secondDistance = context.getFloat("Auto Mode Single Tote Second Distance +A", 24.0f);
-        this.nudge = context.getFloat("Auto Mode Single Tote Nudge +A", 12.0f);
-        this.containerTurnTime = context.getFloat("Auto Mode Single Tote Container Turn Time +A", 0.5f);
-        this.toteCollectTime = context.getFloat("Auto Mode Single Tote Collect Time +A", 3.5f);
-        this.autoZoneAngle = context.getFloat("Auto Mode Single Tote Auto Zone Angle +A", 100.0f);
-        this.autoZoneSpeed = context.getFloat("Auto Mode Single Tote Auto Zone Speed +A", 1.0f);
-        this.autoZoneDistance = context.getFloat("Auto Mode Single Tote Auto Zone Distance (1) +A", 60.0f);
-        this.autoZoneTime = context.getFloat("Auto Mode Single Tote Auto Zone Time (2) +A", 1.15f);
-        this.shake = context.getBoolean("Auto Mode Single Tote Shake +A", false);
     }
 }
