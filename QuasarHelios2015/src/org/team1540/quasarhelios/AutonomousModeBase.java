@@ -334,8 +334,8 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             drive(nudge);
         }
         setClampOpen(false);
-        waitForTime(2000);
-        /* setClampHeight(0.2f);
+        waitForTime(1000);
+        setClampHeight(0.2f);
         waitForTime(1000);
         // align container
         setClampHeight(0.0f);
@@ -343,7 +343,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         setClampOpen(true);
         waitForTime(1000);
         setClampOpen(false);
-        waitForTime(2000); */
+        waitForTime(2000);
         setClampHeight(0.5f);
     }
 

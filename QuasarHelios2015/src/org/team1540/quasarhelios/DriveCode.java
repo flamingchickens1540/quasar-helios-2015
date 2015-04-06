@@ -115,8 +115,8 @@ public class DriveCode {
     };
 
     private static EventOutput justStrafing = () -> {
-        float rotationspeed = -pid.get();
-        driveInDirection(0, leftJoystickX.get(), rotationspeed);
+        //float rotationspeed = -pid.get();
+        driveInDirection(0, leftJoystickX.get(), rightJoystickX.get());
     };
 
     private static void driveInDirection(double angle, float speed, float rotationspeed) {
