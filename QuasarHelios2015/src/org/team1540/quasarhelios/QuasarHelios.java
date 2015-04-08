@@ -48,6 +48,7 @@ public class QuasarHelios implements IgneousApplication {
         Autonomous.setup();
         Pressure.setup();
         CurrentMonitoring.setup();
+        ContainerGrabber.setup();
         publishFaultRConf();
 
         // This is to provide diagnostics in case of another crash due to OOM.
@@ -98,11 +99,15 @@ public class QuasarHelios implements IgneousApplication {
                     entries[0] = RConf.title("ALL FAULTS");
                     entries[1] = RConf.string("(click to clear sticky faults)");
                     for (int i = 2; i < entries.length - 2; i++) {
-                        String str = faultNames.get(i - 2) + ": " + (faults.get(i - 2).get() ? "FAULTING" : "nominal");
-                        if (faultClears.get(i - 2) == null) {
-                            entries[i] = RConf.string(str); // not interactable
+                        boolean faulting = faults.get(i - 2).get();
+                        String str = faultNames.get(i - 2) + ": " + (faulting ? "FAULTING" : "nominal");
+                        if (faultClears.get(i - 2) != null) {
+                            str += " (S)";
+                        }
+                        if (faulting) {
+                            entries[i] = RConf.button(str);
                         } else {
-                            entries[i] = RConf.button(str); // interactable
+                            entries[i] = RConf.string(str);
                         }
                     }
                     entries[entries.length - 2] = RConf.button("(clear all)");

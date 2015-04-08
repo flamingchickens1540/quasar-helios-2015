@@ -56,7 +56,7 @@ public class AutoStacker extends InstinctModule {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(startHeight.get());
             waitUntil(Clamp.atDesiredHeight);
-            
+
             atDrop.event();
 
             if (useRollers.get()) {

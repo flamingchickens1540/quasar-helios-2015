@@ -18,27 +18,32 @@ public class ControlInterface {
     public static TuningContext mainTuning = new TuningContext("Main").publishSavingEvent();
     public static TuningContext autoTuning = new TuningContext("Autonomous").publishSavingEvent();
     public static TuningContext teleTuning = new TuningContext("Teleoperated").publishSavingEvent();
+    private static BooleanInput rollersModeForClampControlDisable;
 
     public static void setup() {
         setupDrive();
-        setupClamp();
         setupElevator();
         setupRollers();
+        setupClamp(); // needs to be after setupRollers()
     }
 
     private static void setupClamp() {
-        FloatMixing.pumpWhen(EventMixing.filterEvent(Igneous.joystick2.getButtonChannel(5), false, QuasarHelios.globalControl),
+        FloatMixing.pumpWhen(EventMixing.filterEvent(rollersModeForClampControlDisable, false, QuasarHelios.globalControl),
                 Igneous.joystick2.getAxisChannel(2), Clamp.speed);
 
         Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
-        Igneous.joystick2.getButtonSource(7).send(Clamp.setBottom);
+        BooleanInput holding = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(7), QuasarHelios.manualControl);
+        BooleanMixing.onPress(holding).send(Rollers.startHoldIn);
+        BooleanMixing.onRelease(holding).send(Rollers.stopHoldIn);
         Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
         Cluck.publish("Auto Stack", QuasarHelios.autoStacker);
     }
 
     private static void setupRollers() {
         BooleanStatus rollersMode = new BooleanStatus();
+        rollersModeForClampControlDisable = rollersMode;
         rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
+        QuasarHelios.publishFault("rollers-overridden", rollersMode.asInput(), rollersMode.getToggleEvent());
 
         EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
         FloatInputPoll povAngle = Igneous.joystick2.getPOVAngle(1);
@@ -70,9 +75,8 @@ public class ControlInterface {
         Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5)));
 
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.8f);
-        BooleanInput overrideRollers = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(5), Igneous.globalPeriodic);
 
-        overrideRollers.send(Rollers.overrideRollers);
+        rollersMode.send(Rollers.overrideRollers);
 
         FloatInput leftStickY = Igneous.joystick2.getAxisSource(2);
         FloatInput rightStickY = Igneous.joystick2.getAxisSource(6);
@@ -84,16 +88,16 @@ public class ControlInterface {
         FloatInput leftTrigger = Igneous.joystick2.getAxisSource(3);
         FloatInput rightTrigger = Igneous.joystick2.getAxisSource(4);
 
-        BooleanInput leftTriggerPress = FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers);
-        BooleanInput rightTriggerPress = FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers);
+        BooleanInput leftTriggerPressForRollers = BooleanMixing.andBooleans(rollersMode, FloatMixing.floatIsAtLeast(leftTrigger, cutoffRollers));
+        BooleanInput rightTriggerPressForRollers = BooleanMixing.andBooleans(rollersMode, FloatMixing.floatIsAtLeast(rightTrigger, cutoffRollers));
+        BooleanInput leftTriggerPressForLoader = BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto));
+        BooleanInput rightTriggerPressForLoader = BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto));
 
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, leftTriggerPress), Rollers.leftPneumaticOverride);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl, BooleanMixing.andBooleans(rollersMode, rightTriggerPress), Rollers.rightPneumaticOverride);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, leftTriggerPressForRollers, Rollers.leftPneumaticOverride);
+        BooleanMixing.pumpWhen(QuasarHelios.manualControl, rightTriggerPressForRollers, Rollers.rightPneumaticOverride);
 
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
-                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(leftTrigger, cutoffAuto)), QuasarHelios.autoEjector);
-        BooleanMixing.pumpWhen(QuasarHelios.manualControl,
-                BooleanMixing.andBooleans(rollersMode.asInvertedInput(), FloatMixing.floatIsAtLeast(rightTrigger, cutoffAuto)), QuasarHelios.autoLoader);
+        leftTriggerPressForLoader.send(QuasarHelios.autoEjector);
+        rightTriggerPressForLoader.send(QuasarHelios.autoLoader);
     }
 
     private static void setupElevator() {
@@ -117,7 +121,7 @@ public class ControlInterface {
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(3), .1f).send(DriveCode.backwardTrigger);
         FloatMixing.deadzone(Igneous.joystick1.getAxisSource(4), .1f).send(DriveCode.forwardTrigger);
 
-        Igneous.joystick1.getButtonSource(1).send(DriveCode.octocanumShiftingButton);
+        Igneous.joystick1.getButtonSource(1).send(ContainerGrabber.containerGrabButton); // only here because this is where we work with the drive joystick
         Igneous.joystick1.getButtonSource(2).send(DriveCode.recalibrateButton);
         Igneous.joystick1.getButtonSource(4).send(DriveCode.strafingButton);
     }

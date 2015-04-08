@@ -34,6 +34,7 @@ public class AutoEjector extends InstinctModule {
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
+            QuasarHelios.autoHumanLoader.set(false);
             float currentClampHeight = Clamp.heightReadout.get();
 
             Clamp.mode.set(Clamp.MODE_HEIGHT);

@@ -24,8 +24,6 @@ public class AutoHumanLoader extends InstinctModule {
         a.setShouldBeRunning(b);
         a.updateWhen(Igneous.globalPeriodic);
 
-        //BooleanMixing.onRelease(b).send(Elevator.setBottom);
-
         b.setFalseWhen(Igneous.startDisabled);
 
         return b;
@@ -38,6 +36,9 @@ public class AutoHumanLoader extends InstinctModule {
                 Elevator.setTop.event();
                 waitUntil(Elevator.atTop);
 
+                if (crateInPosition.get()) {
+                    waitForTime(100);
+                }
                 waitUntil(crateInPosition);
 
                 Elevator.setBottom.event();

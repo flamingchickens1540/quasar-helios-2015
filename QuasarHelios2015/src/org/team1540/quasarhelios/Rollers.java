@@ -24,12 +24,12 @@ public class Rollers {
 
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);
-    public static final BooleanStatus closed = new BooleanStatus(true);
+    public static final BooleanStatus closed = new BooleanStatus(false);
 
     // These will need individual tuning for speed.
-    private static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
-    private static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
-    private static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_REVERSE, 0.1f);
+    public static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
+    public static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
+    public static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_REVERSE, 0.1f);
     private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
 
     private static final BooleanOutput leftPneumatic = Igneous.makeSolenoid(1);
@@ -39,6 +39,7 @@ public class Rollers {
     public static final BooleanStatus leftPneumaticOverride = new BooleanStatus();
     public static final FloatStatus rightRollerOverride = new FloatStatus();
     public static final FloatStatus leftRollerOverride = new FloatStatus();
+    public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
     private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("Roller Speed +M", 1.0f);
@@ -46,6 +47,9 @@ public class Rollers {
 
     private static final FloatInput amperageLeftArmRoller = CurrentMonitoring.channels[15];
     private static final FloatInput amperageRightArmRoller = CurrentMonitoring.channels[0];
+
+    public static final EventOutput startHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 1.0f));
+    public static final EventOutput stopHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
 
     // The thresholds are VERY HIGH by default so that these won't come into effect unless we want to turn them on.
     private static final BooleanInput leftArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageLeftArmRoller,
@@ -88,8 +92,8 @@ public class Rollers {
                 Logger.finer(value ? "Enabled roller override." : "Disabled roller override.");
             }
         });
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(overrideRollers, motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
 
         BooleanInput normalPneumatics = BooleanMixing.andBooleans(overrideRollers.asInvertedInput(), closed);
         BooleanInput overrideLeft = BooleanMixing.andBooleans(overrideRollers.asInput(), leftPneumaticOverride);
@@ -130,5 +134,10 @@ public class Rollers {
 
         Cluck.publish("Roller Has Tote Left", leftArmRollerHasTote.asInput());
         Cluck.publish("Roller Has Tote Right", rightArmRollerHasTote.asInput());
+
+        Cluck.publish("(DEBUG) Roller Direction", direction);
+        Cluck.publish("(DEBUG) Roller Running", running);
+        Cluck.publish("(DEBUG) Roller Override", overrideRollers);
+        Cluck.publish("(DEBUG) Roller Override Speed", overrideRollerSpeedOnly);
     }
 }

@@ -56,13 +56,13 @@ public class Clamp {
     public static final BooleanStatus clampEnabled = new BooleanStatus(true);
 
     public static void setup() {
+        open.set(true);
+
         QuasarHelios.publishFault("clamp-encoder-disabled", BooleanMixing.invert((BooleanInputPoll) useEncoder));
 
         EventStatus zeroEncoder = new EventStatus();
         needsAutoCalibration.setFalseWhen(zeroEncoder);
         FloatInputPoll encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
-
-        QuasarHelios.publishFault("clamp-encoder-zero", FloatMixing.floatIsInRange(encoder, -0.1f, 0.1f));
 
         ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
         FloatOutput motorControlTemp = FloatMixing.ignoredFloatOutput;
@@ -126,6 +126,8 @@ public class Clamp {
         atTopStatus.setFalseWhen(BooleanMixing.onPress(atBottomStatus));
         atBottomStatus.setFalseWhen(BooleanMixing.onPress(atTopStatus));
 
+        QuasarHelios.publishFault("clamp-encoder-zero", BooleanMixing.andBooleans(FloatMixing.floatIsInRange(encoder, -0.1f, 0.1f), atTopStatus.asInvertedInput()));
+
         FloatStatus distance = ControlInterface.mainTuning.getFloat("Clamp Distance +M", 1.0f);
 
         FloatMixing.pumpWhen(EventMixing.filterEvent(useEncoder, true, BooleanMixing.onPress(atBottomStatus)), encoder, FloatMixing.negate((FloatOutput) distance));
@@ -171,7 +173,7 @@ public class Clamp {
         FloatInputPoll speedFactor = Mixing.select(FloatMixing.floatIsAtMost(heightReadout, ControlInterface.mainTuning.getFloat("Clamp Slowdown Threshold +M", 0.2f)), 1.0f, 0.5f);
 
         Cluck.publish("Clamp Speed Factor", FloatMixing.createDispatch(speedFactor, Igneous.globalPeriodic));
-        
+
         FloatMixing.pumpWhen(QuasarHelios.constantControl,
                 Mixing.select(autocalibrationOverrideEnable,
                         FloatMixing.multiplication.of(
