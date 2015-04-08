@@ -12,6 +12,8 @@ import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
 import ccre.ctrl.EventMixing;
 import ccre.ctrl.FloatMixing;
+import ccre.ctrl.Mixing;
+import ccre.ctrl.PauseTimer;
 import ccre.holders.TuningContext;
 
 public class ControlInterface {
@@ -28,14 +30,19 @@ public class ControlInterface {
     }
 
     private static void setupClamp() {
+        PauseTimer disableMotion = new PauseTimer(2000);
+        
         FloatMixing.pumpWhen(EventMixing.filterEvent(rollersModeForClampControlDisable, false, QuasarHelios.globalControl),
-                Igneous.joystick2.getAxisChannel(2), Clamp.speed);
+                Mixing.select(disableMotion, Igneous.joystick2.getAxisChannel(2), FloatMixing.always(0)), Clamp.speed);
 
-        Clamp.open.toggleWhen(Igneous.joystick2.getButtonSource(3));
-        BooleanInput holding = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(7), QuasarHelios.manualControl);
-        BooleanMixing.onPress(holding).send(Rollers.startHoldIn);
-        BooleanMixing.onRelease(holding).send(Rollers.stopHoldIn);
-        Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
+        EventInput toggle = Igneous.joystick2.getButtonSource(3);
+        
+        Clamp.open.toggleWhen(toggle);
+        
+        // When clamp is changed to closed, prevent motion for one second.
+        EventMixing.filterEvent(Clamp.open, false, toggle).send(disableMotion);
+
+        //Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
         Cluck.publish("Auto Stack", QuasarHelios.autoStacker);
     }
 
@@ -60,6 +67,8 @@ public class ControlInterface {
             }
 
             Rollers.direction.set(Rollers.INPUT);
+            
+            rollersMode.set(false);
         });
 
         povUp.send(() -> {
@@ -70,9 +79,13 @@ public class ControlInterface {
             }
 
             Rollers.direction.set(Rollers.OUTPUT);
+            
+            rollersMode.set(false);
         });
 
-        Rollers.closed.toggleWhen(EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5)));
+        EventInput toggleClosed = EventMixing.combine(povLeft, povRight, Igneous.joystick1.getButtonSource(5));
+        toggleClosed.send(rollersMode.getSetFalseEvent());
+        Rollers.closed.toggleWhen(toggleClosed);
 
         FloatInput cutoffRollers = mainTuning.getFloat("Roller Override Threshold +M", 0.8f);
 
@@ -98,6 +111,19 @@ public class ControlInterface {
 
         leftTriggerPressForLoader.send(QuasarHelios.autoEjector);
         rightTriggerPressForLoader.send(QuasarHelios.autoLoader);
+
+        BooleanInput holding = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(7), QuasarHelios.manualControl);
+        EventInput startHolding = BooleanMixing.onPress(holding);
+        startHolding.send(Rollers.startHoldIn);
+        startHolding.send(rollersMode.getSetFalseEvent());
+        BooleanMixing.onRelease(holding).send(Rollers.stopHoldIn);
+
+        BooleanInput spinning = BooleanMixing.createDispatch(Igneous.joystick2.getButtonChannel(8), QuasarHelios.manualControl);
+        EventInput startSpinning = BooleanMixing.onPress(spinning);
+        startSpinning.send(Rollers.startSpin);
+        startSpinning.send(rollersMode.getSetFalseEvent());
+        BooleanMixing.onPress(spinning).send(Rollers.startSpin);
+        BooleanMixing.onRelease(spinning).send(Rollers.stopSpin);
     }
 
     private static void setupElevator() {

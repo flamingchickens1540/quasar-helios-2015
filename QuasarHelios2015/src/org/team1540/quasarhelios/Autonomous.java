@@ -51,6 +51,7 @@ public class Autonomous {
         // mainModule.addMode(new AutonomousModeGrabContainer());
         mainModule.addMode(new AutonomousModeToteContainer());
         mainModule.addMode(new AutonomousModeNoodlePrep());
+        mainModule.addMode(new AutonomousModeNoodleAndTote());
         mainModule.addMode(new AutonomousModeContainerTote());
         mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));

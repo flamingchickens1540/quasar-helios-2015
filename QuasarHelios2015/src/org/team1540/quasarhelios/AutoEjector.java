@@ -35,7 +35,6 @@ public class AutoEjector extends InstinctModule {
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
         try {
             QuasarHelios.autoHumanLoader.set(false);
-            float currentClampHeight = Clamp.heightReadout.get();
 
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(clampHeight.get());
@@ -44,7 +43,7 @@ public class AutoEjector extends InstinctModule {
                 Elevator.setBottom.event();
                 waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atBottom));
             } else {
-                waitUntil(Elevator.atBottom);
+                waitUntil(Clamp.atDesiredHeight);
             }
 
             boolean running = Rollers.running.get();
@@ -52,7 +51,7 @@ public class AutoEjector extends InstinctModule {
             boolean closed = Rollers.closed.get();
 
             try {
-                Rollers.closed.set(true);
+                Rollers.closed.set(false);
                 Rollers.direction.set(Rollers.OUTPUT);
                 Rollers.running.set(true);
 
@@ -61,10 +60,8 @@ public class AutoEjector extends InstinctModule {
             } finally {
                 Rollers.running.set(running);
                 Rollers.direction.set(direction);
-                Rollers.closed.set(closed);
-                Clamp.mode.set(Clamp.MODE_HEIGHT);
-                Clamp.height.set(currentClampHeight);
-                waitUntil(Clamp.atDesiredHeight);
+                //Rollers.closed.set(closed); - not actually helpful
+                Rollers.closed.set(false);
             }
         } finally {
             running.set(false);
