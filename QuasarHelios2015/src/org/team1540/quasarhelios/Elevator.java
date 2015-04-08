@@ -42,7 +42,8 @@ public class Elevator {
     public static final BooleanInput atTop = atTopStatus;
     public static final BooleanInput atBottom = atBottomStatus;
 
-    private static FloatInput winchSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Speed +M", 1.0f);
+    private static FloatInput winchRaisingSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Raising Speed  +M", 1.0f);
+    private static FloatInput winchLoweringSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Lowering Speed  +M", 1.0f);
 
     public static void setup() {
         BooleanInputPoll actuallyRaising = BooleanMixing.orBooleans(
@@ -113,7 +114,7 @@ public class Elevator {
     }
 
     private static EventInput setupMotorControl() {
-        FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchSpeed), winchSpeed, FloatMixing.always(0.0f));
+        FloatInputPoll main = Mixing.quadSelect(raising, lowering, FloatMixing.always(0.0f), FloatMixing.negate(winchLoweringSpeed), winchRaisingSpeed, FloatMixing.always(0.0f));
         QuasarHelios.publishFault("elevator-both-directions", BooleanMixing.andBooleans(raising, lowering));
         FloatInputPoll override = QuasarHelios.limitSwitches(overrideValue, atBottom, atTop);
 
