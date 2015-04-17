@@ -12,7 +12,7 @@ public class ContainerGrabber {
     public static final EventStatus containerGrabButton = new EventStatus();
 
     public static void setup() {
-        containerGrabberSolenoid.toggleWhen(EventMixing.filterEvent(ControlInterface.mainTuning.getBoolean("Container Grab Enabled +A", false), true, (EventInput) containerGrabButton));
+        containerGrabberSolenoid.toggleWhen(EventMixing.filterEvent(ControlInterface.mainTuning.getBoolean("Container Grab Enabled +A", true), true, (EventInput) containerGrabButton));
 
         Cluck.publish("Container Grab Actuated", containerGrabberSolenoid);
     }
