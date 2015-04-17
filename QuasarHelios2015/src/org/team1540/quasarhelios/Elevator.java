@@ -42,8 +42,8 @@ public class Elevator {
     public static final BooleanInput atTop = atTopStatus;
     public static final BooleanInput atBottom = atBottomStatus;
 
-    private static FloatInput winchRaisingSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Raising Speed  +M", 1.0f);
-    private static FloatInput winchLoweringSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Lowering Speed  +M", 1.0f);
+    private static FloatInput winchRaisingSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Speed Raising +M", 1.0f);
+    private static FloatInput winchLoweringSpeed = ControlInterface.mainTuning.getFloat("Elevator Winch Speed Lowering +M", 1.0f);
 
     public static void setup() {
         BooleanInputPoll actuallyRaising = BooleanMixing.orBooleans(
