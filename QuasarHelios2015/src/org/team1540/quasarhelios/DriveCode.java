@@ -172,7 +172,7 @@ public class DriveCode {
     public static void setup() {
         Cluck.publish("(PIT) Pit Mode", pitMode);
         QuasarHelios.publishFault("in-pit-mode", pitMode, disablePitMode);
-//        EventMixing.filterEvent(Igneous.getIsFMS(), true, Igneous.startTele).send(disablePitMode);
+        EventMixing.filterEvent(Igneous.getIsFMS(), true, Igneous.startTele).send(disablePitMode);
         
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
