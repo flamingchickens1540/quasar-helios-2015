@@ -44,8 +44,10 @@ public class Rollers {
     public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
-    private static final FloatInput actualSpeed = ControlInterface.mainTuning.getFloat("Roller Speed +M", 1.0f);
-    private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualSpeed), actualSpeed);
+    private static final FloatInput actualIntakeSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Intake +M", 1.0f);
+    private static final FloatInput actualEjectSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Eject +M", 1.0f);
+
+    private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualIntakeSpeed), actualEjectSpeed);
 
     private static final FloatInput amperageLeftArmRoller = CurrentMonitoring.channels[15];
     private static final FloatInput amperageRightArmRoller = CurrentMonitoring.channels[0];
@@ -69,7 +71,7 @@ public class Rollers {
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, frontRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
-                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.always(0), FloatMixing.negate(actualSpeed)),
+                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.always(0), FloatMixing.negate(actualIntakeSpeed)),
                 internalRollers);
         Igneous.globalPeriodic.send(new EventOutput() {
             private boolean wasRunning = false;
