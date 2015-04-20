@@ -3,8 +3,10 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -12,9 +14,10 @@ import ccre.instinct.InstinctModule;
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
+    private static final FloatStatus slowRollerSpeed = ControlInterface.mainTuning.getFloat("AutoLoader Rollers Slow Speed +M", .2f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
-    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.49f);
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold", 0.49f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
@@ -43,10 +46,6 @@ public class AutoLoader extends InstinctModule {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(clampHeightThreshold.get());
 
-            boolean running = Rollers.running.get();
-            boolean direction = Rollers.direction.get();
-            boolean closed = Rollers.closed.get();
-
             try {
                 Rollers.overrideRollerSpeedOnly.set(true);
                 Rollers.leftRollerOverride.set(1.0f);
@@ -59,14 +58,12 @@ public class AutoLoader extends InstinctModule {
                 while (true) {
                     Rollers.running.set(true);
                     waitUntil(crateInPosition);
-                    Rollers.running.set(false);
+                    FloatMixing.combine(Rollers.leftRollerOverride, Rollers.rightRollerOverride).set(slowRollerSpeed.get());
                     waitUntilNot(crateInPosition);
                 }
             } finally {
                 Rollers.overrideRollerSpeedOnly.set(false);
                 Rollers.running.set(false);
-                //Rollers.direction.set(direction);
-                //Rollers.closed.set(closed); - don't do this because it requires an extra actuation
             }
         } finally {
             QuasarHelios.autoHumanLoader.set(orighl);
