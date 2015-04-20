@@ -14,10 +14,10 @@ import ccre.instinct.InstinctModule;
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
-    private static final FloatStatus slowRollerSpeed = ControlInterface.mainTuning.getFloat("AutoLoader Rollers Slow Speed +M", .2f);
+    private static final FloatStatus slowRollerSpeed = ControlInterface.mainTuning.getFloat("AutoLoader Rollers Slow Speed +M", .3f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
-    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold", 0.49f);
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
