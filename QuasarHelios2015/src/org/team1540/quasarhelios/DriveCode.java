@@ -23,9 +23,9 @@ public class DriveCode {
     private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
 
     private static final BooleanStatus pitMode = new BooleanStatus();
-    
+
     public static final EventOutput disablePitMode = pitMode.getSetFalseEvent();
-    
+
     private static FloatInput wrapForPitMode(FloatInput input) {
         return Mixing.select(pitMode, input, FloatMixing.always(0));
     }
@@ -173,7 +173,7 @@ public class DriveCode {
         Cluck.publish("(PIT) Pit Mode", pitMode);
         QuasarHelios.publishFault("in-pit-mode", pitMode, disablePitMode);
         EventMixing.filterEvent(Igneous.getIsFMS(), true, Igneous.startTele).send(disablePitMode);
-        
+
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
         headingControl.toggleWhen(fieldCentricButton);
@@ -240,5 +240,12 @@ public class DriveCode {
         Cluck.publish("Teleop Field Centric Calibrate", calibrate);
         Cluck.publish("Teleop PID Output", (FloatInput) pid);
         Cluck.publish("Drive Encoder Reset", (EventOutput) resetEncoders);
+    }
+
+    public static void angularStrafeForAuto(float strafeAmount, float forwardAmount) {
+        leftFrontMotor.set(forwardAmount - strafeAmount);
+        leftBackMotor.set(forwardAmount + strafeAmount);
+        rightFrontMotor.set(forwardAmount + strafeAmount);
+        rightBackMotor.set(forwardAmount - strafeAmount);
     }
 }

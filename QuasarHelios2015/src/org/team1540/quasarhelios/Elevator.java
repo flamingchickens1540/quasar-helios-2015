@@ -78,8 +78,11 @@ public class Elevator {
     }
 
     private static void setupLimitSwitchesAndPublishing(BooleanInputPoll reallyRaising, BooleanInputPoll reallyLowering) {
-        BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
-        BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
+        BooleanInput limitTop = BooleanMixing.invert(Igneous.makeDigitalInputByInterrupt(0));
+        BooleanInput limitBottom = BooleanMixing.invert(Igneous.makeDigitalInputByInterrupt(1));
+        //BooleanInput limitTop = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(0)), Igneous.constantPeriodic);
+        //BooleanInput limitBottom = BooleanMixing.createDispatch(BooleanMixing.invert(Igneous.makeDigitalInput(1)), Igneous.constantPeriodic);
+        Logger.info("With interrupts.");
 
         atTopStatus.set(limitTop.get());
         atBottomStatus.set(limitBottom.get());
