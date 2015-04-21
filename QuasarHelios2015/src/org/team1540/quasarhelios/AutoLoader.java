@@ -58,11 +58,14 @@ public class AutoLoader extends InstinctModule {
                 while (true) {
                     Rollers.running.set(true);
                     waitUntil(crateInPosition);
-                    FloatMixing.combine(Rollers.leftRollerOverride, Rollers.rightRollerOverride).set(slowRollerSpeed.get());
+                    Rollers.running.set(false);
+                    Rollers.slowIntake.set(true);
                     waitUntilNot(crateInPosition);
+                    Rollers.slowIntake.set(false);
                 }
             } finally {
                 Rollers.overrideRollerSpeedOnly.set(false);
+                Rollers.slowIntake.set(false);
                 Rollers.running.set(false);
             }
         } finally {
