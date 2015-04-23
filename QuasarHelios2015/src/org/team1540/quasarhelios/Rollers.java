@@ -27,7 +27,6 @@ public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);
     public static final BooleanStatus closed = new BooleanStatus(false);
-    public static final BooleanStatus slowIntake = new BooleanStatus();
 
     // These will need individual tuning for speed.
     public static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
@@ -71,9 +70,9 @@ public class Rollers {
     public static void setup() {
         running.setFalseWhen(Igneous.startDisabled);
         FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, frontRollers);
-        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), Mixing.select(slowIntake, motorSpeed, actualIntakeSpeedSlow), internalRollers);
+        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
-                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.always(0), FloatMixing.negate(actualIntakeSpeed)),
+                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.negate(actualIntakeSpeedSlow), FloatMixing.negate(actualIntakeSpeed)),
                 internalRollers);
         Igneous.globalPeriodic.send(new EventOutput() {
             private boolean wasRunning = false;
