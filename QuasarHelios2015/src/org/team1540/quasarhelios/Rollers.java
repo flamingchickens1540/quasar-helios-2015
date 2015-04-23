@@ -27,6 +27,7 @@ public class Rollers {
     public static final BooleanStatus direction = new BooleanStatus(INPUT);
     public static final BooleanStatus running = new BooleanStatus(false);
     public static final BooleanStatus closed = new BooleanStatus(false);
+    public static final BooleanStatus slowIntake = new BooleanStatus();
 
     // These will need individual tuning for speed.
     public static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
@@ -44,7 +45,6 @@ public class Rollers {
     public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
-    public static final BooleanStatus slowIntake = new BooleanStatus();
     private static final FloatInput actualIntakeSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Intake +M", 1.0f);
     private static final FloatInput actualIntakeSpeedSlow = ControlInterface.mainTuning.getFloat("Roller Speed Intake Slow +M", .3f);
     private static final FloatInput actualEjectSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Eject +M", 1.0f);
