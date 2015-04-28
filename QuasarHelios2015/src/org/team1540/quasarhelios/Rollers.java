@@ -44,6 +44,8 @@ public class Rollers {
     public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
+    private static final BooleanStatus flipFrontRoller = new BooleanStatus();
+
     private static final FloatInput actualIntakeSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Intake +M", 1.0f);
     private static final FloatInput actualIntakeSpeedSlow = ControlInterface.mainTuning.getFloat("Roller Speed Intake Slow +M", .3f);
     private static final FloatInput actualEjectSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Eject +M", 1.0f);
@@ -68,8 +70,11 @@ public class Rollers {
             rightArmRollerHasTote = new BooleanStatus();
 
     public static void setup() {
+        Cluck.publish("Rollers Flip Front Direction", flipFrontRoller);
+        QuasarHelios.publishFault("front-roller-flipped", flipFrontRoller, flipFrontRoller.getSetFalseEvent());
+
         running.setFalseWhen(Igneous.startDisabled);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, frontRollers);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(flipFrontRoller, motorSpeed, FloatMixing.negate(motorSpeed)), frontRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
                 Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.negate(actualIntakeSpeedSlow), FloatMixing.negate(actualIntakeSpeed)),
