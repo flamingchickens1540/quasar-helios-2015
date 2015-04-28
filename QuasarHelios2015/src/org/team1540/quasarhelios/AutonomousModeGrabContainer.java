@@ -30,18 +30,18 @@ public class AutonomousModeGrabContainer extends AutonomousModeBase {
         ContainerGrabber.containerGrabberSolenoid.set(true);
         waitForTime(attachWaitingTime);
         straightening.set(false);
-        Logger.info("A");
+        Logger.info("Motion 1: " + strafeTime1.get() + " in " + strafeSpeed1.get() + ", " + forwardSpeed1.get());
         if (strafeTime1.get() != 0) {
             DriveCode.angularStrafeForAuto(strafeSpeed1.get(), forwardSpeed1.get());
             waitForTime(strafeTime1);
         }
-        Logger.info("B");
+        Logger.info("Motion 2: " + strafeTime2.get() + " in " + strafeSpeed2.get() + ", " + forwardSpeed2.get());
         ContainerGrabber.containerGrabberSolenoid.set(false);
         if (strafeTime2.get() != 0) {
             DriveCode.angularStrafeForAuto(strafeSpeed2.get(), forwardSpeed2.get());
             waitForTime(strafeTime2);
         }
-        Logger.info("C");
+        Logger.info("Motion Done.");
         DriveCode.strafe.set(0.0f);
     }
 }

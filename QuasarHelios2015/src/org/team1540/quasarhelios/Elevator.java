@@ -121,7 +121,7 @@ public class Elevator {
         QuasarHelios.publishFault("elevator-both-directions", BooleanMixing.andBooleans(raising, lowering));
         FloatInputPoll override = QuasarHelios.limitSwitches(overrideValue, atBottom, atTop);
 
-        EventInput currentFault = elevatorTalon.setupCurrentBreakerWithFaultPublish("elevator-current-fault");
+        EventInput currentFault = elevatorTalon.setupCurrentBreakerWithFaultPublish(55, "elevator-current-fault");
         EventLogger.log(currentFault, LogLevel.FINE, "Elevator current fault!");
         currentFault.send(EventMixing.combine(raising.getSetFalseEvent(), lowering.getSetFalseEvent()));
 

@@ -44,7 +44,10 @@ public class Rollers {
     public static final BooleanStatus overrideRollerSpeedOnly = new BooleanStatus();
     public static final BooleanStatus overrideRollers = new BooleanStatus();
 
+    private static final BooleanStatus flipFrontRoller = new BooleanStatus();
+
     private static final FloatInput actualIntakeSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Intake +M", 1.0f);
+    private static final FloatInput actualIntakeSpeedSlow = ControlInterface.mainTuning.getFloat("Roller Speed Intake Slow +M", .3f);
     private static final FloatInput actualEjectSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Eject +M", 1.0f);
 
     private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualIntakeSpeed), actualEjectSpeed);
@@ -67,11 +70,14 @@ public class Rollers {
             rightArmRollerHasTote = new BooleanStatus();
 
     public static void setup() {
+        Cluck.publish("Rollers Flip Front Direction", flipFrontRoller);
+        QuasarHelios.publishFault("front-roller-flipped", flipFrontRoller, flipFrontRoller.getSetFalseEvent());
+
         running.setFalseWhen(Igneous.startDisabled);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, motorSpeed, frontRollers);
+        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(flipFrontRoller, motorSpeed, FloatMixing.negate(motorSpeed)), frontRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
         FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
-                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.always(0), FloatMixing.negate(actualIntakeSpeed)),
+                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.negate(actualIntakeSpeedSlow), FloatMixing.negate(actualIntakeSpeed)),
                 internalRollers);
         Igneous.globalPeriodic.send(new EventOutput() {
             private boolean wasRunning = false;
@@ -146,7 +152,7 @@ public class Rollers {
         Cluck.publish("(DEBUG) Roller Running", running);
         Cluck.publish("(DEBUG) Roller Override", overrideRollers);
         Cluck.publish("(DEBUG) Roller Override Speed", overrideRollerSpeedOnly);
-        
+
         BooleanStatus runningTest = new BooleanStatus();
         Cluck.publish("(DEBUG) Roller Overtest", runningTest);
         FloatInput onDelay = ControlInterface.teleTuning.getFloat("(DEBUG) Roller Test Delay On +T", 0.3f);

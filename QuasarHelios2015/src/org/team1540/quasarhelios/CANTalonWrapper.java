@@ -47,15 +47,15 @@ public class CANTalonWrapper {
         Cluck.publish(name + " Temperature Fault", BooleanMixing.createDispatch(talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), QuasarHelios.readoutUpdate));
     }
 
-    public EventInput setupCurrentBreakerWithFaultPublish(String faultName) {
-        EventInput evt = setupCurrentBreaker();
+    public EventInput setupCurrentBreakerWithFaultPublish(float defaultAmps, String faultName) {
+        EventInput evt = setupCurrentBreaker(defaultAmps);
         QuasarHelios.publishStickyFault(faultName, evt);
         return evt;
     }
 
-    public EventInput setupCurrentBreaker() {
+    public EventInput setupCurrentBreaker(float defaultAmps) {
         FloatInputPoll current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
-        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(current, ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", 45));
+        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(current, ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", defaultAmps));
         EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
         Cluck.publish(name + " Max Current Amps Reached", maxCurrentEvent);
         return maxCurrentEvent;

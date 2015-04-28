@@ -3,8 +3,10 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
+import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -14,7 +16,7 @@ public class AutoLoader extends InstinctModule {
     private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
-    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("main-autoloader-clamp-height-threshold", 0.49f);
+    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
 
     private AutoLoader(BooleanStatus running) {
         this.running = running;
@@ -43,10 +45,6 @@ public class AutoLoader extends InstinctModule {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(clampHeightThreshold.get());
 
-            boolean running = Rollers.running.get();
-            boolean direction = Rollers.direction.get();
-            boolean closed = Rollers.closed.get();
-
             try {
                 Rollers.overrideRollerSpeedOnly.set(true);
                 Rollers.leftRollerOverride.set(1.0f);
@@ -61,12 +59,11 @@ public class AutoLoader extends InstinctModule {
                     waitUntil(crateInPosition);
                     Rollers.running.set(false);
                     waitUntilNot(crateInPosition);
+                    waitUntil(Elevator.atTop);
                 }
             } finally {
                 Rollers.overrideRollerSpeedOnly.set(false);
                 Rollers.running.set(false);
-                //Rollers.direction.set(direction);
-                //Rollers.closed.set(closed); - don't do this because it requires an extra actuation
             }
         } finally {
             QuasarHelios.autoHumanLoader.set(orighl);
