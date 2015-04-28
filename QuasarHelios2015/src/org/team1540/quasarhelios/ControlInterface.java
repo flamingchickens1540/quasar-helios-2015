@@ -50,7 +50,7 @@ public class ControlInterface {
         BooleanStatus rollersMode = new BooleanStatus();
         rollersModeForClampControlDisable = rollersMode;
         rollersMode.toggleWhen(Igneous.joystick2.getButtonSource(5));
-        QuasarHelios.publishFault("rollers-overridden", rollersMode.asInput(), rollersMode.getToggleEvent());
+        QuasarHelios.publishFault("rollers-overridden", rollersMode.asInput(), rollersMode.getSetFalseEvent());
 
         EventInput povPressed = BooleanMixing.onPress(Igneous.joystick2.isPOVPressedSource(1));
         FloatInputPoll povAngle = Igneous.joystick2.getPOVAngle(1);
