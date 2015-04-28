@@ -39,7 +39,7 @@ public class ControlInterface {
         
         Clamp.open.toggleWhen(toggle);
         
-        // When clamp is changed to closed, prevent motion for one second.
+        // When clamp is changed to closed, prevent motion for two seconds.
         EventMixing.filterEvent(Clamp.open, false, toggle).send(disableMotion);
 
         //Igneous.joystick2.getButtonSource(8).send(QuasarHelios.autoStacker.getSetTrueEvent());
