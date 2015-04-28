@@ -10,7 +10,7 @@ public class AutonomousModeNoodleAndTote extends AutonomousModeBaseEnsurable {
 
     @Tunable(0.5f)
     private FloatInputPoll containerTurnTime;
-    @Tunable(valueBoolean=false)
+    @Tunable(valueBoolean = false)
     private BooleanInputPoll shake;
     @Tunable(3.5f)
     private FloatInputPoll toteCollectTime;

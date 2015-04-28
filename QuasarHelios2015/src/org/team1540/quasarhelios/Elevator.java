@@ -174,6 +174,6 @@ public class Elevator {
             protected String getTypeName() {
                 return "elevator autoaligner";
             }
-        }.updateWhen(Igneous.globalPeriodic);
+        };
     }
 }

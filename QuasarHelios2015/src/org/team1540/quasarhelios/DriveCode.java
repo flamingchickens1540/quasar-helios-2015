@@ -134,11 +134,11 @@ public class DriveCode {
             rightBack /= normalize;
         }
         if (normalize < Math.abs(speed)) {
-            float multiplier = Math.abs(speed) / normalize;
-            leftFront *= multiplier;
-            rightFront *= multiplier;
-            leftBack *= multiplier;
-            rightBack *= multiplier;
+            float mul = Math.abs(speed) / normalize;
+            leftFront *= mul;
+            rightFront *= mul;
+            leftBack *= mul;
+            rightBack *= mul;
         }
         rightFrontMotor.set(rightFront);
         leftFrontMotor.set(leftFront);

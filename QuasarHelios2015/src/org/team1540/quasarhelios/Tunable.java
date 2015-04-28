@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Tunable {
     public float value() default 0;
+
     public boolean valueBoolean() default false;
 }
