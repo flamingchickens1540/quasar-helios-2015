@@ -21,8 +21,7 @@ public class AutonomousModeNoodlePrep extends AutonomousModeBase {
     protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);
-        
-        
+
         // Pickup container.
         setClampHeight(0.0f);
         singleSideTurn((long) (containerTurnTime.get() * 1000), true);

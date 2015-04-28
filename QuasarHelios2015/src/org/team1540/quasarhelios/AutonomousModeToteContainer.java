@@ -2,7 +2,6 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInputPoll;
 import ccre.channel.FloatInputPoll;
-import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 import ccre.util.Utils;

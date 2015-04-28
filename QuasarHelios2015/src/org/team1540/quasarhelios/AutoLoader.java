@@ -3,17 +3,14 @@ package org.team1540.quasarhelios;
 import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
-    private static final FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoLoader Timeout +M", 0.0f);
     public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
 
     public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
@@ -27,7 +24,6 @@ public class AutoLoader extends InstinctModule {
         AutoLoader a = new AutoLoader(b);
 
         a.setShouldBeRunning(b);
-        a.updateWhen(Igneous.globalPeriodic);
 
         b.setFalseWhen(Igneous.startDisabled);
 

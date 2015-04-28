@@ -1,7 +1,6 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.FloatInputPoll;
-import ccre.ctrl.FloatMixing;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 

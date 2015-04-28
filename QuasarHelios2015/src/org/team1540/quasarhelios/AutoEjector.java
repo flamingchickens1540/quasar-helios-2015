@@ -21,7 +21,6 @@ public class AutoEjector extends InstinctModule {
         AutoEjector a = new AutoEjector(b);
 
         a.setShouldBeRunning(b);
-        a.updateWhen(Igneous.constantPeriodic);
 
         Rollers.running.setFalseWhen(BooleanMixing.onRelease(b));
         Rollers.direction.setTrueWhen(BooleanMixing.onRelease(b));
@@ -46,9 +45,8 @@ public class AutoEjector extends InstinctModule {
                 waitUntil(Clamp.atDesiredHeight);
             }
 
-            boolean running = Rollers.running.get();
+            boolean wasRunning = Rollers.running.get();
             boolean direction = Rollers.direction.get();
-            boolean closed = Rollers.closed.get();
 
             try {
                 Rollers.closed.set(false);
@@ -58,9 +56,8 @@ public class AutoEjector extends InstinctModule {
                 waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
                 waitForTime(timeout);
             } finally {
-                Rollers.running.set(running);
+                Rollers.running.set(wasRunning);
                 Rollers.direction.set(direction);
-                //Rollers.closed.set(closed); - not actually helpful
                 Rollers.closed.set(false);
             }
         } finally {

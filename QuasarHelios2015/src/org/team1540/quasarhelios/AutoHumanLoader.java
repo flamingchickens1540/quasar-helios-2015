@@ -24,7 +24,6 @@ public class AutoHumanLoader extends InstinctModule {
         AutoHumanLoader a = new AutoHumanLoader(b);
 
         a.setShouldBeRunning(b);
-        a.updateWhen(Igneous.globalPeriodic);
 
         b.setFalseWhen(Igneous.startDisabled);
 

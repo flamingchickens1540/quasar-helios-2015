@@ -1,8 +1,6 @@
 package org.team1540.quasarhelios;
 
-import ccre.igneous.Igneous;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.FloatInput;
@@ -15,6 +13,7 @@ import ccre.ctrl.FloatMixing;
 import ccre.ctrl.Mixing;
 import ccre.ctrl.PauseTimer;
 import ccre.holders.TuningContext;
+import ccre.igneous.Igneous;
 
 public class ControlInterface {
     public static TuningContext mainTuning = new TuningContext("Main").publishSavingEvent();
@@ -31,14 +30,14 @@ public class ControlInterface {
 
     private static void setupClamp() {
         PauseTimer disableMotion = new PauseTimer(2000);
-        
+
         FloatMixing.pumpWhen(EventMixing.filterEvent(rollersModeForClampControlDisable, false, QuasarHelios.globalControl),
                 Mixing.select(disableMotion, Igneous.joystick2.getAxisChannel(2), FloatMixing.always(0)), Clamp.speed);
 
         EventInput toggle = Igneous.joystick2.getButtonSource(3);
-        
+
         Clamp.open.toggleWhen(toggle);
-        
+
         // When clamp is changed to closed, prevent motion for two seconds.
         EventMixing.filterEvent(Clamp.open, false, toggle).send(disableMotion);
 
@@ -67,7 +66,7 @@ public class ControlInterface {
             }
 
             Rollers.direction.set(Rollers.INPUT);
-            
+
             rollersMode.set(false);
         });
 
@@ -79,7 +78,7 @@ public class ControlInterface {
             }
 
             Rollers.direction.set(Rollers.OUTPUT);
-            
+
             rollersMode.set(false);
         });
 

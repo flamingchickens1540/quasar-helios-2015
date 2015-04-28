@@ -219,7 +219,7 @@ public class Clamp {
             protected String getTypeName() {
                 return "clamp autocalibrator";
             }
-        }.updateWhen(Igneous.globalPeriodic);
+        };
 
         Cluck.publish("Clamp Open Control", open);
         Cluck.publish("Clamp Height Encoder", FloatMixing.createDispatch(encoder, Igneous.globalPeriodic));

@@ -32,7 +32,6 @@ public class AutoStacker extends InstinctModule {
         AutoStacker s = new AutoStacker(b);
 
         s.setShouldBeRunning(b);
-        s.updateWhen(Igneous.globalPeriodic);
 
         b.setFalseWhen(Igneous.startDisabled);
         return b;
@@ -40,7 +39,7 @@ public class AutoStacker extends InstinctModule {
 
     @Override
     protected void autonomousMain() throws AutonomousModeOverException, InterruptedException {
-        boolean running = Rollers.running.get();
+        boolean wasRunning = Rollers.running.get();
 
         try {
             Rollers.running.set(false);
@@ -76,7 +75,7 @@ public class AutoStacker extends InstinctModule {
             Clamp.height.set(endHeight.get());
             this.running.set(false);
         } finally {
-            Rollers.running.set(running);
+            Rollers.running.set(wasRunning);
         }
     }
 
