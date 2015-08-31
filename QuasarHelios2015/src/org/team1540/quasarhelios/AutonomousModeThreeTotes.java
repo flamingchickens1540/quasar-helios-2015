@@ -1,8 +1,7 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanOutput;
-import ccre.channel.FloatInputPoll;
-import ccre.ctrl.BooleanMixing;
+import ccre.channel.FloatInput;
 import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 
@@ -11,16 +10,16 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         super("Three Totes");
     }
 
-    private FloatInputPoll nudge1, nudge2;
-    private FloatInputPoll hallwayAngle1, hallwayAngle2;
-    private FloatInputPoll distanceToSecondTote;
-    private FloatInputPoll distanceToThirdTote;
-    private FloatInputPoll autoZoneAngle;
-    private FloatInputPoll autoZoneDistance;
-    private FloatInputPoll toteAngle, toteAngle2;
-    private FloatInputPoll adjustmentAngle2;
+    private FloatInput nudge1, nudge2;
+    private FloatInput hallwayAngle1, hallwayAngle2;
+    private FloatInput distanceToSecondTote;
+    private FloatInput distanceToThirdTote;
+    private FloatInput autoZoneAngle;
+    private FloatInput autoZoneDistance;
+    private FloatInput toteAngle, toteAngle2;
+    private FloatInput adjustmentAngle2;
 
-    private BooleanOutput closed = BooleanMixing.combine(Rollers.leftPneumaticOverride, Rollers.rightPneumaticOverride);
+    private BooleanOutput closed = Rollers.leftPneumaticOverride.combine(Rollers.rightPneumaticOverride);
 
     @Override
     protected void runAutonomous() throws InterruptedException,
@@ -93,7 +92,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
         }
     }
 
-    protected void driveToTote(FloatInputPoll distance) throws AutonomousModeOverException, InterruptedException {
+    protected void driveToTote(FloatInput distance) throws AutonomousModeOverException, InterruptedException {
         Rollers.overrideRollers.set(true);
         straightening.set(false);
         drive(distance.get());

@@ -1,9 +1,16 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.*;
+import ccre.channel.BooleanInput;
+import ccre.channel.BooleanStatus;
+import ccre.channel.EventOutput;
+import ccre.channel.EventStatus;
+import ccre.channel.FloatInput;
+import ccre.channel.FloatOutput;
+import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.*;
-import ccre.igneous.*;
+import ccre.ctrl.ExpirationTimer;
+import ccre.ctrl.PIDController;
+import ccre.igneous.Igneous;
 import ccre.log.Logger;
 
 public class DriveCode {
@@ -20,22 +27,20 @@ public class DriveCode {
     public static FloatStatus forwardTrigger = new FloatStatus();
     public static FloatStatus backwardTrigger = new FloatStatus();
 
-    private static final FloatInput multiplier = Mixing.select(shiftEnabled, FloatMixing.always(1.0f), ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
+    private static final FloatInput multiplier = shiftEnabled.toFloat(1.0f, ControlInterface.teleTuning.getFloat("Drive Shift Multiplier +T", 0.5f));
 
     private static final BooleanStatus pitMode = new BooleanStatus();
 
     public static final EventOutput disablePitMode = pitMode.getSetFalseEvent();
 
     private static FloatInput wrapForPitMode(FloatInput input) {
-        return Mixing.select(pitMode, input, FloatMixing.always(0));
+        return pitMode.toFloat(input, 0);
     }
 
     public static final FloatInput leftJoystickX = wrapForPitMode(leftJoystickXRaw);
-    public static final FloatInput leftJoystickY = wrapForPitMode(FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) leftJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger));
+    public static final FloatInput leftJoystickY = wrapForPitMode(multiplier.multipliedBy(leftJoystickYRaw).plus(backwardTrigger).minus(forwardTrigger));
     public static final FloatInput rightJoystickX = wrapForPitMode(rightJoystickXRaw);
-    public static final FloatInput rightJoystickY = wrapForPitMode(FloatMixing.subtraction.of(FloatMixing.addition.of(
-            FloatMixing.multiplication.of(multiplier, (FloatInput) rightJoystickYRaw), (FloatInput) backwardTrigger), (FloatInput) forwardTrigger));
+    public static final FloatInput rightJoystickY = wrapForPitMode(multiplier.multipliedBy(rightJoystickYRaw).plus(backwardTrigger).minus(forwardTrigger));
 
     public static final BooleanStatus disableMotorsForCurrentFault = new BooleanStatus(false);
 
@@ -43,20 +48,18 @@ public class DriveCode {
     private static final FloatOutput leftBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f));
     private static final FloatOutput rightFrontMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f));
     private static final FloatOutput rightBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f));
-    public static final FloatOutput rightMotors = FloatMixing.combine(rightFrontMotor, rightBackMotor);
-    public static final FloatOutput leftMotors = FloatMixing.combine(leftFrontMotor, leftBackMotor);
-    public static final FloatOutput allMotors = FloatMixing.combine(leftMotors, rightMotors);
-    public static final FloatOutput rotate = FloatMixing.combine(leftMotors, FloatMixing.negate(rightMotors));
-    public static final FloatOutput strafe = FloatMixing.combine(
-            FloatMixing.negate(FloatMixing.combine(leftFrontMotor, rightBackMotor)),
-            FloatMixing.combine(leftBackMotor, rightFrontMotor));
+    public static final FloatOutput rightMotors = rightFrontMotor.combine(rightBackMotor);
+    public static final FloatOutput leftMotors = leftFrontMotor.combine(leftBackMotor);
+    public static final FloatOutput allMotors = leftMotors.combine(rightMotors);
+    public static final FloatOutput rotate = leftMotors.combine(rightMotors.negate());
+    public static final FloatOutput strafe = leftFrontMotor.combine(rightBackMotor).negate().combine(leftBackMotor.combine(rightFrontMotor));
     public static final BooleanStatus onlyStrafing = new BooleanStatus();
     private static final EventStatus resetEncoders = new EventStatus();
-    public static final FloatInput leftEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE, resetEncoders), Igneous.globalPeriodic);
-    public static final FloatInput rightEncoderRaw = FloatMixing.createDispatch(Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD, resetEncoders), Igneous.globalPeriodic);
+    public static final FloatInput leftEncoderRaw = Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE, resetEncoders);
+    public static final FloatInput rightEncoderRaw = Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD, resetEncoders);
     public static final FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("Drive Encoder Scaling +M", -0.0091f);
-    public static final FloatInput leftEncoder = FloatMixing.multiplication.of(leftEncoderRaw, encoderScaling);
-    public static final FloatInput rightEncoder = FloatMixing.multiplication.of(rightEncoderRaw, encoderScaling);
+    public static final FloatInput leftEncoder = leftEncoderRaw.multipliedBy(encoderScaling);
+    public static final FloatInput rightEncoder = rightEncoderRaw.multipliedBy(encoderScaling);
 
     private static final double π = Math.PI;
 
@@ -66,8 +69,8 @@ public class DriveCode {
     private static final BooleanStatus fieldCentric = ControlInterface.teleTuning.getBoolean("Teleop Field Centric Enabled +T", false);
 
     private static final FloatStatus desiredAngle = new FloatStatus();
-    private static final BooleanInputPoll isDisabled = Igneous.getIsDisabled();
-    private static PIDControl pid;
+    private static final BooleanInput isDisabled = Igneous.getIsDisabled();
+    private static PIDController pid;
 
     private static EventOutput mecanum = new EventOutput() {
         public void event() {
@@ -103,7 +106,7 @@ public class DriveCode {
 
             if (headingControl.get()) {
                 if (rotationspeed == 0 && speed > 0) {
-                    rotationspeed = -pid.get();
+                    rotationspeed = pid.get();
                 } else {
                     desiredAngle.set(HeadingSensor.absoluteYaw.get());
                     HeadingSensor.resetAccumulator.event();
@@ -124,9 +127,7 @@ public class DriveCode {
         float rightFront = (float) (speed * Math.cos(angle - π / 4) + rotationspeed);
         float leftBack = (float) (speed * Math.cos(angle - π / 4) - rotationspeed);
         float rightBack = (float) (speed * Math.sin(angle - π / 4) + rotationspeed);
-        float normalize = Math.max(
-                Math.max(Math.abs(leftFront), Math.abs(rightFront)),
-                Math.max(Math.abs(leftBack), Math.abs(rightBack)));
+        float normalize = Math.max(Math.max(Math.abs(leftFront), Math.abs(rightFront)), Math.max(Math.abs(leftBack), Math.abs(rightBack)));
         if (normalize > 1) {
             leftFront /= normalize;
             rightFront /= normalize;
@@ -161,7 +162,7 @@ public class DriveCode {
         if (out == null) {
             throw new NullPointerException();
         }
-        FloatMixing.setWhile(Igneous.globalPeriodic, disableMotorsForCurrentFault, out, 0);
+        out.setWhen(0.0f, Igneous.globalPeriodic.and(disableMotorsForCurrentFault));
         return value -> {
             if (!disableMotorsForCurrentFault.get()) {
                 out.set(value);
@@ -172,7 +173,7 @@ public class DriveCode {
     public static void setup() {
         Cluck.publish("(PIT) Pit Mode", pitMode);
         QuasarHelios.publishFault("in-pit-mode", pitMode, disablePitMode);
-        EventMixing.filterEvent(Igneous.getIsFMS(), true, Igneous.startTele).send(disablePitMode);
+        Igneous.startTele.and(Igneous.getIsFMS()).send(disablePitMode);
 
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
@@ -186,23 +187,17 @@ public class DriveCode {
         FloatStatus dconstant = ControlInterface.teleTuning.getFloat("Teleop PID Calibration D Constant +T", .125f);
         BooleanStatus calibrating = ControlInterface.teleTuning.getBoolean("Teleop PID Calibration +T", false);
 
-        FloatInput p = FloatMixing.createDispatch(
-                Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
-                EventMixing.filterEvent(calibrating, true, FloatMixing.onUpdate(ultgain)));
-        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
-                FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
-        FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
-                FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
+        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain); // TODO: translated properly?
+        FloatInput i = calibrating.toFloat(p.multipliedBy(iconstant).dividedBy(period), 0);
+        FloatInput d = calibrating.toFloat(p.multipliedBy(dconstant).multipliedBy(period), 0);
 
         Cluck.publish("Teleop PID P", p);
         Cluck.publish("Teleop PID I", i);
         Cluck.publish("Teleop PID D", d);
 
-        pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
-        pid.setOutputBounds(-1f, 1f);
-
-        FloatStatus integralBounds = ControlInterface.teleTuning.getFloat("Teleop PID Integral Bounds +T", .5f);
-        pid.setIntegralBounds(FloatMixing.negate((FloatInput) integralBounds), integralBounds);
+        pid = new PIDController(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
+        pid.setOutputBounds(1f);
+        pid.setIntegralBounds(ControlInterface.teleTuning.getFloat("Teleop PID Integral Bounds +T", .5f));
 
         Igneous.globalPeriodic.send(pid);
 
@@ -212,11 +207,11 @@ public class DriveCode {
         timer.start();
 
         onlyStrafing.toggleWhen(strafingButton);
-        FloatMixing.pumpWhen(strafingButton, HeadingSensor.absoluteYaw, desiredAngle);
+        desiredAngle.setWhen(HeadingSensor.absoluteYaw, strafingButton);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
 
-        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, false, mecanum));
-        Igneous.duringTele.send(EventMixing.filterEvent(onlyStrafing, true, justStrafing));
+        Igneous.duringTele.send(mecanum.filterNot(onlyStrafing));
+        Igneous.duringTele.send(justStrafing.filter(onlyStrafing));
 
         Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
         Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);

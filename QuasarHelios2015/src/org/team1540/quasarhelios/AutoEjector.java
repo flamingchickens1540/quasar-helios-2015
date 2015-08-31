@@ -1,16 +1,15 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanStatus;
-import ccre.channel.FloatInputPoll;
-import ccre.ctrl.BooleanMixing;
+import ccre.channel.FloatInput;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
     private final BooleanStatus running;
-    private FloatInputPoll clampHeight = ControlInterface.mainTuning.getFloat("AutoEjector Clamp Height +M", 1.0f);
-    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
+    private FloatInput clampHeight = ControlInterface.mainTuning.getFloat("AutoEjector Clamp Height +M", 1.0f);
+    private FloatInput timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
 
     private AutoEjector(BooleanStatus running) {
         this.running = running;
@@ -22,8 +21,8 @@ public class AutoEjector extends InstinctModule {
 
         a.setShouldBeRunning(b);
 
-        Rollers.running.setFalseWhen(BooleanMixing.onRelease(b));
-        Rollers.direction.setTrueWhen(BooleanMixing.onRelease(b));
+        Rollers.running.setFalseWhen(b.onRelease());
+        Rollers.direction.setTrueWhen(b.onRelease());
 
         b.setFalseWhen(Igneous.startDisabled);
 
@@ -40,7 +39,7 @@ public class AutoEjector extends InstinctModule {
 
             if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
-                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atBottom));
+                waitUntil(Clamp.atDesiredHeight.and(Elevator.atBottom)); // TODO: fix this
             } else {
                 waitUntil(Clamp.atDesiredHeight);
             }
@@ -53,7 +52,7 @@ public class AutoEjector extends InstinctModule {
                 Rollers.direction.set(Rollers.OUTPUT);
                 Rollers.running.set(true);
 
-                waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
+                waitUntilNot(AutoLoader.crateInPosition);
                 waitForTime(timeout);
             } finally {
                 Rollers.running.set(wasRunning);

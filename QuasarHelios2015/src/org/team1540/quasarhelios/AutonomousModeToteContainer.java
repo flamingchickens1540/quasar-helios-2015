@@ -1,38 +1,38 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.BooleanInput;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 import ccre.util.Utils;
 
 public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
     @Tunable(60.0f)
-    private FloatInputPoll autoZoneDistance;
+    private FloatInput autoZoneDistance;
     @Tunable(7.0f)
-    private FloatInputPoll nudge;
+    private FloatInput nudge;
 
     @Tunable(0.5f)
-    private FloatInputPoll containerTurnTime;
+    private FloatInput containerTurnTime;
     @Tunable(1.15f)
-    private FloatInputPoll autoZoneTime;
+    private FloatInput autoZoneTime;
     @Tunable(3.5f)
-    private FloatInputPoll toteCollectTime;
+    private FloatInput toteCollectTime;
     @Tunable(100.0f)
-    private FloatInputPoll autoZoneAngle;
+    private FloatInput autoZoneAngle;
     @Tunable(1.0f)
-    private FloatInputPoll autoZoneSpeed;
+    private FloatInput autoZoneSpeed;
     @Tunable(valueBoolean = false)
-    private BooleanInputPoll shake;
+    private BooleanInput shake;
 
     @Tunable(20)
-    private FloatInputPoll turn1;
+    private FloatInput turn1;
     @Tunable(115)
-    private FloatInputPoll turn2;
+    private FloatInput turn2;
     @Tunable(25)
-    private FloatInputPoll var1;
+    private FloatInput var1;
     @Tunable(30)
-    private FloatInputPoll var2;
+    private FloatInput var2;
 
     public AutonomousModeToteContainer() {
         super("One Tote");

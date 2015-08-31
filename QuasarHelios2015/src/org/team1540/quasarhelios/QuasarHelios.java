@@ -3,15 +3,13 @@ package org.team1540.quasarhelios;
 import java.util.ArrayList;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
+import ccre.channel.DerivedFloatInput;
 import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
 import ccre.ctrl.Ticker;
 import ccre.igneous.Igneous;
 import ccre.igneous.IgneousApplication;
@@ -28,9 +26,10 @@ public class QuasarHelios implements IgneousApplication {
     public static BooleanStatus autoEjector;
     public static BooleanStatus autoStacker;
     public static BooleanStatus autoHumanLoader;
-    public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
-    public static final EventInput manualControl = EventMixing.filterEvent(BooleanMixing.orBooleans(Igneous.getIsTest(), Igneous.getIsAutonomous()), false, Igneous.globalPeriodic);
-    public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
+    public static final EventInput globalControl = Igneous.globalPeriodic.andNot(Igneous.getIsTest());
+    public static final BooleanInput isInManualControl = Igneous.getIsTest().or(Igneous.getIsAutonomous()).not();
+    public static final EventInput manualControl = Igneous.globalPeriodic.and(isInManualControl);
+    public static final EventInput constantControl = Igneous.constantPeriodic.andNot(Igneous.getIsTest());
     public static final EventInput readoutUpdate = new Ticker(100);
 
     public void setupRobot() {
@@ -67,18 +66,11 @@ public class QuasarHelios implements IgneousApplication {
         // This is to provide diagnostics in case of another crash due to OOM.
         new Ticker(60000).send(() -> {
             Logger.info("Current memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            /*System.gc();
-            Logger.info("Post-GC-1 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            System.gc();
-            Logger.info("Post-GC-2 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            System.gc();
-            Logger.info("Post-GC-3 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            MemoryDumper.dumpHeap();*/
         });
     }
 
     private static final ArrayList<String> faultNames = new ArrayList<>();
-    private static final ArrayList<BooleanInputPoll> faults = new ArrayList<>();
+    private static final ArrayList<BooleanInput> faults = new ArrayList<>();
     private static final ArrayList<EventOutput> faultClears = new ArrayList<>();
 
     private static void publishFaultRConf() {
@@ -88,7 +80,7 @@ public class QuasarHelios implements IgneousApplication {
         }
         Cluck.publishRConf("quasar-faults", new RConfable() {
             public boolean signalRConf(int field, byte[] data) throws InterruptedException {
-                field -= 2; // so that it's relative to faultClears.
+                field -= 2;// so that it's relative to faultClears.
                 if (field >= 0 && field < faultClears.size()) {
                     EventOutput out = faultClears.get(field);
                     if (out != null) {
@@ -163,11 +155,7 @@ public class QuasarHelios implements IgneousApplication {
         return object;
     }
 
-    public static BooleanInput publishFault(String name, BooleanInputPoll object) {
-        return publishFault(name, BooleanMixing.createDispatch(object, readoutUpdate));
-    }
-
-    public static FloatStatus integrate(FloatInputPoll value, EventInput updateWhen) {
+    public static FloatStatus integrate(FloatInput value, EventInput updateWhen) {
         FloatStatus output = new FloatStatus();
         updateWhen.send(new EventOutput() {
             private long lastRun = System.nanoTime();
@@ -181,16 +169,18 @@ public class QuasarHelios implements IgneousApplication {
         return output;
     }
 
-    public static FloatInputPoll limitSwitches(FloatInputPoll value, BooleanInputPoll forcePositive, BooleanInputPoll forceNegative) {
-        return () -> {
-            float f = value.get();
-            if (forceNegative.get()) {
-                f = Math.min(0, f);
+    public static FloatInput limitSwitches(FloatInput value, BooleanInput forcePositive, BooleanInput forceNegative) {
+        return new DerivedFloatInput(value, forcePositive, forceNegative) {
+            protected float apply() {
+                float f = value.get();
+                if (forceNegative.get()) {
+                    f = Math.min(0, f);
+                }
+                if (forcePositive.get()) {
+                    f = Math.max(0, f);
+                }
+                return f;
             }
-            if (forcePositive.get()) {
-                f = Math.max(0, f);
-            }
-            return f;
         };
     }
 }

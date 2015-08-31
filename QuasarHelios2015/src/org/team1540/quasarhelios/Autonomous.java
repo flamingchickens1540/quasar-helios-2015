@@ -1,14 +1,10 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.EventMixing;
-import ccre.ctrl.FloatMixing;
-import ccre.ctrl.Mixing;
-import ccre.ctrl.PIDControl;
+import ccre.ctrl.PIDController;
 import ccre.igneous.Igneous;
 import ccre.instinct.InstinctMultiModule;
 
@@ -27,22 +23,18 @@ public class Autonomous {
         BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("Auto PID Calibrating +A", false);
         BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("Auto PID Enabled +A", false);
 
-        FloatInput p = FloatMixing.createDispatch(
-                Mixing.select(calibrating, FloatMixing.multiplication.of((FloatInput) ultgain, (FloatInput) pconstant), ultgain),
-                EventMixing.filterEvent(calibrating, true, FloatMixing.onUpdate(ultgain)));
-        FloatInput i = Mixing.select(calibrating, FloatMixing.division.of(
-                FloatMixing.multiplication.of(p, (FloatInput) iconstant), (FloatInput) period), FloatMixing.always(0));
-        FloatInput d = Mixing.select(calibrating, FloatMixing.multiplication.of(
-                FloatMixing.multiplication.of(p, (FloatInput) dconstant), (FloatInput) period), FloatMixing.always(0));
+        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain); // TODO: was this translated properly?
+        FloatInput i = calibrating.toFloat(p.multipliedBy(iconstant).dividedBy(period), 0);
+        FloatInput d = calibrating.toFloat(p.multipliedBy(dconstant).multipliedBy(period), 0);
 
-        PIDControl pid = new PIDControl(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
-        pid.setOutputBounds(-1f, 1f);
-        pid.setIntegralBounds(-.5f, .5f);
+        PIDController pid = new PIDController(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
+        pid.setOutputBounds(1f);
+        pid.setIntegralBounds(.5f);
         Igneous.duringAuto.send(pid);
-        autoPID = FloatMixing.createDispatch(Mixing.select((BooleanInputPoll) usePID, FloatMixing.always(0), pid), FloatMixing.onUpdate((FloatInput) pid));
-        reversePID = FloatMixing.negate(autoPID);
+        reversePID = usePID.toFloat(0, pid);
+        autoPID = reversePID.negated();
 
-        Cluck.publish("Auto PID Output", autoPID);
+        Cluck.publish("Auto PID Output", reversePID);
 
         mainModule.publishDefaultControls(true, true);
         mainModule.publishRConfControls();

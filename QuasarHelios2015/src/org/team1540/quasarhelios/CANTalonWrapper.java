@@ -1,18 +1,15 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
+import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatInput;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
-import ccre.ctrl.FloatMixing;
 import ccre.igneous.Igneous;
 import ccre.log.Logger;
 import ccre.util.Utils;
@@ -29,22 +26,22 @@ public class CANTalonWrapper {
         try {
             out = talon.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
         } catch (ExtendedMotorFailureException e) {
-            Logger.severe("Could not initialize elevator CAN", e);
+            Logger.severe("Could not initialize " + name, e);
         }
-        this.output = (out == null) ? FloatMixing.ignoredFloatOutput : out;
+        this.output = (out == null) ? FloatOutput.ignored : out;
 
         publishToCluck();
     }
 
     private void publishToCluck() {
         Cluck.publish(name + " Enable", talon.asEnable());
-        Cluck.publish(name + " Bus Voltage", FloatMixing.createDispatch(talon.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE), QuasarHelios.readoutUpdate));
-        Cluck.publish(name + " Output Current", FloatMixing.createDispatch(talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT), QuasarHelios.readoutUpdate));
-        Cluck.publish(name + " Output Voltage", FloatMixing.createDispatch(talon.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE), QuasarHelios.readoutUpdate));
-        Cluck.publish(name + " Temperature", FloatMixing.createDispatch(talon.asStatus(ExtendedMotor.StatusType.TEMPERATURE), QuasarHelios.readoutUpdate));
-        Cluck.publish(name + " Any Fault", QuasarHelios.publishFault("elevator-can", talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT)));
-        Cluck.publish(name + " Bus Voltage Fault", BooleanMixing.createDispatch(talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT), QuasarHelios.readoutUpdate));
-        Cluck.publish(name + " Temperature Fault", BooleanMixing.createDispatch(talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT), QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Bus Voltage", talon.asStatus(ExtendedMotor.StatusType.BUS_VOLTAGE, QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Output Current", talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT, QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Output Voltage", talon.asStatus(ExtendedMotor.StatusType.OUTPUT_VOLTAGE, QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Temperature", talon.asStatus(ExtendedMotor.StatusType.TEMPERATURE, QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Any Fault", QuasarHelios.publishFault("elevator-can", talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.ANY_FAULT, QuasarHelios.readoutUpdate)));
+        Cluck.publish(name + " Bus Voltage Fault", talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.BUS_VOLTAGE_FAULT, QuasarHelios.readoutUpdate));
+        Cluck.publish(name + " Temperature Fault", talon.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT, QuasarHelios.readoutUpdate));
     }
 
     public EventInput setupCurrentBreakerWithFaultPublish(float defaultAmps, String faultName) {
@@ -54,9 +51,9 @@ public class CANTalonWrapper {
     }
 
     public EventInput setupCurrentBreaker(float defaultAmps) {
-        FloatInputPoll current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
-        BooleanInputPoll maxCurrentNow = FloatMixing.floatIsAtLeast(current, ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", defaultAmps));
-        EventInput maxCurrentEvent = EventMixing.filterEvent(maxCurrentNow, true, Igneous.constantPeriodic);
+        FloatInput current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
+        BooleanInput maxCurrentNow = current.atLeast(ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", defaultAmps));
+        EventInput maxCurrentEvent = Igneous.constantPeriodic.and(maxCurrentNow);
         Cluck.publish(name + " Max Current Amps Reached", maxCurrentEvent);
         return maxCurrentEvent;
     }

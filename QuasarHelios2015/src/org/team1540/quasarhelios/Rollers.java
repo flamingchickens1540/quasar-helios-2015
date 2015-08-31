@@ -1,20 +1,14 @@
 package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
 import ccre.channel.BooleanOutput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
-import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
 import ccre.ctrl.ExpirationTimer;
-import ccre.ctrl.FloatMixing;
-import ccre.ctrl.Mixing;
 import ccre.igneous.Igneous;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
@@ -50,22 +44,40 @@ public class Rollers {
     private static final FloatInput actualIntakeSpeedSlow = ControlInterface.mainTuning.getFloat("Roller Speed Intake Slow +M", .3f);
     private static final FloatInput actualEjectSpeed = ControlInterface.mainTuning.getFloat("Roller Speed Eject +M", 1.0f);
 
-    private static final FloatInputPoll motorSpeed = Mixing.quadSelect(running, direction, FloatMixing.always(0.0f), FloatMixing.always(0.0f), FloatMixing.negate(actualIntakeSpeed), actualEjectSpeed);
+    private static final FloatInput motorSpeed = running.toFloat(0, direction.toFloat(actualIntakeSpeed.negated(), actualEjectSpeed));
 
     private static final FloatInput amperageLeftArmRoller = CurrentMonitoring.channels[15];
     private static final FloatInput amperageRightArmRoller = CurrentMonitoring.channels[0];
 
-    public static final EventOutput startHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 1.0f));
-    public static final EventOutput stopHoldIn = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
+    public static final EventOutput startHoldIn = () -> {
+        overrideRollerSpeedOnly.set(true);
+        closed.set(true);
+        leftRollerOverride.set(1.0f);
+        rightRollerOverride.set(1.0f);
+    };
+    public static final EventOutput stopHoldIn = () -> {
+        overrideRollerSpeedOnly.set(false);
+        closed.set(false);
+        leftRollerOverride.set(0.0f);
+        rightRollerOverride.set(0.0f);
+    };
 
-    public static final EventOutput startSpin = EventMixing.combine(overrideRollerSpeedOnly.getSetTrueEvent(), closed.getSetTrueEvent(), FloatMixing.getSetEvent(leftRollerOverride, 1.0f), FloatMixing.getSetEvent(rightRollerOverride, -1.0f));
-    public static final EventOutput stopSpin = EventMixing.combine(overrideRollerSpeedOnly.getSetFalseEvent(), closed.getSetFalseEvent(), FloatMixing.getSetEvent(FloatMixing.combine(leftRollerOverride, rightRollerOverride), 0.0f));
+    public static final EventOutput startSpin = () -> {
+        overrideRollerSpeedOnly.set(true);
+        closed.set(true);
+        leftRollerOverride.set(1.0f);
+        rightRollerOverride.set(-1.0f);
+    };
+    public static final EventOutput stopSpin = () -> {
+        overrideRollerSpeedOnly.set(false);
+        closed.set(false);
+        leftRollerOverride.set(0.0f);
+        rightRollerOverride.set(0.0f);
+    };
 
     // The thresholds are VERY HIGH by default so that these won't come into effect unless we want to turn them on.
-    private static final BooleanInput leftArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageLeftArmRoller,
-            ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Left +M", 1000f));
-    private static final BooleanInput rightArmRollerHasToteRaw = FloatMixing.floatIsAtLeast(amperageRightArmRoller,
-            ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Right +M", 1000f));
+    private static final BooleanInput leftArmRollerHasToteRaw = amperageLeftArmRoller.atLeast(ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Left +M", 1000f));
+    private static final BooleanInput rightArmRollerHasToteRaw = amperageRightArmRoller.atLeast(ControlInterface.mainTuning.getFloat("Roller Amperage Threshold Right +M", 1000f));
     private static BooleanStatus leftArmRollerHasTote = new BooleanStatus(),
             rightArmRollerHasTote = new BooleanStatus();
 
@@ -74,11 +86,10 @@ public class Rollers {
         QuasarHelios.publishFault("front-roller-flipped", flipFrontRoller, flipFrontRoller.getSetFalseEvent());
 
         running.setFalseWhen(Igneous.startDisabled);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(flipFrontRoller, motorSpeed, FloatMixing.negate(motorSpeed)), frontRollers);
-        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, false, QuasarHelios.globalControl), motorSpeed, internalRollers);
-        FloatMixing.pumpWhen(EventMixing.filterEvent(QuasarHelios.autoHumanLoader, true, QuasarHelios.globalControl),
-                Mixing.select(AutoHumanLoader.requestingRollers, FloatMixing.negate(actualIntakeSpeedSlow), FloatMixing.negate(actualIntakeSpeed)),
-                internalRollers);
+        flipFrontRoller.toFloat(motorSpeed, motorSpeed.negated()).send(frontRollers);
+        motorSpeed.send(internalRollers.filterNot(QuasarHelios.autoHumanLoader));
+        AutoHumanLoader.requestingRollers.toFloat(actualIntakeSpeedSlow, actualIntakeSpeed).negated().send(internalRollers.filter(QuasarHelios.autoHumanLoader));
+
         Igneous.globalPeriodic.send(new EventOutput() {
             private boolean wasRunning = false;
             private boolean lastDirection = INPUT;
@@ -100,32 +111,28 @@ public class Rollers {
                 lastDirection = dir;
             }
         });
-        overrideRollers.send(new BooleanOutput() {
-            public void set(boolean value) {
-                Logger.finer(value ? "Enabled roller override." : "Disabled roller override.");
-            }
-        });
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) leftRollerOverride)), leftArmRoller);
-        FloatMixing.pumpWhen(QuasarHelios.globalControl, Mixing.select(BooleanMixing.orBooleans(overrideRollers, overrideRollerSpeedOnly), motorSpeed, FloatMixing.negate((FloatInput) rightRollerOverride)), rightArmRoller);
+        overrideRollers.send(value -> Logger.finer(value ? "Enabled roller override." : "Disabled roller override."));
+        overrideRollers.or(overrideRollerSpeedOnly).toFloat(motorSpeed, leftRollerOverride.negated()).send(leftArmRoller);
+        overrideRollers.or(overrideRollerSpeedOnly).toFloat(motorSpeed, rightRollerOverride.negated()).send(rightArmRoller);
 
-        BooleanInput normalPneumatics = BooleanMixing.andBooleans(overrideRollers.asInvertedInput(), closed);
-        BooleanInput overrideLeft = BooleanMixing.andBooleans(overrideRollers.asInput(), leftPneumaticOverride);
-        BooleanInput overrideRight = BooleanMixing.andBooleans(overrideRollers.asInput(), rightPneumaticOverride);
+        BooleanInput normalPneumatics = overrideRollers.not().and(closed);
+        BooleanInput overrideLeft = overrideRollers.and(leftPneumaticOverride);
+        BooleanInput overrideRight = overrideRollers.and(rightPneumaticOverride);
 
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideLeft), leftPneumatic);
-        BooleanMixing.pumpWhen(QuasarHelios.globalControl, BooleanMixing.orBooleans(normalPneumatics, overrideRight), rightPneumatic);
+        normalPneumatics.or(overrideLeft).send(leftPneumatic);
+        normalPneumatics.or(overrideRight).send(rightPneumatic);
 
-        BooleanInputPoll clampLow = FloatMixing.floatIsAtMost(Clamp.heightReadout, ControlInterface.mainTuning.getFloat("Clamp Rollers Close Height +M", 0.2f));
-        BooleanMixing.setWhen(EventMixing.filterEvent(clampLow, true, QuasarHelios.globalControl), BooleanMixing.combine(closed, leftPneumaticOverride, rightPneumaticOverride), false);
+        BooleanInput clampLow = Clamp.heightReadout.atMost(ControlInterface.mainTuning.getFloat("Clamp Rollers Close Height +M", 0.2f));
+        closed.combine(leftPneumaticOverride).combine(rightPneumaticOverride).setFalseWhen(QuasarHelios.globalControl.and(clampLow));
 
-        FloatInputPoll minimumTime = ControlInterface.mainTuning.getFloat("Rollers Has Tote Minimum Time +M", 0.3f);
+        FloatInput minimumTime = ControlInterface.mainTuning.getFloat("Rollers Has Tote Minimum Time +M", 0.3f);
 
-        leftArmRollerHasTote.setFalseWhen(BooleanMixing.onRelease(leftArmRollerHasToteRaw));
+        leftArmRollerHasTote.setFalseWhen(leftArmRollerHasToteRaw.onRelease());
         ExpirationTimer leftRollers = new ExpirationTimer();
         leftRollers.schedule(minimumTime, leftArmRollerHasTote.getSetTrueEvent());
         leftArmRollerHasToteRaw.send(leftRollers.getRunningControl());
 
-        rightArmRollerHasTote.setFalseWhen(BooleanMixing.onRelease(rightArmRollerHasToteRaw));
+        rightArmRollerHasTote.setFalseWhen(rightArmRollerHasToteRaw.onRelease());
         ExpirationTimer rightRollers = new ExpirationTimer();
         rightRollers.schedule(minimumTime, rightArmRollerHasTote.getSetTrueEvent());
         rightArmRollerHasToteRaw.send(rightRollers.getRunningControl());
@@ -137,7 +144,7 @@ public class Rollers {
         Cluck.publish("Roller Closed", closed);
         Cluck.publish("Roller Closed Left", leftPneumatic);
         Cluck.publish("Roller Closed Right", rightPneumatic);
-        Cluck.publish("Roller Force Open", BooleanMixing.createDispatch(clampLow, QuasarHelios.readoutUpdate));
+        Cluck.publish("Roller Force Open", clampLow);
 
         Cluck.publish("Roller Amperage Left", amperageLeftArmRoller);
         Cluck.publish("Roller Amperage Right", amperageRightArmRoller);
