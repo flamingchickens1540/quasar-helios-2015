@@ -5,15 +5,16 @@ import ccre.channel.EventLogger;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
 import ccre.ctrl.PauseTimer;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.LogLevel;
 
 public class CurrentMonitoring {
     public static final FloatInput[] channels = new FloatInput[16];
     private static final FloatInput threshold = ControlInterface.mainTuning.getFloat("Current Monitoring Threshold +M", 1.5f);
+
     static {
         for (int i = 0; i < 16; i++) {
-            channels[i] = Igneous.getPDPChannelCurrent(i);
+            channels[i] = FRC.getPDPChannelCurrent(i);
         }
     }
 
@@ -34,7 +35,7 @@ public class CurrentMonitoring {
 
     private static BooleanInput setupDriveMotorCurrent(int port) {
         PauseTimer duringOvercurrent = new PauseTimer(1000);
-        duringOvercurrent.on(Igneous.globalPeriodic.and(channels[port].atLeast(driveThreshold)));
+        duringOvercurrent.on(FRC.globalPeriodic.and(channels[port].atLeast(driveThreshold)));
         QuasarHelios.publishFault("Drive Motor Current (" + port + ")", duringOvercurrent);
         return duringOvercurrent;
     }

@@ -9,7 +9,7 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.ExpirationTimer;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
@@ -23,13 +23,13 @@ public class Rollers {
     public static final BooleanStatus closed = new BooleanStatus(false);
 
     // These will need individual tuning for speed.
-    public static final FloatOutput rightArmRoller = Igneous.makeTalonMotor(4, Igneous.MOTOR_REVERSE, 0.1f);
-    public static final FloatOutput leftArmRoller = Igneous.makeTalonMotor(5, Igneous.MOTOR_FORWARD, 0.1f);
-    public static final FloatOutput frontRollers = Igneous.makeTalonMotor(6, Igneous.MOTOR_REVERSE, 0.1f);
-    private static final FloatOutput internalRollers = Igneous.makeTalonMotor(7, Igneous.MOTOR_REVERSE, 0.1f);
+    public static final FloatOutput rightArmRoller = FRC.makeTalonMotor(4, FRC.MOTOR_REVERSE, 0.1f);
+    public static final FloatOutput leftArmRoller = FRC.makeTalonMotor(5, FRC.MOTOR_FORWARD, 0.1f);
+    public static final FloatOutput frontRollers = FRC.makeTalonMotor(6, FRC.MOTOR_REVERSE, 0.1f);
+    private static final FloatOutput internalRollers = FRC.makeTalonMotor(7, FRC.MOTOR_REVERSE, 0.1f);
 
-    private static final BooleanOutput leftPneumatic = Igneous.makeSolenoid(1);
-    private static final BooleanOutput rightPneumatic = Igneous.makeSolenoid(2);
+    private static final BooleanOutput leftPneumatic = FRC.makeSolenoid(1);
+    private static final BooleanOutput rightPneumatic = FRC.makeSolenoid(2);
 
     public static final BooleanStatus rightPneumaticOverride = new BooleanStatus();
     public static final BooleanStatus leftPneumaticOverride = new BooleanStatus();
@@ -85,12 +85,12 @@ public class Rollers {
         Cluck.publish("Rollers Flip Front Direction", flipFrontRoller);
         QuasarHelios.publishFault("front-roller-flipped", flipFrontRoller, flipFrontRoller.getSetFalseEvent());
 
-        running.setFalseWhen(Igneous.startDisabled);
+        running.setFalseWhen(FRC.startDisabled);
         flipFrontRoller.toFloat(motorSpeed, motorSpeed.negated()).send(frontRollers);
         motorSpeed.send(internalRollers.filterNot(QuasarHelios.autoHumanLoader));
         AutoHumanLoader.requestingRollers.toFloat(actualIntakeSpeedSlow, actualIntakeSpeed).negated().send(internalRollers.filter(QuasarHelios.autoHumanLoader));
 
-        Igneous.globalPeriodic.send(new EventOutput() {
+        FRC.globalPeriodic.send(new EventOutput() {
             private boolean wasRunning = false;
             private boolean lastDirection = INPUT;
 

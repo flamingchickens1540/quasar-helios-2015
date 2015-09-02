@@ -4,13 +4,13 @@ import ccre.channel.BooleanInput;
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
     private final BooleanStatus running;
-    public static final BooleanInput crateInPosition = Igneous.makeDigitalInput(5);
+    public static final BooleanInput crateInPosition = FRC.makeDigitalInput(5);
 
     public static final FloatInput clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
 
@@ -24,7 +24,7 @@ public class AutoLoader extends InstinctModule {
 
         a.setShouldBeRunning(b);
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
 
         Cluck.publish("AutoLoader Crate Loaded", crateInPosition);
 
@@ -50,7 +50,7 @@ public class AutoLoader extends InstinctModule {
                 Rollers.closed.set(true);
 
                 while (true) {
-                    Rollers.running.set(true);
+                    Rollers.running.set(true); // TODO: it's not clear that changes here worked? (if there were any. in any case, this appears to be broken. the internal rollers didn't run.)
                     waitUntil(crateInPosition);
                     Rollers.running.set(false);
                     waitUntilNot(crateInPosition);

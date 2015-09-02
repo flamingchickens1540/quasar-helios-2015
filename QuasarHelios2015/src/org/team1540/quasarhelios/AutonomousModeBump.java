@@ -17,8 +17,7 @@ public class AutonomousModeBump extends AutonomousModeBase {
     }
 
     @Override
-    protected void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException {
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         // Motion
         drive(distance.get(), speed.get());
         driveForTime((long) (time.get() * 1000), speed.get());

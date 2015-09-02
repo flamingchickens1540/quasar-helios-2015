@@ -10,7 +10,7 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.ExtendedMotor;
 import ccre.ctrl.ExtendedMotorFailureException;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.Logger;
 import ccre.util.Utils;
 
@@ -21,7 +21,7 @@ public class CANTalonWrapper {
 
     public CANTalonWrapper(String name, int port) {
         this.name = name;
-        this.talon = Igneous.makeCANTalon(port);
+        this.talon = FRC.makeCANTalon(port);
         FloatOutput out = null;
         try {
             out = talon.asMode(ExtendedMotor.OutputControlMode.VOLTAGE_FRACTIONAL);
@@ -53,7 +53,7 @@ public class CANTalonWrapper {
     public EventInput setupCurrentBreaker(float defaultAmps) {
         FloatInput current = talon.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT);
         BooleanInput maxCurrentNow = current.atLeast(ControlInterface.mainTuning.getFloat(name + " Max Current Amps +M", defaultAmps));
-        EventInput maxCurrentEvent = Igneous.constantPeriodic.and(maxCurrentNow);
+        EventInput maxCurrentEvent = FRC.constantPeriodic.and(maxCurrentNow);
         Cluck.publish(name + " Max Current Amps Reached", maxCurrentEvent);
         return maxCurrentEvent;
     }
@@ -66,7 +66,7 @@ public class CANTalonWrapper {
         final FloatStatus wantedS = new FloatStatus();
         BooleanStatus doRamping = new BooleanStatus(true);
         Cluck.publish(name + " Ramping Enabled", doRamping);
-        Igneous.constantPeriodic.send(new EventOutput() {
+        FRC.constantPeriodic.send(new EventOutput() {
             private float last = wantedS.get();
 
             public void event() {

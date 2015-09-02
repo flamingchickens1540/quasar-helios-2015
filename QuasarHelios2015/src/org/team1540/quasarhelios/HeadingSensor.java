@@ -6,7 +6,7 @@ import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.drivers.chrobotics.UM7LT;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.Logger;
 
 public class HeadingSensor {
@@ -27,7 +27,7 @@ public class HeadingSensor {
     public static final EventOutput resetAccumulator = accumulator.getSetEvent(0);
 
     public static void setup() {
-        final UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
+        final UM7LT sensor = new UM7LT(FRC.makeRS232_MXP(115200, "UM7-LT"));
         sensor.autoreportFaults.set(true);
         QuasarHelios.publishFault("heading-sensor-any", new DerivedBooleanInput(sensor.onHealthUpdate) {
             @Override

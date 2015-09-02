@@ -7,18 +7,18 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.Ticker;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.Logger;
 
 public class Pressure {
-    public static final BooleanInput pressureSwitch = Igneous.getPCMPressureSwitch();
+    public static final BooleanInput pressureSwitch = FRC.getPCMPressureSwitch();
     public static FloatInput pressureGauge;
     public static final BooleanStatus compressor = new BooleanStatus(true);
 
     public static void setup() {
-        compressor.send(Igneous.usePCMCompressor());
+        compressor.send(FRC.usePCMCompressor());
         QuasarHelios.publishFault("compressor-disabled", compressor.not(), compressor.getSetTrueEvent());
-        FloatInput pressureInput = Igneous.makeAnalogInput(0);
+        FloatInput pressureInput = FRC.makeAnalogInput(0);
 
         FloatStatus min = ControlInterface.mainTuning.getFloat("Pressure Min +M", 0.0f);
         FloatStatus max = ControlInterface.mainTuning.getFloat("Pressure Max +M", 1.0f);
@@ -28,7 +28,7 @@ public class Pressure {
         QuasarHelios.publishFault("underpressure", pressureGauge.atMost(0.30f));
         QuasarHelios.publishFault("overpressure", pressureGauge.atLeast(1.05f));
 
-        BooleanInput compressorRunning = Igneous.getPCMCompressorRunning();
+        BooleanInput compressorRunning = FRC.getPCMCompressorRunning();
         BooleanInput notPressurizingWhenItShouldBe = pressureGauge.atMost(0.1f).and(compressorRunning);
         ExpirationTimer notPressurizingWarning = new ExpirationTimer();
         notPressurizingWhenItShouldBe.send(notPressurizingWarning.getRunningControl());

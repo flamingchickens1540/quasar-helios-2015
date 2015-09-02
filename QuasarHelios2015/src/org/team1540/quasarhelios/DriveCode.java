@@ -10,7 +10,7 @@ import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.ExpirationTimer;
 import ccre.ctrl.PIDController;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.Logger;
 
 public class DriveCode {
@@ -44,10 +44,10 @@ public class DriveCode {
 
     public static final BooleanStatus disableMotorsForCurrentFault = new BooleanStatus(false);
 
-    private static final FloatOutput leftFrontMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(9, Igneous.MOTOR_REVERSE, .1f));
-    private static final FloatOutput leftBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(8, Igneous.MOTOR_REVERSE, .1f));
-    private static final FloatOutput rightFrontMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(0, Igneous.MOTOR_FORWARD, .1f));
-    private static final FloatOutput rightBackMotor = wrapWithDriveDisable(Igneous.makeTalonMotor(1, Igneous.MOTOR_FORWARD, .1f));
+    private static final FloatOutput leftFrontMotor = wrapWithDriveDisable(FRC.makeTalonMotor(9, FRC.MOTOR_REVERSE, .1f));
+    private static final FloatOutput leftBackMotor = wrapWithDriveDisable(FRC.makeTalonMotor(8, FRC.MOTOR_REVERSE, .1f));
+    private static final FloatOutput rightFrontMotor = wrapWithDriveDisable(FRC.makeTalonMotor(0, FRC.MOTOR_FORWARD, .1f));
+    private static final FloatOutput rightBackMotor = wrapWithDriveDisable(FRC.makeTalonMotor(1, FRC.MOTOR_FORWARD, .1f));
     public static final FloatOutput rightMotors = rightFrontMotor.combine(rightBackMotor);
     public static final FloatOutput leftMotors = leftFrontMotor.combine(leftBackMotor);
     public static final FloatOutput allMotors = leftMotors.combine(rightMotors);
@@ -55,8 +55,8 @@ public class DriveCode {
     public static final FloatOutput strafe = leftFrontMotor.combine(rightBackMotor).negate().combine(leftBackMotor.combine(rightFrontMotor));
     public static final BooleanStatus onlyStrafing = new BooleanStatus();
     private static final EventStatus resetEncoders = new EventStatus();
-    public static final FloatInput leftEncoderRaw = Igneous.makeEncoder(6, 7, Igneous.MOTOR_REVERSE, resetEncoders);
-    public static final FloatInput rightEncoderRaw = Igneous.makeEncoder(8, 9, Igneous.MOTOR_FORWARD, resetEncoders);
+    public static final FloatInput leftEncoderRaw = FRC.makeEncoder(6, 7, FRC.MOTOR_REVERSE, resetEncoders);
+    public static final FloatInput rightEncoderRaw = FRC.makeEncoder(8, 9, FRC.MOTOR_FORWARD, resetEncoders);
     public static final FloatInput encoderScaling = ControlInterface.mainTuning.getFloat("Drive Encoder Scaling +M", -0.0091f);
     public static final FloatInput leftEncoder = leftEncoderRaw.multipliedBy(encoderScaling);
     public static final FloatInput rightEncoder = rightEncoderRaw.multipliedBy(encoderScaling);
@@ -69,7 +69,7 @@ public class DriveCode {
     private static final BooleanStatus fieldCentric = ControlInterface.teleTuning.getBoolean("Teleop Field Centric Enabled +T", false);
 
     private static final FloatStatus desiredAngle = new FloatStatus();
-    private static final BooleanInput isDisabled = Igneous.getIsDisabled();
+    private static final BooleanInput isDisabled = FRC.getIsDisabled();
     private static PIDController pid;
 
     private static EventOutput mecanum = new EventOutput() {
@@ -162,7 +162,7 @@ public class DriveCode {
         if (out == null) {
             throw new NullPointerException();
         }
-        out.setWhen(0.0f, Igneous.globalPeriodic.and(disableMotorsForCurrentFault));
+        out.setWhen(0.0f, FRC.globalPeriodic.and(disableMotorsForCurrentFault));
         return value -> {
             if (!disableMotorsForCurrentFault.get()) {
                 out.set(value);
@@ -173,7 +173,7 @@ public class DriveCode {
     public static void setup() {
         Cluck.publish("(PIT) Pit Mode", pitMode);
         QuasarHelios.publishFault("in-pit-mode", pitMode, disablePitMode);
-        Igneous.startTele.and(Igneous.getIsFMS()).send(disablePitMode);
+        FRC.startTele.and(FRC.getIsFMS()).send(disablePitMode);
 
         centricAngleOffset = ControlInterface.teleTuning.getFloat("Teleop Field Centric Default Angle +T", 0);
         headingControl = ControlInterface.teleTuning.getBoolean("Teleop Mecanum Keep Straight +T", false);
@@ -187,7 +187,7 @@ public class DriveCode {
         FloatStatus dconstant = ControlInterface.teleTuning.getFloat("Teleop PID Calibration D Constant +T", .125f);
         BooleanStatus calibrating = ControlInterface.teleTuning.getBoolean("Teleop PID Calibration +T", false);
 
-        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain); // TODO: translated properly?
+        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain);// TODO: translated properly?
         FloatInput i = calibrating.toFloat(p.multipliedBy(iconstant).dividedBy(period), 0);
         FloatInput d = calibrating.toFloat(p.multipliedBy(dconstant).multipliedBy(period), 0);
 
@@ -199,7 +199,7 @@ public class DriveCode {
         pid.setOutputBounds(1f);
         pid.setIntegralBounds(ControlInterface.teleTuning.getFloat("Teleop PID Integral Bounds +T", .5f));
 
-        Igneous.globalPeriodic.send(pid);
+        FRC.globalPeriodic.send(pid);
 
         ExpirationTimer timer = new ExpirationTimer();
         timer.schedule(10, HeadingSensor.zeroGyro);
@@ -210,8 +210,8 @@ public class DriveCode {
         desiredAngle.setWhen(HeadingSensor.absoluteYaw, strafingButton);
         strafingButton.send(pid.integralTotal.getSetEvent(0));
 
-        Igneous.duringTele.send(mecanum.filterNot(onlyStrafing));
-        Igneous.duringTele.send(justStrafing.filter(onlyStrafing));
+        FRC.duringTele.send(mecanum.filterNot(onlyStrafing));
+        FRC.duringTele.send(justStrafing.filter(onlyStrafing));
 
         Cluck.publish("Joystick 1 Right X Axis Raw", (FloatInput) rightJoystickXRaw);
         Cluck.publish("Joystick 1 Right Y Axis Raw", (FloatInput) rightJoystickYRaw);

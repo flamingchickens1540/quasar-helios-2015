@@ -11,8 +11,8 @@ import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.Ticker;
-import ccre.igneous.Igneous;
-import ccre.igneous.IgneousApplication;
+import ccre.frc.FRC;
+import ccre.frc.FRCApplication;
 import ccre.log.Logger;
 import ccre.rconf.RConf;
 import ccre.rconf.RConf.Entry;
@@ -21,15 +21,15 @@ import ccre.rconf.RConfable;
 /**
  * The main class for QuasarHelios. This dispatches to all of the other modules.
  */
-public class QuasarHelios implements IgneousApplication {
+public class QuasarHelios implements FRCApplication {
     public static BooleanStatus autoLoader;
     public static BooleanStatus autoEjector;
     public static BooleanStatus autoStacker;
     public static BooleanStatus autoHumanLoader;
-    public static final EventInput globalControl = Igneous.globalPeriodic.andNot(Igneous.getIsTest());
-    public static final BooleanInput isInManualControl = Igneous.getIsTest().or(Igneous.getIsAutonomous()).not();
-    public static final EventInput manualControl = Igneous.globalPeriodic.and(isInManualControl);
-    public static final EventInput constantControl = Igneous.constantPeriodic.andNot(Igneous.getIsTest());
+    public static final EventInput globalControl = FRC.globalPeriodic.andNot(FRC.getIsTest());
+    public static final BooleanInput isInManualControl = FRC.getIsTest().or(FRC.getIsAutonomous()).not();
+    public static final EventInput manualControl = FRC.globalPeriodic.and(isInManualControl);
+    public static final EventInput constantControl = FRC.constantPeriodic.andNot(FRC.getIsTest());
     public static final EventInput readoutUpdate = new Ticker(100);
 
     public void setupRobot() {
@@ -51,7 +51,7 @@ public class QuasarHelios implements IgneousApplication {
         autoEjector = AutoEjector.create();
         autoStacker = AutoStacker.create();
         autoHumanLoader = AutoHumanLoader.create();
-        autoHumanLoader.setFalseWhen(Igneous.startDisabled);
+        autoHumanLoader.setFalseWhen(FRC.startDisabled);
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();

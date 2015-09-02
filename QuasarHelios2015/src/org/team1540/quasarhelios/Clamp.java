@@ -15,7 +15,7 @@ import ccre.ctrl.ExtendedMotorFailureException;
 import ccre.ctrl.PIDController;
 import ccre.ctrl.PauseTimer;
 import ccre.ctrl.Ticker;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 import ccre.log.Logger;
@@ -30,7 +30,7 @@ public class Clamp {
     private static FloatStatus autocalibrationOverrideSpeed = new FloatStatus();
     private static BooleanStatus autocalibrationOverrideEnable = new BooleanStatus(false);
 
-    public static final BooleanStatus open = new BooleanStatus(Igneous.makeSolenoid(3).invert());
+    public static final BooleanStatus open = new BooleanStatus(FRC.makeSolenoid(3).invert());
 
     public static final EventOutput setBottom = mode.getSetFalseEvent().combine(height.getSetEvent(0));
 
@@ -56,9 +56,9 @@ public class Clamp {
 
         EventStatus zeroEncoder = new EventStatus();
         needsAutoCalibration.setFalseWhen(zeroEncoder);
-        FloatInput encoder = Igneous.makeEncoder(10, 11, true, zeroEncoder);
+        FloatInput encoder = FRC.makeEncoder(10, 11, true, zeroEncoder);
 
-        ExtendedMotor clampCAN = Igneous.makeCANTalon(1);
+        ExtendedMotor clampCAN = FRC.makeCANTalon(1);
         FloatOutput motorControlTemp = FloatOutput.ignored;
 
         try {
@@ -71,7 +71,7 @@ public class Clamp {
             Logger.severe("Exception thrown when creating clamp motor", e);
         }
 
-        final FloatStatus speedControl = new FloatStatus(motorControlTemp.negate().addRamping(0.2f, Igneous.constantPeriodic));
+        final FloatStatus speedControl = new FloatStatus(motorControlTemp.negate().addRamping(0.2f, FRC.constantPeriodic));
 
         Cluck.publish("Clamp CAN Enable", clampCAN.asEnable());
         Ticker updateCAN = new Ticker(100);// don't update too frequently
@@ -84,7 +84,7 @@ public class Clamp {
         Cluck.publish("Clamp CAN Temperature Fault", clampCAN.getDiagnosticChannel(ExtendedMotor.DiagnosticType.TEMPERATURE_FAULT, updateCAN));
 
         BooleanInput maxCurrentNow = clampCAN.asStatus(ExtendedMotor.StatusType.OUTPUT_CURRENT).atLeast(ControlInterface.mainTuning.getFloat("Clamp Max Current Amps +M", 45));
-        EventInput maxCurrentEvent = Igneous.constantPeriodic.and(maxCurrentNow);
+        EventInput maxCurrentEvent = FRC.constantPeriodic.and(maxCurrentNow);
 
         QuasarHelios.publishStickyFault("clamp-current-fault", maxCurrentEvent);
 
@@ -94,8 +94,8 @@ public class Clamp {
         timer.triggerAtChanges(clampEnabled.getSetFalseEvent(), clampEnabled.getSetTrueEvent());
         maxCurrentEvent.send(timer);
 
-        BooleanInput limitTop = Igneous.makeDigitalInput(2, Igneous.constantPeriodic).not();
-        BooleanInput limitBottom = Igneous.makeDigitalInput(3, Igneous.constantPeriodic).not();
+        BooleanInput limitTop = FRC.makeDigitalInput(2, FRC.constantPeriodic).not();
+        BooleanInput limitBottom = FRC.makeDigitalInput(3, FRC.constantPeriodic).not();
 
         BooleanStatus atTopStatus = new BooleanStatus(), atBottomStatus = new BooleanStatus();
         atTop = atTopStatus;
@@ -160,7 +160,7 @@ public class Clamp {
         EventInput manualOverride = QuasarHelios.globalControl.and(speed.outsideRange(-0.3f, 0.3f));
         mode.setTrueWhen(manualOverride);
         needsAutoCalibration.setFalseWhen(manualOverride);// allow the user to override the autocalibration
-        mode.setTrueWhen(Igneous.startTele);
+        mode.setTrueWhen(FRC.startTele);
 
         FloatStatus slowdownThreshold = ControlInterface.mainTuning.getFloat("Clamp Slowdown Threshold +M", 0.2f);
         FloatInput speedFactor = heightReadout.atMost(slowdownThreshold).toFloat(1.0f, 0.5f);
@@ -171,7 +171,7 @@ public class Clamp {
 
         // The autocalibrator runs when it's needed, AND allowed to by tuning (so that it can be disabled) AND the robot is enable in teleop or autonomous mode.
         // Once the encoder gets reset, it's no longer needed, and won't run. (Unless manually reactivated.)
-        new InstinctModule(Igneous.getIsEnabled().and(waitingForAutoCalibration).and(Igneous.getIsTeleop().or(Igneous.getIsAutonomous()))) {
+        new InstinctModule(FRC.getIsEnabled().and(waitingForAutoCalibration).and(FRC.getIsTeleop().or(FRC.getIsAutonomous()))) {
             private final FloatInput downwardTime = ControlInterface.mainTuning.getFloat("Clamp Autocalibration Downward Time +M", 0.1f);
 
             @Override

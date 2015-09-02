@@ -6,7 +6,7 @@ import ccre.channel.EventInput;
 import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
@@ -33,7 +33,7 @@ public class AutoStacker extends InstinctModule {
 
         s.setShouldBeRunning(b);
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
         return b;
     }
 

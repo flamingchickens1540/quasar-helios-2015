@@ -39,8 +39,7 @@ public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
     }
 
     @Override
-    protected void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException {
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         float startAngle = HeadingSensor.absoluteYaw.get();
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);

@@ -5,7 +5,7 @@ import ccre.channel.FloatInput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.PIDController;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.InstinctMultiModule;
 
 public class Autonomous {
@@ -23,14 +23,14 @@ public class Autonomous {
         BooleanStatus calibrating = ControlInterface.autoTuning.getBoolean("Auto PID Calibrating +A", false);
         BooleanStatus usePID = ControlInterface.autoTuning.getBoolean("Auto PID Enabled +A", false);
 
-        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain); // TODO: was this translated properly?
+        FloatInput p = calibrating.toFloat(ultgain.multipliedBy(pconstant), ultgain);// TODO: was this translated properly?
         FloatInput i = calibrating.toFloat(p.multipliedBy(iconstant).dividedBy(period), 0);
         FloatInput d = calibrating.toFloat(p.multipliedBy(dconstant).multipliedBy(period), 0);
 
         PIDController pid = new PIDController(HeadingSensor.absoluteYaw, desiredAngle, p, i, d);
         pid.setOutputBounds(1f);
         pid.setIntegralBounds(.5f);
-        Igneous.duringAuto.send(pid);
+        FRC.duringAuto.send(pid);
         reversePID = usePID.toFloat(0, pid);
         autoPID = reversePID.negated();
 
@@ -47,6 +47,6 @@ public class Autonomous {
         mainModule.addMode(new AutonomousModeContainerTote());
         mainModule.addMode(new AutonomousModeThreeTotes());
         mainModule.loadSettings(mainModule.addNullMode("none", "I'm a sitting chicken!"));
-        Igneous.registerAutonomous(mainModule);
+        FRC.registerAutonomous(mainModule);
     }
 }

@@ -11,7 +11,7 @@ import ccre.channel.FloatOutput;
 import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
 import ccre.ctrl.ExpirationTimer;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 import ccre.log.LogLevel;
@@ -57,8 +57,8 @@ public class Elevator {
 
         setupLimitSwitchesAndPublishing(actuallyRaising, actuallyLowering);
 
-        raising.setFalseWhen(Igneous.constantPeriodic.and(atTop));
-        lowering.setFalseWhen(Igneous.constantPeriodic.and(atBottom));
+        raising.setFalseWhen(FRC.constantPeriodic.and(atTop));
+        lowering.setFalseWhen(FRC.constantPeriodic.and(atBottom));
 
         atTop.send(new BooleanOutput() {
             public void set(boolean value) {
@@ -79,8 +79,8 @@ public class Elevator {
     }
 
     private static void setupLimitSwitchesAndPublishing(BooleanInput reallyRaising, BooleanInput reallyLowering) {
-        BooleanInput limitTop = Igneous.makeDigitalInputByInterrupt(0).not();
-        BooleanInput limitBottom = Igneous.makeDigitalInputByInterrupt(1).not();
+        BooleanInput limitTop = FRC.makeDigitalInputByInterrupt(0).not();
+        BooleanInput limitBottom = FRC.makeDigitalInputByInterrupt(1).not();
 
         atTopStatus.set(limitTop.get());
         atBottomStatus.set(limitBottom.get());
@@ -149,7 +149,7 @@ public class Elevator {
         needsAutoAlign.setFalseWhen(atTop.onPress());
         needsAutoAlign.setFalseWhen(atBottom.onPress());
 
-        BooleanInput shouldBeAutoaligning = Igneous.getIsEnabled().and(needsAutoAlign).and(ControlInterface.mainTuning.getBoolean("Elevator Enable Autoalign", true)).and(Igneous.getIsTeleop().or(Igneous.getIsAutonomous()));
+        BooleanInput shouldBeAutoaligning = FRC.getIsEnabled().and(needsAutoAlign).and(ControlInterface.mainTuning.getBoolean("Elevator Enable Autoalign", true)).and(FRC.getIsTeleop().or(FRC.getIsAutonomous()));
 
         // If we run into the top of the elevator here - then we know that we're at the top.
         atTopStatus.setTrueWhen(currentFault.and(shouldBeAutoaligning));

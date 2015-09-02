@@ -22,8 +22,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
     private BooleanOutput closed = Rollers.leftPneumaticOverride.combine(Rollers.rightPneumaticOverride);
 
     @Override
-    protected void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException {
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         try {
             // Setup rollers for later.
             closed.set(false);
@@ -56,7 +55,7 @@ public class AutonomousModeThreeTotes extends AutonomousModeBase {
             Rollers.running.set(false);
             turn(toteAngle.get(), false, 0.4f);
             drive(nudge1.get(), 0.7f);
-            waitUntilNot(AutoLoader.crateInPosition); // finish loading last tote
+            waitUntilNot(AutoLoader.crateInPosition);// finish loading last tote
             collectToteFastStart();
             turn(adjustmentAngle2.get(), false);
             straightening.set(false);

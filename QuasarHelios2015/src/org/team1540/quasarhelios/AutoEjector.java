@@ -2,7 +2,7 @@ package org.team1540.quasarhelios;
 
 import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
@@ -24,7 +24,7 @@ public class AutoEjector extends InstinctModule {
         Rollers.running.setFalseWhen(b.onRelease());
         Rollers.direction.setTrueWhen(b.onRelease());
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
 
         return b;
     }
@@ -39,7 +39,7 @@ public class AutoEjector extends InstinctModule {
 
             if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
-                waitUntil(Clamp.atDesiredHeight.and(Elevator.atBottom)); // TODO: fix this
+                waitUntil(Clamp.atDesiredHeight.and(Elevator.atBottom));// TODO: fix this
             } else {
                 waitUntil(Clamp.atDesiredHeight);
             }
