@@ -1,31 +1,29 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanCell;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanStatus;
 import ccre.channel.FloatInput;
-import ccre.ctrl.BooleanMixing;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoHumanLoader extends InstinctModule {
-    private final BooleanStatus running;
+    private final BooleanCell running;
     public static final BooleanInput crateInPosition = AutoLoader.crateInPosition;
-    public static final BooleanInputPoll requestingRollers = BooleanMixing.invert((BooleanInputPoll) crateInPosition);
+    public static final BooleanInput requestingRollers = crateInPosition.not();
     public static final FloatInput settleDelay = ControlInterface.teleTuning.getFloat("AutoHumanLoader Settle Time +T", 0.25f);
 
-    private AutoHumanLoader(BooleanStatus running) {
+    private AutoHumanLoader(BooleanCell running) {
         this.running = running;
     }
 
-    public static BooleanStatus create() {
-        BooleanStatus b = new BooleanStatus(false);
+    public static BooleanCell create() {
+        BooleanCell b = new BooleanCell(false);
         AutoHumanLoader a = new AutoHumanLoader(b);
 
         a.setShouldBeRunning(b);
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
 
         return b;
     }

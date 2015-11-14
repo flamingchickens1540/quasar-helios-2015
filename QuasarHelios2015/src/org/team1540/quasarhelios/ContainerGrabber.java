@@ -1,18 +1,16 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanStatus;
-import ccre.channel.EventInput;
-import ccre.channel.EventStatus;
+import ccre.channel.BooleanCell;
+import ccre.channel.EventCell;
 import ccre.cluck.Cluck;
-import ccre.ctrl.EventMixing;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 
 public class ContainerGrabber {
-    public static final BooleanStatus containerGrabberSolenoid = new BooleanStatus(Igneous.makeSolenoid(0));
-    public static final EventStatus containerGrabButton = new EventStatus();
+    public static final BooleanCell containerGrabberSolenoid = new BooleanCell(FRC.solenoid(0));
+    public static final EventCell containerGrabButton = new EventCell();
 
     public static void setup() {
-        containerGrabberSolenoid.toggleWhen(EventMixing.filterEvent(ControlInterface.mainTuning.getBoolean("Container Grab Enabled +A", true), true, (EventInput) containerGrabButton));
+        containerGrabberSolenoid.toggleWhen(containerGrabButton.and(ControlInterface.mainTuning.getBoolean("Container Grab Enabled +A", true)));
 
         Cluck.publish("Container Grab Actuated", containerGrabberSolenoid);
     }

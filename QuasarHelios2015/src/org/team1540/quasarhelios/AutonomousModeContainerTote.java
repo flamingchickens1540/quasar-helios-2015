@@ -1,47 +1,46 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.BooleanInput;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 
 public class AutonomousModeContainerTote extends AutonomousModeBaseEnsurable {
 
     @Tunable(65.0f)
-    private FloatInputPoll autoZoneDistance;
+    private FloatInput autoZoneDistance;
     @Tunable(0.2f)
-    private FloatInputPoll closeClampTime;
+    private FloatInput closeClampTime;
     @Tunable(0.6f)
-    private FloatInputPoll containerTurnTime;
+    private FloatInput containerTurnTime;
     @Tunable(10f)
-    private FloatInputPoll containerDriveTime;
+    private FloatInput containerDriveTime;
     @Tunable(100.0f)
-    private FloatInputPoll autoZoneAngle;
+    private FloatInput autoZoneAngle;
     @Tunable(1.0f)
-    private FloatInputPoll autoZoneSpeed;
+    private FloatInput autoZoneSpeed;
     @Tunable(0.75f)
-    private FloatInputPoll topClampHeight;
+    private FloatInput topClampHeight;
     @Tunable(valueBoolean = false)
-    private BooleanInputPoll shake;
+    private BooleanInput shake;
     @Tunable(-90.0f)
-    private FloatInputPoll finishAngle;
+    private FloatInput finishAngle;
 
     @Tunable(25)
-    private FloatInputPoll turn1;
+    private FloatInput turn1;
     @Tunable(110)
-    private FloatInputPoll turn2;
+    private FloatInput turn2;
     @Tunable(25)
-    private FloatInputPoll var1;
+    private FloatInput var1;
     @Tunable(20)
-    private FloatInputPoll var2;
+    private FloatInput var2;
 
     public AutonomousModeContainerTote() {
         super("Container, then Tote");
     }
 
     @Override
-    protected void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException {
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         float startAngle = HeadingSensor.absoluteYaw.get();
         setClampOpen(false);
         waitUntilNot(Clamp.waitingForAutoCalibration);

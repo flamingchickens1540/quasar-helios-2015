@@ -1,23 +1,23 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.BooleanInput;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 
 public class AutonomousModeNoodleAndTote extends AutonomousModeBaseEnsurable {
     @Tunable(7.0f)
-    private FloatInputPoll nudge;
+    private FloatInput nudge;
 
     @Tunable(0.5f)
-    private FloatInputPoll containerTurnTime;
+    private FloatInput containerTurnTime;
     @Tunable(valueBoolean = false)
-    private BooleanInputPoll shake;
+    private BooleanInput shake;
     @Tunable(3.5f)
-    private FloatInputPoll toteCollectTime;
+    private FloatInput toteCollectTime;
     @Tunable(-210.f)
-    private FloatInputPoll noodleAngle;
+    private FloatInput noodleAngle;
     @Tunable(0.80f)
-    private FloatInputPoll containerHeight;
+    private FloatInput containerHeight;
 
     public AutonomousModeNoodleAndTote() {
         super("Noodle and Tote");

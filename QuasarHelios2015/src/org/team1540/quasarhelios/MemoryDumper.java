@@ -8,7 +8,8 @@ import java.lang.reflect.Method;
 
 import ccre.log.Logger;
 
-public class MemoryDumper { // based on http://stackoverflow.com/a/12297339/3369324
+public class MemoryDumper { // based on
+                            // http://stackoverflow.com/a/12297339/3369324
     private static volatile Object hotspotMBean;
 
     public static void dumpHeap() {
@@ -34,8 +35,7 @@ public class MemoryDumper { // based on http://stackoverflow.com/a/12297339/3369
         if (hotspotMBean == null) {
             synchronized (MemoryDumper.class) {
                 if (hotspotMBean == null) {
-                    hotspotMBean = ManagementFactory.newPlatformMXBeanProxy(ManagementFactory.getPlatformMBeanServer(),
-                            "com.sun.management:type=HotSpotDiagnostic", Class.forName("com.sun.management.HotSpotDiagnosticMXBean"));
+                    hotspotMBean = ManagementFactory.newPlatformMXBeanProxy(ManagementFactory.getPlatformMBeanServer(), "com.sun.management:type=HotSpotDiagnostic", Class.forName("com.sun.management.HotSpotDiagnosticMXBean"));
                 }
             }
         }

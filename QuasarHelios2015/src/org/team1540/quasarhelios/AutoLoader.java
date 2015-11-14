@@ -1,31 +1,30 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanCell;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanStatus;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoLoader extends InstinctModule {
-    private final BooleanStatus running;
-    public static final BooleanInput crateInPosition = BooleanMixing.createDispatch(Igneous.makeDigitalInput(5), Igneous.globalPeriodic);
+    private final BooleanCell running;
+    public static final BooleanInput crateInPosition = FRC.digitalInput(5);
 
-    public static final FloatInputPoll clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
+    public static final FloatInput clampHeightThreshold = ControlInterface.mainTuning.getFloat("AutoLoader Clamp Height Threshold +M", 0.49f);
 
-    private AutoLoader(BooleanStatus running) {
+    private AutoLoader(BooleanCell running) {
         this.running = running;
     }
 
-    public static BooleanStatus create() {
-        BooleanStatus b = new BooleanStatus(false);
+    public static BooleanCell create() {
+        BooleanCell b = new BooleanCell(false);
         AutoLoader a = new AutoLoader(b);
 
         a.setShouldBeRunning(b);
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
 
         Cluck.publish("AutoLoader Crate Loaded", crateInPosition);
 

@@ -1,12 +1,12 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.DerivedBooleanInput;
 import ccre.channel.EventOutput;
+import ccre.channel.FloatCell;
 import ccre.channel.FloatInput;
-import ccre.channel.FloatStatus;
 import ccre.cluck.Cluck;
-import ccre.ctrl.FloatMixing;
 import ccre.drivers.chrobotics.UM7LT;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.log.Logger;
 
 public class HeadingSensor {
@@ -20,16 +20,21 @@ public class HeadingSensor {
 
     public static EventOutput zeroGyro;
 
-    private static final FloatStatus accumulator = new FloatStatus();
+    private static final FloatCell accumulator = new FloatCell();
 
     public static FloatInput absoluteYaw;
 
-    public static final EventOutput resetAccumulator = accumulator.getSetEvent(0);
+    public static final EventOutput resetAccumulator = accumulator.eventSet(0);
 
     public static void setup() {
-        UM7LT sensor = new UM7LT(Igneous.makeRS232_MXP(115200, "UM7-LT"));
+        UM7LT sensor = new UM7LT(FRC.mxpRS232(115200, "UM7-LT"));
         sensor.autoreportFaults.set(true);
-        QuasarHelios.publishFault("heading-sensor-any", () -> sensor.hasFault());
+        QuasarHelios.publishFault("heading-sensor-any", new DerivedBooleanInput(sensor.onHealthUpdate) {
+            @Override
+            protected boolean apply() {
+                return sensor.hasFault();
+            }
+        });
         Cluck.publish("Diagnose Heading Sensor", new EventOutput() {
             public void event() {
                 UM7LT.Faults faults = new UM7LT.Faults();
@@ -71,7 +76,12 @@ public class HeadingSensor {
         yaw = sensor.yaw;
         roll = sensor.roll;
 
-        QuasarHelios.publishFault("heading-sensor-all-zeroes", () -> pitch.get() == 0 && yaw.get() == 0 && roll.get() == 0);
+        QuasarHelios.publishFault("heading-sensor-all-zeroes", new DerivedBooleanInput(sensor.onHealthUpdate) {
+            @Override
+            protected boolean apply() {
+                return pitch.get() == 0 && yaw.get() == 0 && roll.get() == 0;
+            }
+        });
 
         pitchRate = sensor.pitchRate;
         yawRate = sensor.yawRate;
@@ -79,9 +89,9 @@ public class HeadingSensor {
 
         zeroGyro = sensor.zeroGyro;
 
-        absoluteYaw = FloatMixing.addition.of((FloatInput) accumulator, yaw);
+        absoluteYaw = accumulator.plus(yaw);
 
-        Igneous.globalPeriodic.send(new EventOutput() {
+        FRC.globalPeriodic.send(new EventOutput() {
             float oldyaw = 0;
 
             public void event() {

@@ -1,31 +1,30 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanStatus;
-import ccre.channel.FloatInputPoll;
-import ccre.ctrl.BooleanMixing;
-import ccre.igneous.Igneous;
+import ccre.channel.BooleanCell;
+import ccre.channel.FloatInput;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
 public class AutoEjector extends InstinctModule {
-    private final BooleanStatus running;
-    private FloatInputPoll clampHeight = ControlInterface.mainTuning.getFloat("AutoEjector Clamp Height +M", 1.0f);
-    private FloatInputPoll timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
+    private final BooleanCell running;
+    private FloatInput clampHeight = ControlInterface.mainTuning.getFloat("AutoEjector Clamp Height +M", 1.0f);
+    private FloatInput timeout = ControlInterface.mainTuning.getFloat("AutoEjector Timeout +M", 2.0f);
 
-    private AutoEjector(BooleanStatus running) {
+    private AutoEjector(BooleanCell running) {
         this.running = running;
     }
 
-    public static BooleanStatus create() {
-        BooleanStatus b = new BooleanStatus(false);
+    public static BooleanCell create() {
+        BooleanCell b = new BooleanCell(false);
         AutoEjector a = new AutoEjector(b);
 
         a.setShouldBeRunning(b);
 
-        Rollers.running.setFalseWhen(BooleanMixing.onRelease(b));
-        Rollers.direction.setTrueWhen(BooleanMixing.onRelease(b));
+        Rollers.running.setFalseWhen(b.onRelease());
+        Rollers.direction.setTrueWhen(b.onRelease());
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
 
         return b;
     }
@@ -40,7 +39,8 @@ public class AutoEjector extends InstinctModule {
 
             if (!Elevator.atBottom.get()) {
                 Elevator.setBottom.event();
-                waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atBottom));
+                waitUntil(Clamp.atDesiredHeight);
+                waitUntil(Elevator.atBottom);
             } else {
                 waitUntil(Clamp.atDesiredHeight);
             }
@@ -53,7 +53,7 @@ public class AutoEjector extends InstinctModule {
                 Rollers.direction.set(Rollers.OUTPUT);
                 Rollers.running.set(true);
 
-                waitUntil(BooleanMixing.invert(AutoLoader.crateInPosition));
+                waitUntilNot(AutoLoader.crateInPosition);
                 waitForTime(timeout);
             } finally {
                 Rollers.running.set(wasRunning);

@@ -2,35 +2,33 @@ package org.team1540.quasarhelios;
 
 import java.util.ArrayList;
 
+import ccre.channel.BooleanCell;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanStatus;
+import ccre.channel.DerivedFloatInput;
 import ccre.channel.EventInput;
 import ccre.channel.EventOutput;
-import ccre.channel.FloatInputPoll;
-import ccre.channel.FloatStatus;
+import ccre.channel.FloatCell;
+import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
-import ccre.ctrl.Ticker;
-import ccre.igneous.Igneous;
-import ccre.igneous.IgneousApplication;
+import ccre.frc.FRC;
+import ccre.frc.FRCApplication;
 import ccre.log.Logger;
 import ccre.rconf.RConf;
 import ccre.rconf.RConf.Entry;
 import ccre.rconf.RConfable;
+import ccre.timers.Ticker;
 
 /**
  * The main class for QuasarHelios. This dispatches to all of the other modules.
  */
-public class QuasarHelios implements IgneousApplication {
-    public static BooleanStatus autoLoader;
-    public static BooleanStatus autoEjector;
-    public static BooleanStatus autoStacker;
-    public static BooleanStatus autoHumanLoader;
-    public static final EventInput globalControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.globalPeriodic);
-    public static final EventInput manualControl = EventMixing.filterEvent(BooleanMixing.orBooleans(Igneous.getIsTest(), Igneous.getIsAutonomous()), false, Igneous.globalPeriodic);
-    public static final EventInput constantControl = EventMixing.filterEvent(Igneous.getIsTest(), false, Igneous.constantPeriodic);
+public class QuasarHelios implements FRCApplication {
+    public static BooleanCell autoLoader;
+    public static BooleanCell autoEjector;
+    public static BooleanCell autoStacker;
+    public static BooleanCell autoHumanLoader;
+    public static final EventInput globalControl = FRC.globalPeriodic.andNot(FRC.inTestMode());
+    public static final EventInput manualControl = FRC.globalPeriodic.andNot(FRC.inTestMode().or(FRC.inAutonomousMode()));
+    public static final EventInput constantControl = FRC.constantPeriodic.andNot(FRC.inTestMode());
     public static final EventInput readoutUpdate = new Ticker(100);
 
     public void setupRobot() {
@@ -52,7 +50,7 @@ public class QuasarHelios implements IgneousApplication {
         autoEjector = AutoEjector.create();
         autoStacker = AutoStacker.create();
         autoHumanLoader = AutoHumanLoader.create();
-        autoHumanLoader.setFalseWhen(Igneous.startDisabled);
+        autoHumanLoader.setFalseWhen(FRC.startDisabled);
         ControlInterface.setup();
         HeadingSensor.setup();
         DriveCode.setup();
@@ -67,18 +65,26 @@ public class QuasarHelios implements IgneousApplication {
         // This is to provide diagnostics in case of another crash due to OOM.
         new Ticker(60000).send(() -> {
             Logger.info("Current memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            /*System.gc();
-            Logger.info("Post-GC-1 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            System.gc();
-            Logger.info("Post-GC-2 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            System.gc();
-            Logger.info("Post-GC-3 memory usage: " + (Runtime.getRuntime().freeMemory() / 1000) + "k free / " + (Runtime.getRuntime().maxMemory() / 1000) + "k max / " + (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
-            MemoryDumper.dumpHeap();*/
+            /*
+             * System.gc(); Logger.info("Post-GC-1 memory usage: " +
+             * (Runtime.getRuntime().freeMemory() / 1000) + "k free / " +
+             * (Runtime.getRuntime().maxMemory() / 1000) + "k max / " +
+             * (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+             * System.gc(); Logger.info("Post-GC-2 memory usage: " +
+             * (Runtime.getRuntime().freeMemory() / 1000) + "k free / " +
+             * (Runtime.getRuntime().maxMemory() / 1000) + "k max / " +
+             * (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+             * System.gc(); Logger.info("Post-GC-3 memory usage: " +
+             * (Runtime.getRuntime().freeMemory() / 1000) + "k free / " +
+             * (Runtime.getRuntime().maxMemory() / 1000) + "k max / " +
+             * (Runtime.getRuntime().totalMemory() / 1000) + "k total.");
+             * MemoryDumper.dumpHeap();
+             */
         });
     }
 
     private static final ArrayList<String> faultNames = new ArrayList<>();
-    private static final ArrayList<BooleanInputPoll> faults = new ArrayList<>();
+    private static final ArrayList<BooleanInput> faults = new ArrayList<>();
     private static final ArrayList<EventOutput> faultClears = new ArrayList<>();
 
     private static void publishFaultRConf() {
@@ -133,22 +139,22 @@ public class QuasarHelios implements IgneousApplication {
 
     // These should not be called once publishFaultRConf is called.
     public static EventOutput publishStickyFault(String name) {
-        BooleanStatus stickyValue = new BooleanStatus();
-        publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
-        return stickyValue.getSetTrueEvent();
+        BooleanCell stickyValue = new BooleanCell();
+        publishFault(name, stickyValue, stickyValue.eventSet(false));
+        return stickyValue.eventSet(true);
     }
 
     public static BooleanInput publishStickyFault(String name, EventInput fault) {
-        BooleanStatus stickyValue = new BooleanStatus();
+        BooleanCell stickyValue = new BooleanCell();
         stickyValue.setTrueWhen(fault);
-        return publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
+        return publishFault(name, stickyValue, stickyValue.eventSet(false));
     }
 
     public static BooleanInput publishStickyFault(String name, EventInput fault, EventInput clearFault) {
-        BooleanStatus stickyValue = new BooleanStatus();
+        BooleanCell stickyValue = new BooleanCell();
         stickyValue.setTrueWhen(fault);
         stickyValue.setFalseWhen(clearFault);
-        return publishFault(name, stickyValue, stickyValue.getSetFalseEvent());
+        return publishFault(name, stickyValue, stickyValue.eventSet(false));
     }
 
     public static BooleanInput publishFault(String name, BooleanInput object) {
@@ -163,12 +169,8 @@ public class QuasarHelios implements IgneousApplication {
         return object;
     }
 
-    public static BooleanInput publishFault(String name, BooleanInputPoll object) {
-        return publishFault(name, BooleanMixing.createDispatch(object, readoutUpdate));
-    }
-
-    public static FloatStatus integrate(FloatInputPoll value, EventInput updateWhen) {
-        FloatStatus output = new FloatStatus();
+    public static FloatCell integrate(FloatInput value, EventInput updateWhen) {
+        FloatCell output = new FloatCell();
         updateWhen.send(new EventOutput() {
             private long lastRun = System.nanoTime();
 
@@ -181,16 +183,18 @@ public class QuasarHelios implements IgneousApplication {
         return output;
     }
 
-    public static FloatInputPoll limitSwitches(FloatInputPoll value, BooleanInputPoll forcePositive, BooleanInputPoll forceNegative) {
-        return () -> {
-            float f = value.get();
-            if (forceNegative.get()) {
-                f = Math.min(0, f);
+    public static FloatInput limitSwitches(FloatInput value, BooleanInput forcePositive, BooleanInput forceNegative) {
+        return new DerivedFloatInput(value, forcePositive, forceNegative) {
+            protected float apply() {
+                float f = value.get();
+                if (forceNegative.get()) {
+                    f = Math.min(0, f);
+                }
+                if (forcePositive.get()) {
+                    f = Math.max(0, f);
+                }
+                return f;
             }
-            if (forcePositive.get()) {
-                f = Math.max(0, f);
-            }
-            return f;
         };
     }
 }

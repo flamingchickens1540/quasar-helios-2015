@@ -1,14 +1,14 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 
 public class AutonomousModeDrive extends AutonomousModeBase {
     @Tunable(48.0f)
-    private FloatInputPoll driveDistance;
+    private FloatInput driveDistance;
     @Tunable(0.0f)
-    private FloatInputPoll turnAngle;
+    private FloatInput turnAngle;
 
     public AutonomousModeDrive() {
         super("Drive");

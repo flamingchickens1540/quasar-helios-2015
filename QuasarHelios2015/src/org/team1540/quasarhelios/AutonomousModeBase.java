@@ -3,35 +3,30 @@ package org.team1540.quasarhelios;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import ccre.channel.BooleanCell;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.BooleanStatus;
+import ccre.channel.EventOutput;
 import ccre.channel.FloatInput;
-import ccre.channel.FloatInputPoll;
 import ccre.channel.FloatOutput;
 import ccre.cluck.Cluck;
-import ccre.ctrl.BooleanMixing;
-import ccre.ctrl.EventMixing;
-import ccre.ctrl.FloatMixing;
-import ccre.holders.TuningContext;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModeModule;
 import ccre.log.Logger;
 import ccre.rconf.RConf;
-import ccre.rconf.RConfable;
 import ccre.rconf.RConf.Entry;
-import ccre.util.Utils;
+import ccre.rconf.RConfable;
+import ccre.tuning.TuningContext;
 
 public abstract class AutonomousModeBase extends InstinctModeModule {
     private static final TuningContext context = ControlInterface.autoTuning;
-    private static final FloatInputPoll driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
-    private static final FloatInputPoll rotateSpeed = FloatMixing.negate((FloatInputPoll) context.getFloat("Auto Rotate Speed +A", 0.5f));
-    private static final FloatInputPoll rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
-    private static final FloatInputPoll rotateOffset = context.getFloat("Auto Rotate Offset +A", -30f);
+    private static final FloatInput driveSpeed = context.getFloat("Auto Drive Speed +A", 1.0f);
+    private static final FloatInput rotateSpeed = context.getFloat("Auto Rotate Speed +A", 0.5f).negated();
+    private static final FloatInput rotateMultiplier = context.getFloat("Auto Rotate Multiplier +A", 1.0f);
+    private static final FloatInput rotateOffset = context.getFloat("Auto Rotate Offset +A", -30f);
     public static final float STRAFE_RIGHT = 1.0f;
     public static final float STRAFE_LEFT = -1.0f;
 
-    protected final BooleanStatus straightening = new BooleanStatus();
+    protected final BooleanCell straightening = new BooleanCell();
 
     public AutonomousModeBase(String modeName) {
         super(modeName);
@@ -44,21 +39,18 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (time > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
-            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
+            rightMotorSpeed = Autonomous.reversePID.minus(speed);
+            leftMotorSpeed = Autonomous.autoPID.minus(speed);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
+            rightMotorSpeed = Autonomous.reversePID.minusRev(speed);
+            leftMotorSpeed = Autonomous.autoPID.minusRev(speed);
         }
 
+        EventOutput unbind = rightMotorSpeed.send(DriveCode.rightMotors).combine(leftMotorSpeed.send(DriveCode.leftMotors));
         try {
-            rightMotorSpeed.send(DriveCode.rightMotors);
-            leftMotorSpeed.send(DriveCode.leftMotors);
-
             waitForTime(Math.abs(time));
         } finally {
-            rightMotorSpeed.unsend(DriveCode.rightMotors);
-            leftMotorSpeed.unsend(DriveCode.leftMotors);
+            unbind.event();
             DriveCode.allMotors.set(0.0f);
             straightening.set(true);
         }
@@ -77,25 +69,22 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         FloatInput rightMotorSpeed, leftMotorSpeed;
 
         if (distance > 0) {
-            rightMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.reversePID);
-            leftMotorSpeed = FloatMixing.addition.of(-speed, Autonomous.autoPID);
+            rightMotorSpeed = Autonomous.reversePID.minus(speed);
+            leftMotorSpeed = Autonomous.autoPID.minus(speed);
         } else {
-            rightMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.reversePID));
-            leftMotorSpeed = FloatMixing.negate(FloatMixing.addition.of(-speed, Autonomous.autoPID));
+            rightMotorSpeed = Autonomous.reversePID.minusRev(speed);
+            leftMotorSpeed = Autonomous.autoPID.minusRev(speed);
         }
 
+        EventOutput unbind = rightMotorSpeed.send(DriveCode.rightMotors).combine(leftMotorSpeed.send(DriveCode.leftMotors));
         try {
-            rightMotorSpeed.send(DriveCode.rightMotors);
-            leftMotorSpeed.send(DriveCode.leftMotors);
-
             if (distance > 0) {
                 waitUntilAtLeast(DriveCode.leftEncoder, startingEncoder + distance);
             } else {
                 waitUntilAtMost(DriveCode.leftEncoder, startingEncoder + distance);
             }
         } finally {
-            rightMotorSpeed.unsend(DriveCode.rightMotors);
-            leftMotorSpeed.unsend(DriveCode.leftMotors);
+            unbind.event();
             DriveCode.allMotors.set(0.0f);
             straightening.set(true);
         }
@@ -244,7 +233,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         if (currentClampHeight < AutoLoader.clampHeightThreshold.get()) {
             Clamp.mode.set(Clamp.MODE_HEIGHT);
             Clamp.height.set(AutoLoader.clampHeightThreshold.get());
-            waitUntil(BooleanMixing.andBooleans(Clamp.atDesiredHeight, Elevator.atTop));
+            waitUntil(Clamp.atDesiredHeight.and(Elevator.atTop));
         } else {
             waitUntil(Elevator.atTop);
         }
@@ -270,8 +259,7 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
             Rollers.running.set(false);
             Rollers.closed.set(false);
         } else if (timeout > 0) {
-            float end = Utils.getCurrentTimeSeconds() + timeout / 1000f;
-            waitUntil(BooleanMixing.orBooleans(AutoLoader.crateInPosition, FloatMixing.floatIsAtLeast(Utils.currentTimeSeconds, end)));
+            waitUntil(timeout, AutoLoader.crateInPosition);
             Rollers.running.set(false);
             Rollers.closed.set(false);
         } else if (timeout == 0) {
@@ -358,8 +346,8 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
         try {
             DriveCode.disablePitMode.event();
             // TODO: Move these elsewhere... this is a terrible plan.
-            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.autoPID)), Autonomous.autoPID, DriveCode.leftMotors);
-            FloatMixing.pumpWhen(EventMixing.filterEvent(straightening, true, FloatMixing.onUpdate(Autonomous.reversePID)), Autonomous.reversePID, DriveCode.rightMotors);
+            Autonomous.autoPID.filterUpdates(straightening).send(DriveCode.leftMotors);
+            Autonomous.reversePID.filterUpdates(straightening).send(DriveCode.rightMotors);
             runAutonomous();
         } finally {
             straightening.set(false);
@@ -378,9 +366,9 @@ public abstract class AutonomousModeBase extends InstinctModeModule {
                 f.setAccessible(true);
                 try {
                     String name = "Auto Mode " + getModeName() + " " + toTitleCase(f.getName()) + " +A";
-                    if (f.getType() == FloatInputPoll.class || f.getType() == FloatInput.class) {
+                    if (f.getType() == FloatInput.class || f.getType() == FloatInput.class) {
                         f.set(this, ctx.getFloat(name, annot.value()));
-                    } else if (f.getType() == BooleanInputPoll.class || f.getType() == BooleanInput.class) {
+                    } else if (f.getType() == BooleanInput.class || f.getType() == BooleanInput.class) {
                         f.set(this, ctx.getBoolean(name, annot.valueBoolean()));
                     } else {
                         Logger.severe("Invalid application of @Tunable to " + f.getType());

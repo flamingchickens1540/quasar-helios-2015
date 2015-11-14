@@ -1,24 +1,24 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.FloatInputPoll;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
 
 public class AutonomousModeGrabContainer extends AutonomousModeBase {
     @Tunable(2.0f)
-    private FloatInputPoll attachWaitingTime;
+    private FloatInput attachWaitingTime;
     @Tunable(1.0f)
-    private FloatInputPoll strafeTime1;
+    private FloatInput strafeTime1;
     @Tunable(0.5f)
-    private FloatInputPoll strafeTime2;
+    private FloatInput strafeTime2;
     @Tunable(-0.5f)
-    private FloatInputPoll strafeSpeed1;
+    private FloatInput strafeSpeed1;
     @Tunable(0.5f)
-    private FloatInputPoll strafeSpeed2;
+    private FloatInput strafeSpeed2;
     @Tunable(0.0f)
-    private FloatInputPoll forwardSpeed1;
+    private FloatInput forwardSpeed1;
     @Tunable(0.0f)
-    private FloatInputPoll forwardSpeed2;
+    private FloatInput forwardSpeed2;
 
     public AutonomousModeGrabContainer() {
         super("Grab Container");

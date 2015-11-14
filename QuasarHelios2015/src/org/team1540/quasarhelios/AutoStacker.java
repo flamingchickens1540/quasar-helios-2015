@@ -1,12 +1,12 @@
 package org.team1540.quasarhelios;
 
+import ccre.channel.BooleanCell;
 import ccre.channel.BooleanInput;
-import ccre.channel.BooleanStatus;
+import ccre.channel.EventCell;
 import ccre.channel.EventInput;
-import ccre.channel.EventStatus;
 import ccre.channel.FloatInput;
 import ccre.cluck.Cluck;
-import ccre.igneous.Igneous;
+import ccre.frc.FRC;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.instinct.InstinctModule;
 
@@ -18,22 +18,22 @@ public class AutoStacker extends InstinctModule {
     private static final FloatInput clampTime = ControlInterface.mainTuning.getFloat("AutoStacker Clamp Time +M", 0.25f);
 
     private static final BooleanInput useRollers = ControlInterface.mainTuning.getBoolean("AutoStacker Use Rollers", false);
-    private static final EventStatus atDrop = new EventStatus();
+    private static final EventCell atDrop = new EventCell();
 
-    private final BooleanStatus running;
+    private final BooleanCell running;
 
-    private AutoStacker(BooleanStatus running) {
+    private AutoStacker(BooleanCell running) {
         this.running = running;
         Cluck.publish("AutoStacker At Drop", (EventInput) atDrop);
     }
 
-    public static BooleanStatus create() {
-        BooleanStatus b = new BooleanStatus();
+    public static BooleanCell create() {
+        BooleanCell b = new BooleanCell();
         AutoStacker s = new AutoStacker(b);
 
         s.setShouldBeRunning(b);
 
-        b.setFalseWhen(Igneous.startDisabled);
+        b.setFalseWhen(FRC.startDisabled);
         return b;
     }
 
@@ -66,7 +66,7 @@ public class AutoStacker extends InstinctModule {
             waitForTime(clampTime);
 
             Clamp.height.set(collectHeight.get());
-            //waitUntil(Clamp.atDesiredHeight);
+            // waitUntil(Clamp.atDesiredHeight);
             waitUntil(Clamp.atBottom);
 
             Clamp.open.set(false);

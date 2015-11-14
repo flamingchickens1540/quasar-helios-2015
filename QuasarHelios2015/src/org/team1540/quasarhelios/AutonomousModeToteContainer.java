@@ -1,46 +1,45 @@
 package org.team1540.quasarhelios;
 
-import ccre.channel.BooleanInputPoll;
-import ccre.channel.FloatInputPoll;
+import ccre.channel.BooleanInput;
+import ccre.channel.FloatInput;
 import ccre.instinct.AutonomousModeOverException;
 import ccre.log.Logger;
-import ccre.util.Utils;
+import ccre.time.Time;
 
 public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
     @Tunable(60.0f)
-    private FloatInputPoll autoZoneDistance;
+    private FloatInput autoZoneDistance;
     @Tunable(7.0f)
-    private FloatInputPoll nudge;
+    private FloatInput nudge;
 
     @Tunable(0.5f)
-    private FloatInputPoll containerTurnTime;
+    private FloatInput containerTurnTime;
     @Tunable(1.15f)
-    private FloatInputPoll autoZoneTime;
+    private FloatInput autoZoneTime;
     @Tunable(3.5f)
-    private FloatInputPoll toteCollectTime;
+    private FloatInput toteCollectTime;
     @Tunable(100.0f)
-    private FloatInputPoll autoZoneAngle;
+    private FloatInput autoZoneAngle;
     @Tunable(1.0f)
-    private FloatInputPoll autoZoneSpeed;
+    private FloatInput autoZoneSpeed;
     @Tunable(valueBoolean = false)
-    private BooleanInputPoll shake;
+    private BooleanInput shake;
 
     @Tunable(20)
-    private FloatInputPoll turn1;
+    private FloatInput turn1;
     @Tunable(115)
-    private FloatInputPoll turn2;
+    private FloatInput turn2;
     @Tunable(25)
-    private FloatInputPoll var1;
+    private FloatInput var1;
     @Tunable(30)
-    private FloatInputPoll var2;
+    private FloatInput var2;
 
     public AutonomousModeToteContainer() {
         super("One Tote");
     }
 
     @Override
-    protected void runAutonomous() throws InterruptedException,
-            AutonomousModeOverException {
+    protected void runAutonomous() throws InterruptedException, AutonomousModeOverException {
         float startAngle = HeadingSensor.absoluteYaw.get();
         setClampOpen(true);
         waitUntilNot(Clamp.waitingForAutoCalibration);
@@ -61,11 +60,11 @@ public class AutonomousModeToteContainer extends AutonomousModeBaseEnsurable {
         endEnsureBlockAngleOnly(turn2.get(), var2.get());
         float curAngle = HeadingSensor.absoluteYaw.get();
         Logger.info("Actual angle: " + (curAngle - startAngle) + " based on " + startAngle + "/" + nextAngle + "/" + curAngle);
-        float now = Utils.getCurrentTimeSeconds();
+        long now = Time.currentTimeMillis();
         Logger.info("About to drive: " + DriveCode.leftEncoder.get() + " and " + autoZoneDistance.get());
         drive(autoZoneDistance.get(), autoZoneSpeed.get());
         Rollers.closed.set(false);
         driveForTime((long) (autoZoneTime.get() * 1000), autoZoneSpeed.get());
-        Logger.info("Finished: " + (Utils.getCurrentTimeSeconds() - now) + ": " + DriveCode.leftEncoder.get());
+        Logger.info("Finished: " + (Time.currentTimeMillis() - now) / 1000 + ": " + DriveCode.leftEncoder.get());
     }
 }
